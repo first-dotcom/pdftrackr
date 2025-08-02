@@ -1,0 +1,224 @@
+import { 
+  pgTable, 
+  serial, 
+  text, 
+  varchar, 
+  integer, 
+  bigint,
+  boolean, 
+  timestamp, 
+  json,
+  uuid,
+  index,
+  uniqueIndex,
+} from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
+
+// Users table
+export const users = pgTable('users', {
+  id: serial('id').primaryKey(),
+  clerkId: varchar('clerk_id', { length: 255 }).notNull().unique(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  firstName: varchar('first_name', { length: 100 }),
+  lastName: varchar('last_name', { length: 100 }),
+  plan: varchar('plan', { length: 20 }).notNull().default('free'), // free, pro, team
+  storageUsed: bigint('storage_used', { mode: 'number' }).notNull().default(0),
+  filesCount: integer('files_count').notNull().default(0),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  clerkIdIdx: uniqueIndex('users_clerk_id_idx').on(table.clerkId),
+  emailIdx: uniqueIndex('users_email_idx').on(table.email),
+}));
+
+// Files table
+export const files = pgTable('files', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  filename: varchar('filename', { length: 255 }).notNull(),
+  originalName: varchar('original_name', { length: 255 }).notNull(),
+  size: bigint('size', { mode: 'number' }).notNull(),
+  mimeType: varchar('mime_type', { length: 100 }).notNull(),
+  storageKey: varchar('storage_key', { length: 500 }).notNull(),
+  storageUrl: text('storage_url').notNull(),
+  title: varchar('title', { length: 255 }),
+  description: text('description'),
+  isPublic: boolean('is_public').notNull().default(false),
+  downloadEnabled: boolean('download_enabled').notNull().default(true),
+  watermarkEnabled: boolean('watermark_enabled').notNull().default(false),
+  password: varchar('password', { length: 255 }), // hashed password for protected files
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index('files_user_id_idx').on(table.userId),
+  createdAtIdx: index('files_created_at_idx').on(table.createdAt),
+}));
+
+// Share links table
+export const shareLinks = pgTable('share_links', {
+  id: serial('id').primaryKey(),
+  fileId: integer('file_id').notNull().references(() => files.id, { onDelete: 'cascade' }),
+  shareId: varchar('share_id', { length: 50 }).notNull().unique(), // nanoid for URL
+  title: varchar('title', { length: 255 }),
+  description: text('description'),
+  password: varchar('password', { length: 255 }), // hashed password
+  emailGatingEnabled: boolean('email_gating_enabled').notNull().default(false),
+  downloadEnabled: boolean('download_enabled').notNull().default(true),
+  watermarkEnabled: boolean('watermark_enabled').notNull().default(false),
+  expiresAt: timestamp('expires_at'),
+  maxViews: integer('max_views'),
+  viewCount: integer('view_count').notNull().default(0),
+  uniqueViewCount: integer('unique_view_count').notNull().default(0),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  shareIdIdx: uniqueIndex('share_links_share_id_idx').on(table.shareId),
+  fileIdIdx: index('share_links_file_id_idx').on(table.fileId),
+  expiresAtIdx: index('share_links_expires_at_idx').on(table.expiresAt),
+}));
+
+// View sessions table - tracks individual viewing sessions
+export const viewSessions = pgTable('view_sessions', {
+  id: serial('id').primaryKey(),
+  shareId: varchar('share_id', { length: 50 }).notNull().references(() => shareLinks.shareId, { onDelete: 'cascade' }),
+  sessionId: uuid('session_id').notNull(), // unique session identifier
+  viewerEmail: varchar('viewer_email', { length: 255 }),
+  viewerName: varchar('viewer_name', { length: 255 }),
+  ipAddress: varchar('ip_address', { length: 45 }),
+  userAgent: text('user_agent'),
+  referer: text('referer'),
+  country: varchar('country', { length: 2 }),
+  city: varchar('city', { length: 100 }),
+  device: varchar('device', { length: 50 }), // mobile, desktop, tablet
+  browser: varchar('browser', { length: 50 }),
+  os: varchar('os', { length: 50 }),
+  startedAt: timestamp('started_at').defaultNow().notNull(),
+  lastActiveAt: timestamp('last_active_at').defaultNow().notNull(),
+  totalDuration: integer('total_duration').notNull().default(0), // in seconds
+  isUnique: boolean('is_unique').notNull().default(true), // first time viewing this share link
+}, (table) => ({
+  shareIdIdx: index('view_sessions_share_id_idx').on(table.shareId),
+  sessionIdIdx: index('view_sessions_session_id_idx').on(table.sessionId),
+  startedAtIdx: index('view_sessions_started_at_idx').on(table.startedAt),
+}));
+
+// Page views table - tracks individual page views within a session
+export const pageViews = pgTable('page_views', {
+  id: serial('id').primaryKey(),
+  sessionId: uuid('session_id').notNull().references(() => viewSessions.sessionId, { onDelete: 'cascade' }),
+  pageNumber: integer('page_number').notNull(),
+  viewedAt: timestamp('viewed_at').defaultNow().notNull(),
+  duration: integer('duration').notNull().default(0), // time spent on page in seconds
+  scrollDepth: integer('scroll_depth').notNull().default(0), // max scroll percentage (0-100)
+}, (table) => ({
+  sessionIdIdx: index('page_views_session_id_idx').on(table.sessionId),
+  pageNumberIdx: index('page_views_page_number_idx').on(table.pageNumber),
+  viewedAtIdx: index('page_views_viewed_at_idx').on(table.viewedAt),
+}));
+
+// Email captures table - for email gating
+export const emailCaptures = pgTable('email_captures', {
+  id: serial('id').primaryKey(),
+  shareId: varchar('share_id', { length: 50 }).notNull().references(() => shareLinks.shareId, { onDelete: 'cascade' }),
+  email: varchar('email', { length: 255 }).notNull(),
+  name: varchar('name', { length: 255 }),
+  ipAddress: varchar('ip_address', { length: 45 }),
+  userAgent: text('user_agent'),
+  referer: text('referer'),
+  capturedAt: timestamp('captured_at').defaultNow().notNull(),
+}, (table) => ({
+  shareIdIdx: index('email_captures_share_id_idx').on(table.shareId),
+  emailIdx: index('email_captures_email_idx').on(table.email),
+  capturedAtIdx: index('email_captures_captured_at_idx').on(table.capturedAt),
+}));
+
+// Analytics summary table - for quick dashboard queries
+export const analyticsSummary = pgTable('analytics_summary', {
+  id: serial('id').primaryKey(),
+  fileId: integer('file_id').notNull().references(() => files.id, { onDelete: 'cascade' }),
+  date: varchar('date', { length: 10 }).notNull(), // YYYY-MM-DD
+  totalViews: integer('total_views').notNull().default(0),
+  uniqueViews: integer('unique_views').notNull().default(0),
+  totalDuration: integer('total_duration').notNull().default(0), // in seconds
+  avgDuration: integer('avg_duration').notNull().default(0), // in seconds
+  emailCaptures: integer('email_captures').notNull().default(0),
+  countries: json('countries').$type<Record<string, number>>(), // country code -> count
+  devices: json('devices').$type<Record<string, number>>(), // device type -> count
+  referers: json('referers').$type<Record<string, number>>(), // referer -> count
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  fileIdDateIdx: uniqueIndex('analytics_summary_file_id_date_idx').on(table.fileId, table.date),
+  dateIdx: index('analytics_summary_date_idx').on(table.date),
+}));
+
+// Define relations
+export const usersRelations = relations(users, ({ many }) => ({
+  files: many(files),
+}));
+
+export const filesRelations = relations(files, ({ one, many }) => ({
+  user: one(users, {
+    fields: [files.userId],
+    references: [users.id],
+  }),
+  shareLinks: many(shareLinks),
+  analyticsSummary: many(analyticsSummary),
+}));
+
+export const shareLinksRelations = relations(shareLinks, ({ one, many }) => ({
+  file: one(files, {
+    fields: [shareLinks.fileId],
+    references: [files.id],
+  }),
+  viewSessions: many(viewSessions),
+  emailCaptures: many(emailCaptures),
+}));
+
+export const viewSessionsRelations = relations(viewSessions, ({ one, many }) => ({
+  shareLink: one(shareLinks, {
+    fields: [viewSessions.shareId],
+    references: [shareLinks.shareId],
+  }),
+  pageViews: many(pageViews),
+}));
+
+export const pageViewsRelations = relations(pageViews, ({ one }) => ({
+  session: one(viewSessions, {
+    fields: [pageViews.sessionId],
+    references: [viewSessions.sessionId],
+  }),
+}));
+
+export const emailCapturesRelations = relations(emailCaptures, ({ one }) => ({
+  shareLink: one(shareLinks, {
+    fields: [emailCaptures.shareId],
+    references: [shareLinks.shareId],
+  }),
+}));
+
+export const analyticsSummaryRelations = relations(analyticsSummary, ({ one }) => ({
+  file: one(files, {
+    fields: [analyticsSummary.fileId],
+    references: [files.id],
+  }),
+}));
+
+// Waitlist table for premium plan signups
+export const waitlist = pgTable('waitlist', {
+  id: serial('id').primaryKey(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  plan: varchar('plan', { length: 20 }).notNull(), // pro, team, either
+  source: varchar('source', { length: 100 }), // pricing-page, dashboard, etc.
+  ipAddress: varchar('ip_address', { length: 45 }),
+  userAgent: text('user_agent'),
+  referer: text('referer'),
+  notified: boolean('notified').notNull().default(false), // when we launch plans
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  emailIdx: uniqueIndex('waitlist_email_idx').on(table.email),
+  planIdx: index('waitlist_plan_idx').on(table.plan),
+  createdAtIdx: index('waitlist_created_at_idx').on(table.createdAt),
+}));
