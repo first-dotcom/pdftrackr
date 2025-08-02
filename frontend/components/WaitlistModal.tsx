@@ -2,24 +2,51 @@
 
 import { useState } from 'react';
 import { X, Mail, Bell } from 'lucide-react';
+import { sanitizeUserInput, isValidEmail, generateCSRFToken, createClientRateLimit } from '../utils/security';
+
+// Rate limiting for waitlist submissions
+const waitlistRateLimit = createClientRateLimit(3, 60000); // 3 submissions per minute
 
 export default function WaitlistModal() {
   const [email, setEmail] = useState('');
   const [plan, setPlan] = useState('pro');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     setLoading(true);
 
     try {
+      // Client-side validation
+      const sanitizedEmail = sanitizeUserInput(email);
+      
+      if (!isValidEmail(sanitizedEmail)) {
+        setError('Please enter a valid email address');
+        setLoading(false);
+        return;
+      }
+
+      // Rate limiting check
+      if (!waitlistRateLimit.canMakeRequest()) {
+        setError('Too many requests. Please wait a moment before trying again.');
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch('/api/waitlist', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRF-Token': generateCSRFToken(), // Add CSRF protection
         },
-        body: JSON.stringify({ email, plan }),
+        body: JSON.stringify({ 
+          email: sanitizedEmail, 
+          plan: sanitizeUserInput(plan),
+          source: 'modal'
+        }),
       });
 
       if (response.ok) {
@@ -27,9 +54,13 @@ export default function WaitlistModal() {
         setTimeout(() => {
           closeModal();
         }, 3000);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.message || 'Failed to join waitlist. Please try again.');
       }
     } catch (error) {
       console.error('Failed to join waitlist:', error);
+      setError('Network error. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -40,6 +71,7 @@ export default function WaitlistModal() {
     setEmail('');
     setPlan('pro');
     setSubmitted(false);
+    setError('');
   };
 
   return (
@@ -79,11 +111,15 @@ export default function WaitlistModal() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(sanitizeUserInput(e.target.value))}
                 required
+                maxLength={254}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="your@email.com"
               />
+              {error && (
+                <p className="text-sm text-red-600 mt-1">{error}</p>
+              )}
             </div>
 
             <div className="mb-6">

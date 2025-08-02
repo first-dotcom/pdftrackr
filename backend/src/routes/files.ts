@@ -4,6 +4,7 @@ import { authenticate, requirePlan } from '../middleware/auth';
 import { asyncHandler, CustomError } from '../middleware/errorHandler';
 import { validateBody, validateQuery, validateParams } from '../middleware/validation';
 import { validateFileUpload, normalizeIp } from '../middleware/security';
+import { validatePDFSecurity, validateMimeType, createUploadRateLimit } from '../middleware/fileValidation';
 import { fileUploadSchema, paginationSchema } from '../utils/validation';
 import { db } from '../utils/database';
 import { files, users } from '../models/schema';
@@ -31,8 +32,17 @@ const upload = multer({
   },
 });
 
-// Upload PDF file
-router.post('/upload', authenticate, upload.single('file'), validateFileUpload, validateBody(fileUploadSchema), normalizeIp, asyncHandler(async (req, res) => {
+// Upload PDF file - Enhanced security
+router.post('/upload', 
+  createUploadRateLimit(), // Rate limiting for uploads
+  authenticate, 
+  upload.single('file'), 
+  validateMimeType, // Validate MIME type first
+  validatePDFSecurity, // Deep PDF content validation
+  validateFileUpload, // Additional file validation
+  validateBody(fileUploadSchema), 
+  normalizeIp, 
+  asyncHandler(async (req, res) => {
   if (!req.file) {
     throw new CustomError('No file provided', 400);
   }
@@ -71,7 +81,7 @@ router.post('/upload', authenticate, upload.single('file'), validateFileUpload, 
     // Upload to S3
     const uploadResult = await uploadToS3(storageKey, file.buffer, file.mimetype);
 
-    // Save file record to database
+    // Save file record to database with security metadata
     const newFile = await db.insert(files).values({
       userId: user.id,
       filename,
@@ -82,6 +92,10 @@ router.post('/upload', authenticate, upload.single('file'), validateFileUpload, 
       storageUrl: uploadResult.url,
       title: title || file.originalname,
       description,
+      // Add security tracking
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+      fileHash: (req as any).fileHash, // From PDF validation
     }).returning();
 
     // Update user storage and file count

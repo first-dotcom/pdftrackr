@@ -4,11 +4,12 @@ import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import cookieParser from 'cookie-parser';
 import { config } from './config';
 import { logger } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
 import { metricsMiddleware } from './middleware/metrics';
-import { securityHeaders, addRequestId } from './middleware/security';
+import { securityHeaders, addRequestId, csrfProtection } from './middleware/security';
 import { connectDatabase } from './utils/database';
 import { connectRedis } from './utils/redis';
 
@@ -30,27 +31,47 @@ app.use(addRequestId);
 // Security headers
 app.use(securityHeaders);
 
-// Enhanced security middleware
+// Enhanced security middleware with stricter policies
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", config.storage.endpoint],
-      fontSrc: ["'self'", "https:"],
+      styleSrc: ["'self'", "'unsafe-inline'"], // For CSS-in-JS libraries
+      scriptSrc: ["'self'", "'strict-dynamic'"], // Allow dynamically loaded scripts
+      imgSrc: ["'self'", "data:", "https:", config.storage.cdnUrl || config.storage.endpoint],
+      connectSrc: ["'self'", config.storage.endpoint, "https://api.clerk.dev", "https://clerk.dev"],
+      fontSrc: ["'self'", "https:", "data:"],
       objectSrc: ["'none'"],
-      mediaSrc: ["'self'"],
+      mediaSrc: ["'self'", config.storage.endpoint],
       frameSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      frameAncestors: ["'none'"],
+      upgradeInsecureRequests: config.env === 'production' ? [] : null,
     },
+    reportOnly: config.env === 'development', // Report violations in dev
   },
-  crossOriginEmbedderPolicy: false, // Required for some PDF viewers
+  crossOriginEmbedderPolicy: false, // Required for PDF viewers
+  crossOriginOpenerPolicy: { policy: "same-origin" },
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  dnsPrefetchControl: { allow: false },
+  expectCt: {
+    maxAge: 86400,
+    enforce: true,
+  },
+  frameguard: { action: 'deny' },
+  hidePoweredBy: true,
   hsts: {
     maxAge: 31536000,
     includeSubDomains: true,
     preload: true,
   },
+  ieNoOpen: true,
+  noSniff: true,
+  originAgentCluster: true,
+  permittedCrossDomainPolicies: false,
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  xssFilter: true,
 }));
 
 // Rate limiting (more restrictive)
@@ -90,19 +111,41 @@ app.use(cors({
   exposedHeaders: ['X-Request-ID'],
 }));
 
+// Cookie parser for CSRF tokens
+app.use(cookieParser());
+
 // Compression and parsing (with security limits)
-app.use(compression());
+app.use(compression({
+  filter: (req, res) => {
+    // Don't compress responses with sensitive headers
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  },
+  threshold: 1024, // Only compress responses > 1KB
+}));
+
 app.use(express.json({ 
   limit: '10mb', // Reduced from 50mb for security
   verify: (req, res, buf) => {
     // Store raw body for webhook verification
     (req as any).rawBody = buf;
+  },
+  // Prevent JSON pollution attacks
+  reviver: (key, value) => {
+    if (typeof value === 'string' && value.length > 10000) {
+      throw new Error('JSON string too long');
+    }
+    return value;
   }
 }));
+
 app.use(express.urlencoded({ 
   extended: true, 
-  limit: '10mb', // Reduced from 50mb for security
-  parameterLimit: 100, // Limit URL parameters
+  limit: '5mb', // Even more restrictive for form data
+  parameterLimit: 50, // Limit URL parameters
+  arrayLimit: 20, // Limit array size in forms
 }));
 
 // Logging
@@ -110,6 +153,18 @@ app.use(morgan('combined', { stream: { write: (message) => logger.info(message.t
 
 // Metrics middleware
 app.use(metricsMiddleware);
+
+// CSRF Protection (applied selectively)
+app.use('/api', (req, res, next) => {
+  // Skip CSRF for webhooks and public endpoints
+  if (req.path.includes('/webhook') || 
+      req.path.includes('/public') ||
+      req.path.includes('/health') ||
+      req.path.includes('/metrics')) {
+    return next();
+  }
+  return csrfProtection(req, res, next);
+});
 
 // Health check
 app.get('/health', (req, res) => {

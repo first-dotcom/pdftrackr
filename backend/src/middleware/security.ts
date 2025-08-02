@@ -36,20 +36,52 @@ export const securityHeaders = (req: Request, res: Response, next: NextFunction)
   next();
 };
 
-// CSRF protection
+// Enhanced CSRF protection
 export const csrfProtection = (req: Request, res: Response, next: NextFunction) => {
+  // Skip CSRF for safe methods
   if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') {
     return next();
   }
 
-  const token = req.headers['x-csrf-token'] || req.headers['csrf-token'];
-  const sessionToken = req.headers.authorization;
+  try {
+    // Check for CSRF token in headers or cookies
+    const headerToken = req.headers['x-csrf-token'] || req.headers['csrf-token'];
+    const cookieToken = req.cookies?.csrfToken;
+    const sessionToken = req.headers.authorization;
 
-  if (!token && !sessionToken) {
-    throw new CustomError('CSRF token required', 403);
+    // Require either CSRF token or valid authentication
+    if (!headerToken && !cookieToken && !sessionToken) {
+      logger.warn('CSRF protection triggered - no token provided', { 
+        ip: req.ip,
+        path: req.path,
+        method: req.method 
+      });
+      throw new CustomError('CSRF token required', 403);
+    }
+
+    // If CSRF token provided, validate it
+    if (headerToken || cookieToken) {
+      const providedToken = headerToken || cookieToken;
+      
+      // Simple validation - in production you'd want signed tokens
+      if (!providedToken || providedToken.length < 10) {
+        logger.warn('Invalid CSRF token format', { 
+          ip: req.ip,
+          tokenLength: providedToken?.length || 0 
+        });
+        throw new CustomError('Invalid CSRF token', 403);
+      }
+    }
+
+    next();
+  } catch (error) {
+    if (error instanceof CustomError) {
+      next(error);
+    } else {
+      logger.error('CSRF protection error', { error, ip: req.ip });
+      next(new CustomError('CSRF validation failed', 403));
+    }
   }
-
-  next();
 };
 
 // Validate file upload security

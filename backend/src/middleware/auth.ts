@@ -6,6 +6,7 @@ import { db } from '../utils/database';
 import { users } from '../models/schema';
 import { eq } from 'drizzle-orm';
 import { logger } from '../utils/logger';
+import { CacheService } from '../utils/redis';
 
 // Extend Express Request type to include user
 declare global {
@@ -40,6 +41,15 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     if (!payload.sub) {
       throw new CustomError('Invalid token', 401);
     }
+
+    // Check token expiration
+    if (payload.exp && payload.exp < Date.now() / 1000) {
+      logger.warn('Expired token used', { userId: payload.sub, ip: req.ip });
+      throw new CustomError('Token expired', 401);
+    }
+
+    // Check for suspicious activity patterns
+    await checkSuspiciousActivity(req, payload.sub);
 
     req.userId = payload.sub;
 
@@ -125,4 +135,55 @@ export const requirePlan = (requiredPlan: 'free' | 'pro' | 'team') => {
 
     next();
   };
+};
+
+// Check for suspicious activity patterns
+const checkSuspiciousActivity = async (req: Request, userId: string) => {
+  const ip = req.ip;
+  const userAgent = req.get('User-Agent');
+  const key = `auth_attempts:${ip}:${userId}`;
+  
+  try {
+    // Track authentication attempts
+    const attempts = await CacheService.get(key);
+    const attemptCount = attempts ? parseInt(attempts) : 0;
+    
+    // Log unusual patterns
+    if (attemptCount > 10) {
+      logger.warn('High authentication frequency detected', {
+        userId,
+        ip,
+        attempts: attemptCount,
+        userAgent
+      });
+    }
+    
+    // Increment counter
+    await CacheService.setex(key, 3600, (attemptCount + 1).toString()); // 1 hour TTL
+    
+    // Check for multiple IPs per user (potential account sharing/compromise)
+    const userIpKey = `user_ips:${userId}`;
+    const userIps = await CacheService.get(userIpKey);
+    
+    if (userIps) {
+      const ips = JSON.parse(userIps);
+      if (!ips.includes(ip)) {
+        ips.push(ip);
+        if (ips.length > 5) { // More than 5 different IPs in short time
+          logger.warn('Multiple IP addresses detected for user', {
+            userId,
+            ips: ips.length,
+            currentIp: ip
+          });
+        }
+        await CacheService.setex(userIpKey, 86400, JSON.stringify(ips)); // 24 hours
+      }
+    } else {
+      await CacheService.setex(userIpKey, 86400, JSON.stringify([ip]));
+    }
+    
+  } catch (error) {
+    // Don't fail auth if Redis is down, just log
+    logger.error('Failed to check suspicious activity', { error, userId, ip });
+  }
 };
