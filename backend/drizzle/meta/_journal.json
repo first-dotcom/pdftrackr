@@ -8,6 +8,13 @@
       "when": 1754182928120,
       "tag": "0000_red_romulus",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1754218219753,
+      "tag": "0001_sweet_darkhawk",
+      "breakpoints": true
     }
   ]
 }

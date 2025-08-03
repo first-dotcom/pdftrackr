@@ -40,20 +40,34 @@ export default function UploadPage() {
 
   const handleFileSelect = useCallback((selectedFiles: FileList | File[]) => {
     const fileArray = Array.from(selectedFiles);
-    const newFiles: UploadFile[] = [];
-
-    fileArray.forEach(file => {
+    
+    // For single file upload, replace existing files
+    if (fileArray.length === 1) {
+      const file = fileArray[0];
       const error = validateFile(file);
-      newFiles.push({
+      const newFile: UploadFile = {
         file,
         id: generateId(),
         status: error ? 'error' : 'pending',
         progress: 0,
         error,
+      };
+      setFiles([newFile]);
+    } else {
+      // For multiple files, add to existing
+      const newFiles: UploadFile[] = [];
+      fileArray.forEach(file => {
+        const error = validateFile(file);
+        newFiles.push({
+          file,
+          id: generateId(),
+          status: error ? 'error' : 'pending',
+          progress: 0,
+          error,
+        });
       });
-    });
-
-    setFiles(prev => [...prev, ...newFiles]);
+      setFiles(prev => [...prev, ...newFiles]);
+    }
   }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -195,8 +209,8 @@ export default function UploadPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Upload PDF Files</h1>
-          <p className="text-gray-600">Upload your PDF files to share and track analytics</p>
+          <h1 className="text-2xl font-bold text-gray-900">Upload PDF</h1>
+          <p className="text-gray-600">Upload a PDF file to share and track analytics</p>
         </div>
         <button
           onClick={() => router.back()}

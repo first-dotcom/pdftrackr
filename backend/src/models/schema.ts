@@ -93,7 +93,9 @@ export const viewSessions = pgTable('view_sessions', {
   sessionId: uuid('session_id').notNull(), // unique session identifier
   viewerEmail: varchar('viewer_email', { length: 255 }),
   viewerName: varchar('viewer_name', { length: 255 }),
-  ipAddress: varchar('ip_address', { length: 45 }),
+  // GDPR-compliant IP tracking - store hashed IP instead of plain text
+  ipAddressHash: varchar('ip_address_hash', { length: 64 }), // SHA-256 hash of IP
+  ipAddressCountry: varchar('ip_address_country', { length: 2 }), // Country from IP (no personal data)
   userAgent: text('user_agent'),
   referer: text('referer'),
   country: varchar('country', { length: 2 }),
@@ -105,6 +107,9 @@ export const viewSessions = pgTable('view_sessions', {
   lastActiveAt: timestamp('last_active_at').defaultNow().notNull(),
   totalDuration: integer('total_duration').notNull().default(0), // in seconds
   isUnique: boolean('is_unique').notNull().default(true), // first time viewing this share link
+  // GDPR compliance
+  consentGiven: boolean('consent_given').notNull().default(false), // User consented to tracking
+  dataRetentionDate: timestamp('data_retention_date'), // When this data should be deleted
   // Security tracking
   suspiciousFlags: json('suspicious_flags').$type<string[]>(), // Security warnings
   riskScore: integer('risk_score').default(0), // 0-100 risk assessment
@@ -112,8 +117,9 @@ export const viewSessions = pgTable('view_sessions', {
   shareIdIdx: index('view_sessions_share_id_idx').on(table.shareId),
   sessionIdIdx: uniqueIndex('view_sessions_session_id_idx').on(table.sessionId),
   startedAtIdx: index('view_sessions_started_at_idx').on(table.startedAt),
-  ipIdx: index('view_sessions_ip_idx').on(table.ipAddress), // Security monitoring
+  ipHashIdx: index('view_sessions_ip_hash_idx').on(table.ipAddressHash), // Security monitoring
   riskIdx: index('view_sessions_risk_idx').on(table.riskScore),
+  retentionIdx: index('view_sessions_retention_idx').on(table.dataRetentionDate), // GDPR cleanup
 }));
 
 // Page views table - tracks individual page views within a session
