@@ -110,7 +110,7 @@ export const viewSessions = pgTable('view_sessions', {
   riskScore: integer('risk_score').default(0), // 0-100 risk assessment
 }, (table) => ({
   shareIdIdx: index('view_sessions_share_id_idx').on(table.shareId),
-  sessionIdIdx: index('view_sessions_session_id_idx').on(table.sessionId),
+  sessionIdIdx: uniqueIndex('view_sessions_session_id_idx').on(table.sessionId),
   startedAtIdx: index('view_sessions_started_at_idx').on(table.startedAt),
   ipIdx: index('view_sessions_ip_idx').on(table.ipAddress), // Security monitoring
   riskIdx: index('view_sessions_risk_idx').on(table.riskScore),

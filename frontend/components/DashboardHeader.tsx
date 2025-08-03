@@ -4,7 +4,7 @@ import { UserButton } from '@clerk/nextjs';
 import { Bell, Settings } from 'lucide-react';
 import Link from 'next/link';
 
-export default function DashboardHeader({ user }: { user: any }) {
+export default function DashboardHeader() {
   return (
     <header className="bg-white border-b border-gray-200">
       <div className="px-6 py-4">

@@ -1,0 +1,22 @@
+{
+  "name": "pdftrackr",
+  "version": "1.0.0",
+  "description": "PDFTrackr - Secure PDF Sharing & Analytics SaaS",
+  "scripts": {
+    "dev": "docker-compose up -d",
+    "dev:build": "docker-compose up -d --build",
+    "dev:rebuild": "docker-compose down && docker-compose up -d --build",
+    "stop": "docker-compose down",
+    "restart": "docker-compose restart",
+    "logs": "docker-compose logs -f",
+    "logs:backend": "docker-compose logs -f backend",
+    "logs:frontend": "docker-compose logs -f frontend",
+    "db:migrate": "docker-compose exec backend npm run db:migrate",
+    "db:seed": "docker-compose exec backend npm run db:seed",
+    "clean": "docker-compose down -v --remove-orphans",
+    "clean:all": "docker-compose down -v --remove-orphans && docker system prune -f"
+  },
+  "keywords": ["pdf", "sharing", "analytics", "saas", "nextjs", "nodejs"],
+  "author": "PDFTrackr Team",
+  "license": "MIT"
+}

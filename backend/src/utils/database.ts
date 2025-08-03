@@ -5,13 +5,7 @@ import { logger } from './logger';
 import * as schema from '../models/schema';
 
 // Create postgres client
-const client = postgres({
-  host: config.database.host,
-  port: config.database.port,
-  database: config.database.name,
-  username: config.database.user,
-  password: config.database.password,
-  ssl: config.database.ssl ? 'require' : false,
+const client = postgres(config.database.url, {
   max: 10,
   idle_timeout: 20,
   connect_timeout: 10,
