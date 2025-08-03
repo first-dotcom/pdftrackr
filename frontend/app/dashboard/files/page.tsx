@@ -41,7 +41,7 @@ export default function FilesPage() {
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [shareLinks, setShareLinks] = useState<ShareLink[]>([]);
-  const [expandedFiles, setExpandedFiles] = useState<Set<number>>(new Set());
+  const [expandedFiles, setExpandedFiles] = useState<Set<number>>(new Set<number>());
   const [selectedFolder, setSelectedFolder] = useState<string>('all');
   
   // Add proper loading states for Clerk
@@ -74,9 +74,11 @@ export default function FilesPage() {
       
       if (response.ok) {
         const data = await response.json();
-        setFiles(data.data.files);
+        setFiles(data.data.files || []);
       } else {
         console.error('Failed to fetch files:', response.status, response.statusText);
+        const errorData = await response.json().catch(() => null);
+        console.error('Error response data:', errorData);
       }
     } catch (error) {
       console.error('Failed to fetch files:', error);
@@ -87,7 +89,6 @@ export default function FilesPage() {
 
   const fetchShareLinks = async (fileId: number) => {
     try {
-      console.log('Fetching share links for file ID:', fileId);
       const token = await getToken();
       if (!token) {
         console.error('No authentication token available');
@@ -102,7 +103,6 @@ export default function FilesPage() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Share links response:', data);
         setShareLinks(data.data.shareLinks);
       } else {
         console.error('Failed to fetch share links:', response.status, response.statusText);
@@ -170,6 +170,7 @@ export default function FilesPage() {
     const matchesSearch = file.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          file.originalName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFolder = selectedFolder === 'all' || (file.folder || 'General') === selectedFolder;
+    
     return matchesSearch && matchesFolder;
   });
 
@@ -349,12 +350,17 @@ export default function FilesPage() {
                             </div>
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {file.title}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {file.originalName}
-                            </div>
+                            <Link
+                              href={`/dashboard/files/${file.id}`}
+                              className="text-sm font-medium text-gray-900 hover:text-primary-600 transition-colors"
+                            >
+                              {file.title || file.originalName}
+                            </Link>
+                            {file.title && file.title !== file.originalName && (
+                              <div className="text-sm text-gray-500">
+                                {file.originalName}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </td>

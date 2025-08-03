@@ -38,7 +38,7 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"], // For CSS-in-JS libraries
       scriptSrc: ["'self'", "'strict-dynamic'"], // Allow dynamically loaded scripts
-      imgSrc: ["'self'", "data:", "https:", config.storage.cdnUrl || config.storage.endpoint],
+      imgSrc: ["'self'", "data:", "https:", config.storage.endpoint],
       connectSrc: ["'self'", config.storage.endpoint, "https://api.clerk.dev", "https://clerk.dev"],
       fontSrc: ["'self'", "https:", "data:"],
       objectSrc: ["'none'"],
@@ -55,10 +55,7 @@ app.use(helmet({
   crossOriginOpenerPolicy: { policy: "same-origin" },
   crossOriginResourcePolicy: { policy: "cross-origin" },
   dnsPrefetchControl: { allow: false },
-  expectCt: {
-    maxAge: 86400,
-    enforce: true,
-  },
+  // expectCt removed - deprecated in newer helmet versions
   frameguard: { action: 'deny' },
   hidePoweredBy: true,
   hsts: {
@@ -74,10 +71,10 @@ app.use(helmet({
   xssFilter: true,
 }));
 
-// Rate limiting (more restrictive)
+// Rate limiting (more reasonable)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: config.env === 'production' ? 50 : 100, // Stricter in production
+  max: config.env === 'production' ? 200 : 500, // More reasonable limits
   message: {
     error: 'Too many requests from this IP, please try again later.',
     retryAfter: '15 minutes',
@@ -85,17 +82,22 @@ const limiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: false,
-  keyGenerator: (req) => req.ip, // Use IP for rate limiting
+  keyGenerator: (req: any) => req.ip, // Use IP for rate limiting
 });
 app.use(limiter);
 
-// CORS configuration (strict)
+// CORS configuration (more permissive for development)
 app.use(cors({
   origin: function (origin, callback) {
     // Allow same origin and configured frontend URL
     const allowedOrigins = [config.frontend.url];
     if (config.env === 'development') {
-      allowedOrigins.push('http://localhost:3000', 'http://127.0.0.1:3000');
+      allowedOrigins.push('http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3001');
+    }
+    
+    // In development, be more permissive
+    if (config.env === 'development' && !origin) {
+      return callback(null, true);
     }
     
     if (!origin || allowedOrigins.includes(origin)) {
@@ -145,7 +147,6 @@ app.use(express.urlencoded({
   extended: true, 
   limit: '5mb', // Even more restrictive for form data
   parameterLimit: 50, // Limit URL parameters
-  arrayLimit: 20, // Limit array size in forms
 }));
 
 // Logging

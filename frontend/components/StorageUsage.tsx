@@ -23,6 +23,7 @@ export default function StorageUsage() {
     plan: 'free',
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   // Add proper loading states for Clerk
   const { getToken, isLoaded: authLoaded } = useAuth();
@@ -39,9 +40,11 @@ export default function StorageUsage() {
 
   const fetchStorageInfo = async () => {
     try {
+      setError(null);
       const token = await getToken();
       if (!token) {
         console.error('No authentication token available');
+        setError('Authentication required');
         setLoading(false);
         return;
       }
@@ -54,19 +57,24 @@ export default function StorageUsage() {
       
       if (response.ok) {
         const data = await response.json();
-        const { user, quotas } = data.data;
+        console.log('Storage data received:', data);
+        
+        const { user: userData, quotas } = data.data;
+        
         setStorage({
-          storageUsed: user.storageUsed,
-          storageQuota: quotas.storage,
-          filesCount: user.filesCount,
-          filesQuota: quotas.fileCount,
-          plan: user.plan,
+          storageUsed: userData.storageUsed || 0,
+          storageQuota: quotas.storage || 500 * 1024 * 1024, // 500MB default
+          filesCount: userData.filesCount || 0,
+          filesQuota: quotas.fileCount || 25, // 25 files default
+          plan: userData.plan || 'free',
         });
       } else {
         console.error('Failed to fetch storage info:', response.status, response.statusText);
+        setError('Failed to load storage information');
       }
     } catch (error) {
       console.error('Failed to fetch storage info:', error);
+      setError('Failed to load storage information');
     } finally {
       setLoading(false);
     }
@@ -80,10 +88,10 @@ export default function StorageUsage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   };
 
-  const storagePercentage = (storage.storageUsed / storage.storageQuota) * 100;
+  const storagePercentage = storage.storageQuota > 0 ? (storage.storageUsed / storage.storageQuota) * 100 : 0;
   const filesPercentage = storage.filesQuota === -1 
     ? 0 
-    : (storage.filesCount / storage.filesQuota) * 100;
+    : storage.filesQuota > 0 ? (storage.filesCount / storage.filesQuota) * 100 : 0;
 
   const getProgressBarColor = (percentage: number) => {
     if (percentage >= 90) return 'bg-red-500';
@@ -139,6 +147,28 @@ export default function StorageUsage() {
             <div className="h-2 bg-gray-200 rounded w-full"></div>
             <div className="h-4 bg-gray-200 rounded w-3/4"></div>
             <div className="h-2 bg-gray-200 rounded w-full"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="card">
+        <div className="card-header">
+          <h3 className="text-lg font-medium text-gray-900">Storage Usage</h3>
+        </div>
+        <div className="card-body">
+          <div className="text-center py-8">
+            <HardDrive className="mx-auto h-8 w-8 text-red-400" />
+            <p className="mt-2 text-sm text-red-600">{error}</p>
+            <button 
+              onClick={fetchStorageInfo}
+              className="mt-4 btn-outline btn-sm"
+            >
+              Retry
+            </button>
           </div>
         </div>
       </div>

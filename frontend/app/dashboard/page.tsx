@@ -16,6 +16,7 @@ import { config } from '@/lib/config';
 import RecentFiles from '@/components/RecentFiles';
 import StorageUsage from '@/components/StorageUsage';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import Link from 'next/link';
 
 interface DashboardData {
   totalFiles: number;
@@ -238,29 +239,54 @@ export default function DashboardPage() {
               {dashboardData.recentViews && dashboardData.recentViews.length > 0 ? (
                 <div className="space-y-3">
                   {dashboardData.recentViews.slice(0, 5).map((view, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <div className="flex items-center">
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <div className="flex items-center flex-1">
                         <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                           <Eye className="h-4 w-4 text-blue-600" />
                         </div>
-                        <div className="ml-3">
+                        <div className="ml-3 flex-1">
                           <div className="text-sm font-medium text-gray-900">
                             {view.viewerName || view.viewerEmail || 'Anonymous'}
                           </div>
-                          <div className="text-xs text-gray-500">{view.fileName}</div>
+                          <div className="text-xs text-gray-500">
+                            {view.fileName}
+                            {view.shareTitle && view.shareTitle !== view.fileName && (
+                              <span className="ml-1 text-gray-400">
+                                • {view.shareTitle}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-sm text-gray-900">{formatDuration(view.duration)}</div>
+                        <div className="text-sm text-gray-900">
+                          {view.duration > 0 ? formatDuration(view.duration) : 'Quick view'}
+                        </div>
                         <div className="text-xs text-gray-500">
-                          {new Date(view.startedAt).toLocaleDateString()}
+                          {new Date(view.startedAt).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
                         </div>
                       </div>
                     </div>
                   ))}
+                  {dashboardData.recentViews.length > 5 && (
+                    <div className="text-center pt-2">
+                      <button className="text-sm text-primary-600 hover:text-primary-800">
+                        View all recent activity →
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
-                <p className="text-gray-500 text-center py-4">No recent views available</p>
+                <div className="text-center py-8">
+                  <Clock className="mx-auto h-8 w-8 text-gray-400" />
+                  <p className="mt-2 text-sm text-gray-500">No recent views</p>
+                  <p className="text-xs text-gray-400">Share your files to see viewer activity here</p>
+                </div>
               )}
             </div>
           </div>
@@ -275,40 +301,60 @@ export default function DashboardPage() {
             </div>
             <div className="card-body">
               {dashboardData.topFiles && dashboardData.topFiles.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          File
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Total Views
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Unique Views
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {dashboardData.topFiles.map((file) => (
-                        <tr key={file.fileId} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">{file.fileName}</div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {formatNumber(file.views)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {formatNumber(file.uniqueViews)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="space-y-3">
+                  {dashboardData.topFiles.map((file, index) => (
+                    <div key={file.fileId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <div className="flex items-center flex-1">
+                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                          <span className="text-sm font-bold text-green-600">#{index + 1}</span>
+                        </div>
+                        <div className="ml-3 flex-1">
+                          <div className="text-sm font-medium text-gray-900">
+                            {file.fileName}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {formatNumber(file.views)} total views
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm text-gray-900">
+                          {formatNumber(file.uniqueViews)} unique
+                        </div>
+                                                 <div className="text-xs text-gray-500">
+                           {Number(file.views) > 0 && Number(file.uniqueViews) > 0 ? 
+                             `${Math.round((Number(file.uniqueViews) / Number(file.views)) * 100)}% return rate` : 
+                             'New file'
+                           }
+                         </div>
+                      </div>
+                      <div className="ml-4">
+                        <Link
+                          href={`/dashboard/files/${file.fileId}`}
+                          className="text-primary-600 hover:text-primary-800 text-sm font-medium"
+                        >
+                          View Details →
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                  {dashboardData.topFiles.length > 5 && (
+                    <div className="text-center pt-2">
+                      <Link
+                        href="/dashboard/files"
+                        className="text-sm text-primary-600 hover:text-primary-800"
+                      >
+                        View all files →
+                      </Link>
+                    </div>
+                  )}
                 </div>
               ) : (
-                <p className="text-gray-500 text-center py-4">No file data available</p>
+                <div className="text-center py-8">
+                  <TrendingUp className="mx-auto h-8 w-8 text-gray-400" />
+                  <p className="mt-2 text-sm text-gray-500">No file data available</p>
+                  <p className="text-xs text-gray-400">Upload and share files to see performance metrics</p>
+                </div>
               )}
             </div>
           </div>
