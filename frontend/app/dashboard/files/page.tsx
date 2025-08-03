@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth, useUser } from '@clerk/nextjs';
-import { Plus, Search, Filter, FileText, Eye, Share2, MoreVertical, Share } from 'lucide-react';
+import { Search, FileText, Eye, Share2, MoreVertical, Share } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { config } from '@/lib/config';
 import ShareLinkModal from '@/components/ShareLinkModal';
@@ -135,11 +135,7 @@ export default function FilesPage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const getTotalViews = (shareLinks: any[] = []) => {
-    return shareLinks.reduce((total, link) => total + link.viewCount, 0);
-  };
-
-  const getActiveShareLinks = (shareLinks: any[] = []) => {
+  const getActiveShareLinks = (shareLinks: Array<{isActive: boolean}> = []) => {
     return shareLinks.filter(link => link.isActive).length;
   };
 
@@ -178,12 +174,6 @@ export default function FilesPage() {
   if (!isReady) {
     return (
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Files</h1>
-            <p className="text-gray-600">Manage your PDF files and share links</p>
-          </div>
-        </div>
         <div className="card">
           <div className="card-body">
             <div className="space-y-4">
@@ -210,12 +200,6 @@ export default function FilesPage() {
   if (!user) {
     return (
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Files</h1>
-            <p className="text-gray-600">Manage your PDF files and share links</p>
-          </div>
-        </div>
         <div className="card">
           <div className="card-body text-center py-12">
             <FileText className="mx-auto h-12 w-12 text-gray-400" />
@@ -229,19 +213,6 @@ export default function FilesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Files</h1>
-          <p className="text-gray-600">Manage your PDF files and share links</p>
-        </div>
-        <Link
-          href="/dashboard/files/upload"
-          className="btn-primary btn-md flex items-center"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Upload PDF
-        </Link>
-      </div>
 
       {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
@@ -265,10 +236,6 @@ export default function FilesPage() {
             <option key={folder} value={folder}>{folder}</option>
           ))}
         </select>
-        <button className="btn-outline btn-md flex items-center">
-          <Filter className="mr-2 h-4 w-4" />
-          Filter
-        </button>
       </div>
 
       {/* Files List */}
@@ -413,7 +380,7 @@ export default function FilesPage() {
                       <tr key={`expanded-${file.id}`} className="bg-gray-50">
                         <td colSpan={6} className="px-6 py-4">
                           <div className="space-y-3">
-                            <h4 className="text-sm font-medium text-gray-900">Shared Links for "{file.title}"</h4>
+                            <h4 className="text-sm font-medium text-gray-900">Shared Links for &quot;{file.title}&quot;</h4>
                             {shareLinks.length > 0 ? (
                               <div className="space-y-2">
                                 {shareLinks.map((link) => (

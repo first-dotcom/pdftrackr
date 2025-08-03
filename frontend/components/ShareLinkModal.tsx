@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
-import { X, Copy, CheckCircle, Eye, EyeOff, Calendar, Users, Shield, Download } from 'lucide-react';
+import { X, Copy, CheckCircle, Eye, EyeOff, Calendar, Users, Shield } from 'lucide-react';
 import { config } from '@/lib/config';
 
 interface ShareLinkModalProps {
@@ -200,26 +200,7 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
     onClose();
   };
 
-  const handleRegeneratePassword = async () => {
-    try {
-      const response = await fetch(`${config.api.url}/api/share/${file.id}/regenerate-password`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${await getToken()}`,
-          'Content-Type': 'application/json',
-        },
-      });
 
-      if (response.ok) {
-        const data = await response.json();
-        alert(`New Password: ${data.data.newPassword}`); // Display the new password
-      } else {
-        console.error('Failed to regenerate password:', response.status, response.statusText);
-      }
-    } catch (error) {
-      console.error('Error regenerating password:', error);
-    }
-  };
 
   if (!isOpen) return null;
 

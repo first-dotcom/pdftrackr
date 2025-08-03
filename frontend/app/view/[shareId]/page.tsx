@@ -1,6 +1,5 @@
 import React from 'react';
 import { Metadata } from 'next';
-import { config } from '@/lib/config';
 import SharePageClient from './SharePageClient';
 
 interface SharePageProps {

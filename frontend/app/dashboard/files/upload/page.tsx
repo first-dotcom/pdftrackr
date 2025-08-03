@@ -207,11 +207,7 @@ export default function UploadPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Upload PDF</h1>
-          <p className="text-gray-600">Upload a PDF file to share and track analytics</p>
-        </div>
+      <div className="flex justify-end">
         <button
           onClick={() => router.back()}
           className="btn-outline btn-md"

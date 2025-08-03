@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth, useUser } from '@clerk/nextjs';
 import { HardDrive, Upload, TrendingUp } from 'lucide-react';
-import Link from 'next/link';
 import { config } from '@/lib/config';
 
 interface StorageInfo {

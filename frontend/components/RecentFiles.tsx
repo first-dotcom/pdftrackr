@@ -72,7 +72,7 @@ export default function RecentFiles() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const getTotalViews = (shareLinks: any[] = []) => {
+  const getTotalViews = (shareLinks: Array<{viewCount: number}> = []) => {
     return shareLinks.reduce((total, link) => total + link.viewCount, 0);
   };
 

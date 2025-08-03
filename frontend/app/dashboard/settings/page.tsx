@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
-import { User, Shield, Bell, CreditCard, Download, Trash2, Key, Globe } from 'lucide-react';
+import { User, Shield, Bell, CreditCard, Download, Trash2 } from 'lucide-react';
 import { config } from '@/lib/config';
 
 interface UserSettings {
@@ -124,10 +124,6 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-          <p className="text-gray-600">Manage your account and preferences</p>
-        </div>
         <div className="card animate-pulse">
           <div className="card-body">
             <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
@@ -145,10 +141,6 @@ export default function SettingsPage() {
   if (!settings) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-          <p className="text-gray-600">Manage your account and preferences</p>
-        </div>
         <div className="card">
           <div className="card-body text-center py-12">
             <User className="mx-auto h-12 w-12 text-gray-400" />
@@ -162,10 +154,6 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-600">Manage your account and preferences</p>
-      </div>
 
       {/* Account Information */}
       <div className="card">

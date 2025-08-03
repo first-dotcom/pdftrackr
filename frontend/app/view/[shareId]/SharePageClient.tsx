@@ -9,7 +9,7 @@ import { config } from '@/lib/config';
 const Eye = dynamic(() => import('lucide-react').then(mod => mod.Eye), { ssr: false });
 const Download = dynamic(() => import('lucide-react').then(mod => mod.Download), { ssr: false });
 const Lock = dynamic(() => import('lucide-react').then(mod => mod.Lock), { ssr: false });
-const Mail = dynamic(() => import('lucide-react').then(mod => mod.Mail), { ssr: false });
+
 const Clock = dynamic(() => import('lucide-react').then(mod => mod.Clock), { ssr: false });
 const Users = dynamic(() => import('lucide-react').then(mod => mod.Users), { ssr: false });
 
