@@ -57,7 +57,6 @@ export default function StorageUsage() {
       
       if (response.ok) {
         const data = await response.json();
-        console.log('Storage data received:', data);
         
         const { user: userData, quotas } = data.data;
         
@@ -70,11 +69,25 @@ export default function StorageUsage() {
         });
       } else {
         console.error('Failed to fetch storage info:', response.status, response.statusText);
-        setError('Failed to load storage information');
+        // Don't show error for storage info - just use defaults
+        setStorage({
+          storageUsed: 0,
+          storageQuota: 500 * 1024 * 1024, // 500MB default
+          filesCount: 0,
+          filesQuota: 25, // 25 files default
+          plan: 'free',
+        });
       }
     } catch (error) {
       console.error('Failed to fetch storage info:', error);
-      setError('Failed to load storage information');
+      // Don't show error for storage info - just use defaults
+      setStorage({
+        storageUsed: 0,
+        storageQuota: 500 * 1024 * 1024, // 500MB default
+        filesCount: 0,
+        filesQuota: 25, // 25 files default
+        plan: 'free',
+      });
     } finally {
       setLoading(false);
     }
@@ -161,14 +174,8 @@ export default function StorageUsage() {
         </div>
         <div className="card-body">
           <div className="text-center py-8">
-            <HardDrive className="mx-auto h-8 w-8 text-red-400" />
-            <p className="mt-2 text-sm text-red-600">{error}</p>
-            <button 
-              onClick={fetchStorageInfo}
-              className="mt-4 btn-outline btn-sm"
-            >
-              Retry
-            </button>
+            <HardDrive className="mx-auto h-8 w-8 text-gray-400" />
+            <p className="mt-2 text-sm text-gray-500">Storage information unavailable</p>
           </div>
         </div>
       </div>

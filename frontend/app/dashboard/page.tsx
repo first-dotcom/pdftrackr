@@ -10,7 +10,8 @@ import {
   Mail, 
   Clock, 
   TrendingUp, 
-  BarChart3 
+  BarChart3,
+  Plus
 } from 'lucide-react';
 import { config } from '@/lib/config';
 import RecentFiles from '@/components/RecentFiles';
@@ -209,100 +210,61 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <Suspense fallback={<LoadingSpinner />}>
-            <RecentFiles />
-          </Suspense>
-        </div>
-        
+      {/* Main Content Grid - Simplified */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Storage Usage */}
         <div>
           <Suspense fallback={<LoadingSpinner />}>
             <StorageUsage />
           </Suspense>
         </div>
+        
+        {/* Quick Actions */}
+        <div className="card">
+          <div className="card-header">
+            <h3 className="text-lg font-medium text-gray-900">Quick Actions</h3>
+          </div>
+          <div className="card-body space-y-4">
+            <Link
+              href="/dashboard/files/upload"
+              className="flex items-center p-3 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
+            >
+              <Plus className="h-5 w-5 text-primary-600 mr-3" />
+              <div>
+                <div className="font-medium text-primary-900">Upload PDF</div>
+                <div className="text-sm text-primary-600">Add a new file to your library</div>
+              </div>
+            </Link>
+            
+            <Link
+              href="/dashboard/files"
+              className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <FileText className="h-5 w-5 text-gray-600 mr-3" />
+              <div>
+                <div className="font-medium text-gray-900">Manage Files</div>
+                <div className="text-sm text-gray-600">View and organize your files</div>
+              </div>
+            </Link>
+          </div>
+        </div>
       </div>
 
-      {/* Analytics Section */}
-      {dashboardData && (
+      {/* Analytics Section - Only show if there's data */}
+      {dashboardData && (dashboardData.recentViews?.length > 0 || dashboardData.topFiles?.length > 0) && (
         <div className="space-y-6">
-          {/* Recent Views */}
-          <div className="card">
-            <div className="card-header">
-              <h3 className="text-lg font-medium text-gray-900 flex items-center">
-                <Clock className="mr-2 h-5 w-5" />
-                Recent Views
-              </h3>
-            </div>
-            <div className="card-body">
-              {dashboardData.recentViews && dashboardData.recentViews.length > 0 ? (
+          {/* Top Performing Files - Only show top 3 */}
+          {dashboardData.topFiles && dashboardData.topFiles.length > 0 && (
+            <div className="card">
+              <div className="card-header">
+                <h3 className="text-lg font-medium text-gray-900 flex items-center">
+                  <TrendingUp className="mr-2 h-5 w-5" />
+                  Top Performing Files
+                </h3>
+              </div>
+              <div className="card-body">
                 <div className="space-y-3">
-                  {dashboardData.recentViews.slice(0, 5).map((view, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                      <div className="flex items-center flex-1">
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                          <Eye className="h-4 w-4 text-blue-600" />
-                        </div>
-                        <div className="ml-3 flex-1">
-                          <div className="text-sm font-medium text-gray-900">
-                            {view.viewerName || view.viewerEmail || 'Anonymous'}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {view.fileName}
-                            {view.shareTitle && view.shareTitle !== view.fileName && (
-                              <span className="ml-1 text-gray-400">
-                                • {view.shareTitle}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm text-gray-900">
-                          {view.duration > 0 ? formatDuration(view.duration) : 'Quick view'}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {new Date(view.startedAt).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {dashboardData.recentViews.length > 5 && (
-                    <div className="text-center pt-2">
-                      <button className="text-sm text-primary-600 hover:text-primary-800">
-                        View all recent activity →
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Clock className="mx-auto h-8 w-8 text-gray-400" />
-                  <p className="mt-2 text-sm text-gray-500">No recent views</p>
-                  <p className="text-xs text-gray-400">Share your files to see viewer activity here</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Top Performing Files */}
-          <div className="card">
-            <div className="card-header">
-              <h3 className="text-lg font-medium text-gray-900 flex items-center">
-                <TrendingUp className="mr-2 h-5 w-5" />
-                Top Performing Files
-              </h3>
-            </div>
-            <div className="card-body">
-              {dashboardData.topFiles && dashboardData.topFiles.length > 0 ? (
-                <div className="space-y-3">
-                  {dashboardData.topFiles.map((file, index) => (
+                  {dashboardData.topFiles.slice(0, 3).map((file, index) => (
                     <div key={file.fileId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                       <div className="flex items-center flex-1">
                         <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
@@ -321,24 +283,24 @@ export default function DashboardPage() {
                         <div className="text-sm text-gray-900">
                           {formatNumber(file.uniqueViews)} unique
                         </div>
-                                                 <div className="text-xs text-gray-500">
-                           {Number(file.views) > 0 && Number(file.uniqueViews) > 0 ? 
-                             `${Math.round((Number(file.uniqueViews) / Number(file.views)) * 100)}% return rate` : 
-                             'New file'
-                           }
-                         </div>
+                        <div className="text-xs text-gray-500">
+                          {Number(file.views) > 0 && Number(file.uniqueViews) > 0 ? 
+                            `${Math.round((Number(file.uniqueViews) / Number(file.views)) * 100)}% return rate` : 
+                            'New file'
+                          }
+                        </div>
                       </div>
                       <div className="ml-4">
                         <Link
                           href={`/dashboard/files/${file.fileId}`}
                           className="text-primary-600 hover:text-primary-800 text-sm font-medium"
                         >
-                          View Details →
+                          View →
                         </Link>
                       </div>
                     </div>
                   ))}
-                  {dashboardData.topFiles.length > 5 && (
+                  {dashboardData.topFiles.length > 3 && (
                     <div className="text-center pt-2">
                       <Link
                         href="/dashboard/files"
@@ -349,13 +311,79 @@ export default function DashboardPage() {
                     </div>
                   )}
                 </div>
-              ) : (
-                <div className="text-center py-8">
-                  <TrendingUp className="mx-auto h-8 w-8 text-gray-400" />
-                  <p className="mt-2 text-sm text-gray-500">No file data available</p>
-                  <p className="text-xs text-gray-400">Upload and share files to see performance metrics</p>
+              </div>
+            </div>
+          )}
+
+          {/* Recent Views - Only show if there are views */}
+          {dashboardData.recentViews && dashboardData.recentViews.length > 0 && (
+            <div className="card">
+              <div className="card-header">
+                <h3 className="text-lg font-medium text-gray-900 flex items-center">
+                  <Clock className="mr-2 h-5 w-5" />
+                  Recent Activity
+                </h3>
+              </div>
+              <div className="card-body">
+                <div className="space-y-3">
+                  {dashboardData.recentViews.slice(0, 3).map((view, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <div className="flex items-center flex-1">
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                          <Eye className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div className="ml-3 flex-1">
+                          <div className="text-sm font-medium text-gray-900">
+                            {view.viewerName || view.viewerEmail || 'Anonymous'}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {view.fileName}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm text-gray-900">
+                          {view.duration > 0 ? formatDuration(view.duration) : 'Quick view'}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {new Date(view.startedAt).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {dashboardData.recentViews.length > 3 && (
+                    <div className="text-center pt-2">
+                      <button className="text-sm text-primary-600 hover:text-primary-800">
+                        View all activity →
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Empty State - Show when no data */}
+      {dashboardData && (!dashboardData.recentViews?.length && !dashboardData.topFiles?.length) && (
+        <div className="card">
+          <div className="card-body text-center py-12">
+            <BarChart3 className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">No activity yet</h3>
+            <p className="mt-1 text-sm text-gray-500">Upload and share files to see analytics here</p>
+            <div className="mt-6">
+              <Link
+                href="/dashboard/files/upload"
+                className="btn-primary btn-md"
+              >
+                Upload your first file
+              </Link>
             </div>
           </div>
         </div>
