@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Plus, Search, Filter, FileText, Eye, Share2, MoreVertical } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { config } from '../../lib/config';
 
 interface File {
   id: number;
@@ -31,7 +32,7 @@ export default function FilesPage() {
 
   const fetchFiles = async () => {
     try {
-      const response = await fetch('/api/files', {
+      const response = await fetch(`${config.api.url}/api/files`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('clerk-token')}`,
         },

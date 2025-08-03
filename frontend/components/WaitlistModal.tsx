@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { X, Mail, Bell } from 'lucide-react';
-import { sanitizeUserInput, isValidEmail, generateCSRFToken, createClientRateLimit } from '../utils/security';
+import { sanitizeUserInput, validateEmail, validatePlan, generateCSRFToken, createClientRateLimit } from '../utils/security';
+import { config } from '../lib/config';
 
 // Rate limiting for waitlist submissions
 const waitlistRateLimit = createClientRateLimit(3, 60000); // 3 submissions per minute
@@ -20,11 +21,19 @@ export default function WaitlistModal() {
     setLoading(true);
 
     try {
-      // Client-side validation
+      // Client-side validation with Zod
       const sanitizedEmail = sanitizeUserInput(email);
+      const emailValidation = validateEmail(sanitizedEmail);
       
-      if (!isValidEmail(sanitizedEmail)) {
-        setError('Please enter a valid email address');
+      if (!emailValidation.valid) {
+        setError(emailValidation.error || 'Please enter a valid email address');
+        setLoading(false);
+        return;
+      }
+
+      const planValidation = validatePlan(plan);
+      if (!planValidation.valid) {
+        setError(planValidation.error || 'Please select a valid plan');
         setLoading(false);
         return;
       }
@@ -36,7 +45,7 @@ export default function WaitlistModal() {
         return;
       }
 
-      const response = await fetch('/api/waitlist', {
+      const response = await fetch(`${config.api.url}/api/waitlist`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

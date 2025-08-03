@@ -15,7 +15,10 @@ export class CustomError extends Error implements AppError {
     this.statusCode = statusCode;
     this.isOperational = isOperational;
     
-    Error.captureStackTrace(this, this.constructor);
+    // Capture stack trace if available (Node.js feature)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, this.constructor);
+    }
   }
 }
 

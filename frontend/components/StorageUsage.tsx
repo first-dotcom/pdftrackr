@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { HardDrive, Upload, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
+import { config } from '../lib/config';
 
 interface StorageInfo {
   storageUsed: number;
@@ -28,7 +29,7 @@ export default function StorageUsage() {
 
   const fetchStorageInfo = async () => {
     try {
-      const response = await fetch('/api/users/profile', {
+      const response = await fetch(`${config.api.url}/api/users/profile`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('clerk-token')}`,
         },

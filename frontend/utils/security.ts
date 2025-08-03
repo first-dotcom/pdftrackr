@@ -1,7 +1,34 @@
 /**
  * Frontend Security Utilities
- * XSS Protection and Input Sanitization
+ * XSS Protection, Input Sanitization, and Zod Validation
  */
+
+import { z } from 'zod';
+
+// Zod schemas for validation
+export const emailSchema = z.string().email().max(254);
+export const planSchema = z.enum(['pro', 'team', 'either']);
+export const userInputSchema = z.string().max(1000).trim();
+export const filenameSchema = z.string().max(255).regex(/^[^<>:"|?*\x00-\x1f]+$/);
+
+// Validation helpers using Zod
+export const validateEmail = (email: string): { valid: boolean; error?: string } => {
+  try {
+    emailSchema.parse(email);
+    return { valid: true };
+  } catch (error) {
+    return { valid: false, error: error instanceof z.ZodError ? error.errors[0].message : 'Invalid email' };
+  }
+};
+
+export const validatePlan = (plan: string): { valid: boolean; error?: string } => {
+  try {
+    planSchema.parse(plan);
+    return { valid: true };
+  } catch (error) {
+    return { valid: false, error: 'Invalid plan selection' };
+  }
+};
 
 // Simple XSS protection for user-generated content
 export const sanitizeHtml = (input: string): string => {

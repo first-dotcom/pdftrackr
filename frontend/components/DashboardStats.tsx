@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { FileText, Eye, Users, Mail } from 'lucide-react';
+import { config } from '../lib/config';
 
 interface DashboardStatsData {
   totalFiles: number;
@@ -25,7 +26,7 @@ export default function DashboardStats() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/analytics/dashboard', {
+      const response = await fetch(`${config.api.url}/api/analytics/dashboard`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('clerk-token')}`,
         },

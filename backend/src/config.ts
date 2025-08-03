@@ -1,71 +1,62 @@
 import dotenv from 'dotenv';
-import { envSchema } from './utils/validation';
-import { logger } from './utils/logger';
+import { z } from 'zod';
 
 dotenv.config();
 
-// Validate environment variables - FAIL FAST if missing critical vars
-const envValidation = envSchema.safeParse(process.env);
-if (!envValidation.success) {
-  logger.error('❌ Invalid environment variables:', envValidation.error.errors);
-  if (process.env.NODE_ENV === 'production') {
-    process.exit(1); // Fail in production
-  } else {
-    logger.warn('⚠️  Using fallback values for development');
-  }
-}
+// Define environment schema - SIMPLIFIED
+const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  PORT: z.string().default('3001'),
+  
+  // Database - use URL format (simpler)
+  DATABASE_URL: z.string().default('postgresql://postgres:password@postgres:5432/pdftrackr'),
+  
+  // Redis - use URL format (simpler)  
+  REDIS_URL: z.string().default('redis://redis:6379'),
+  
+  // Authentication
+  JWT_SECRET: z.string().default('dev-jwt-secret-change-in-production'),
+  CLERK_SECRET_KEY: z.string().default('sk_test_placeholder'),
+  
+  // Storage (using S3 format - works with DigitalOcean Spaces)
+  S3_ENDPOINT: z.string().default('https://nyc3.digitaloceanspaces.com'),
+  S3_BUCKET: z.string().default('pdftrackr-files'),
+  S3_ACCESS_KEY: z.string().default(''),
+  S3_SECRET_KEY: z.string().default(''),
+  
+  // Frontend
+  FRONTEND_URL: z.string().default('http://localhost:3000'),
+});
 
-const requireEnvVar = (name: string, fallback?: string): string => {
-  const value = process.env[name];
-  if (!value) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error(`🚨 CRITICAL: Missing required environment variable: ${name}`);
-    }
-    if (fallback) {
-      logger.warn(`⚠️  Using fallback for ${name}: ${fallback}`);
-      return fallback;
-    }
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
-  return value;
-};
+// Parse and validate environment variables
+const env = envSchema.parse(process.env);
 
 export const config = {
-  env: process.env.NODE_ENV || 'development',
+  env: env.NODE_ENV,
   server: {
-    port: parseInt(requireEnvVar('PORT', '3001'), 10),
+    port: parseInt(env.PORT, 10),
   },
   database: {
-    host: requireEnvVar('DB_HOST', 'localhost'),
-    port: parseInt(requireEnvVar('DB_PORT', '5432'), 10),
-    name: requireEnvVar('DB_NAME', 'pdftrackr'),
-    user: requireEnvVar('DB_USER', 'postgres'),
-    password: requireEnvVar('DB_PASSWORD', 'password'),
-    ssl: process.env.DB_SSL === 'true',
+    url: env.DATABASE_URL,
   },
   redis: {
-    host: requireEnvVar('REDIS_HOST', 'localhost'),
-    port: parseInt(requireEnvVar('REDIS_PORT', '6379'), 10),
-    password: process.env.REDIS_PASSWORD,
+    url: env.REDIS_URL,
   },
   jwt: {
-    secret: requireEnvVar('JWT_SECRET', process.env.NODE_ENV === 'development' ? 'dev-jwt-secret-please-change-in-production' : undefined),
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+    secret: env.JWT_SECRET,
+    expiresIn: '7d',
   },
   clerk: {
-    secretKey: requireEnvVar('CLERK_SECRET_KEY'),
-    publishableKey: requireEnvVar('CLERK_PUBLISHABLE_KEY'),
+    secretKey: env.CLERK_SECRET_KEY,
   },
   storage: {
-    endpoint: requireEnvVar('DO_SPACES_ENDPOINT'),
-    region: requireEnvVar('DO_SPACES_REGION', 'nyc3'),
-    bucket: requireEnvVar('DO_SPACES_BUCKET', 'pdftrackr-files'),
-    accessKeyId: requireEnvVar('DO_SPACES_KEY'),
-    secretAccessKey: requireEnvVar('DO_SPACES_SECRET'),
-    cdnUrl: process.env.DO_SPACES_CDN_URL || '',
+    endpoint: env.S3_ENDPOINT,
+    bucket: env.S3_BUCKET,
+    accessKeyId: env.S3_ACCESS_KEY,
+    secretAccessKey: env.S3_SECRET_KEY,
   },
   frontend: {
-    url: requireEnvVar('FRONTEND_URL', 'http://localhost:3000'),
+    url: env.FRONTEND_URL,
   },
   quotas: {
     free: {
