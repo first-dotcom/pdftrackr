@@ -6,6 +6,7 @@ import { normalizeIp, createRateLimit } from '../middleware/security';
 import { createShareLinkSchema, updateShareLinkSchema, shareAccessSchema, trackPageViewSchema } from '../utils/validation';
 import { db } from '../utils/database';
 import { files, shareLinks, viewSessions, pageViews, emailCaptures } from '../models/schema';
+import { hashIPAddress, getCountryFromIP } from '../utils/privacy';
 import { eq, and, desc, lt, or } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import bcrypt from 'bcryptjs';
@@ -213,37 +214,44 @@ router.post('/:shareId/access', createRateLimit(15 * 60 * 1000, 20, 'Too many ac
   // Create session ID
   const sessionId = uuidv4();
   
-  // Get viewer info
+  // Get viewer info with GDPR compliance
+  const ipHash = hashIPAddress(req.ip!);
+  const ipCountry = getCountryFromIP(req.ip!);
+  
   const viewerInfo = {
     email: email || null,
     name: name || null,
-    ipAddress: req.ip,
+    ipAddressHash: ipHash,
+    ipAddressCountry: ipCountry,
     userAgent: req.get('User-Agent'),
     referer: req.get('Referer'),
   };
 
-  // Check if this is a unique view (same IP + email in last 24 hours)
+  // Check if this is a unique view (same IP hash + email in last 24 hours)
   const recentSessions = await db.select()
     .from(viewSessions)
     .where(and(
       eq(viewSessions.shareId, shareId),
-      eq(viewSessions.ipAddress, req.ip!),
+      eq(viewSessions.ipAddressHash, ipHash),
       viewerInfo.email ? eq(viewSessions.viewerEmail, viewerInfo.email) : undefined
     ))
     .limit(1);
 
   const isUnique = recentSessions.length === 0;
 
-  // Create view session
+  // Create view session with GDPR compliance
   await db.insert(viewSessions).values({
     shareId,
     sessionId,
     viewerEmail: viewerInfo.email,
     viewerName: viewerInfo.name,
-    ipAddress: viewerInfo.ipAddress,
+    ipAddressHash: viewerInfo.ipAddressHash,
+    ipAddressCountry: viewerInfo.ipAddressCountry,
     userAgent: viewerInfo.userAgent,
     referer: viewerInfo.referer,
     isUnique,
+    consentGiven: true, // User consented by accessing the link
+    dataRetentionDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year retention
   });
 
   // Update view counts
@@ -263,7 +271,7 @@ router.post('/:shareId/access', createRateLimit(15 * 60 * 1000, 20, 'Too many ac
       shareId,
       email,
       name,
-      ipAddress: req.ip,
+      ipAddress: req.ip, // Keep original IP for email captures as it's not personal data
       userAgent: req.get('User-Agent'),
       referer: req.get('Referer'),
     });

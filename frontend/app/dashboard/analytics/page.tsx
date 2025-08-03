@@ -35,7 +35,7 @@ export default function AnalyticsPage() {
         return;
       }
 
-      const response = await fetch(`${config.api.url}/api/analytics/dashboard?timeRange=${timeRange}`, {
+      const response = await fetch(`${config.api.url}/api/analytics/dashboard?days=${timeRange.replace('d', '')}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
