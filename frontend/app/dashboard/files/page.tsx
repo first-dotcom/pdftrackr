@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@clerk/nextjs';
-import { Plus, Search, Filter, FileText, Eye, Share2, MoreVertical } from 'lucide-react';
+import { Plus, Search, Filter, FileText, Eye, Share2, MoreVertical, Share } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { config } from '@/lib/config';
+import ShareLinkModal from '@/components/ShareLinkModal';
 
 interface File {
   id: number;
@@ -13,19 +14,35 @@ interface File {
   originalName: string;
   size: number;
   createdAt: string;
+  viewCount: number;
+  folder?: string;
   shareLinks?: Array<{
     id: number;
     shareId: string;
+    title: string;
     viewCount: number;
     uniqueViewCount: number;
     isActive: boolean;
   }>;
 }
 
+interface ShareLink {
+  id: number;
+  shareId: string;
+  title: string;
+  viewCount: number;
+  createdAt: string;
+}
+
 export default function FilesPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [shareLinks, setShareLinks] = useState<ShareLink[]>([]);
+  const [expandedFiles, setExpandedFiles] = useState<Set<number>>(new Set());
+  const [selectedFolder, setSelectedFolder] = useState<string>('all');
   const { getToken } = useAuth();
 
   useEffect(() => {
@@ -60,6 +77,48 @@ export default function FilesPage() {
     }
   };
 
+  const fetchShareLinks = async (fileId: number) => {
+    try {
+      console.log('Fetching share links for file ID:', fileId);
+      const token = await getToken();
+      if (!token) {
+        console.error('No authentication token available');
+        return;
+      }
+
+      const response = await fetch(`${config.api.url}/api/share/file/${fileId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Share links response:', data);
+        setShareLinks(data.data.shareLinks);
+      } else {
+        console.error('Failed to fetch share links:', response.status, response.statusText);
+        const errorData = await response.json().catch(() => null);
+        console.error('Error response data:', errorData);
+      }
+    } catch (error) {
+      console.error('Failed to fetch share links:', error);
+    }
+  };
+
+  const handleShareClick = (file: File) => {
+    setSelectedFile(file);
+    setShareModalOpen(true);
+    fetchShareLinks(file.id);
+  };
+
+  const handleShareSuccess = () => {
+    fetchFiles();
+    if (selectedFile) {
+      fetchShareLinks(selectedFile.id);
+    }
+  };
+
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -76,10 +135,35 @@ export default function FilesPage() {
     return shareLinks.filter(link => link.isActive).length;
   };
 
-  const filteredFiles = files.filter(file =>
-    file.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    file.originalName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const toggleFileExpansion = (fileId: number) => {
+    const newExpanded = new Set(expandedFiles);
+    if (newExpanded.has(fileId)) {
+      newExpanded.delete(fileId);
+    } else {
+      newExpanded.add(fileId);
+      fetchShareLinks(fileId);
+    }
+    setExpandedFiles(newExpanded);
+  };
+
+  // Group files by folder
+  const groupedFiles = files.reduce((acc, file) => {
+    const folder = file.folder || 'General';
+    if (!acc[folder]) {
+      acc[folder] = [];
+    }
+    acc[folder].push(file);
+    return acc;
+  }, {} as Record<string, File[]>);
+
+  const folders = Object.keys(groupedFiles);
+
+  const filteredFiles = files.filter(file => {
+    const matchesSearch = file.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         file.originalName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFolder = selectedFolder === 'all' || (file.folder || 'General') === selectedFolder;
+    return matchesSearch && matchesFolder;
+  });
 
   return (
     <div className="space-y-6">
@@ -109,6 +193,16 @@ export default function FilesPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
+        <select 
+          className="input w-auto min-w-[150px]"
+          value={selectedFolder}
+          onChange={(e) => setSelectedFolder(e.target.value)}
+        >
+          <option value="all">All Folders</option>
+          {folders.map(folder => (
+            <option key={folder} value={folder}>{folder}</option>
+          ))}
+        </select>
         <button className="btn-outline btn-md flex items-center">
           <Filter className="mr-2 h-4 w-4" />
           Filter
@@ -169,7 +263,7 @@ export default function FilesPage() {
                     Size
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Views
+                    File Views
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Share Links
@@ -184,57 +278,139 @@ export default function FilesPage() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredFiles.map((file) => (
-                  <tr key={file.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0">
-                          <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                            <FileText className="h-5 w-5 text-red-600" />
+                  <>
+                    <tr key={file.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0">
+                            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                              <FileText className="h-5 w-5 text-red-600" />
+                            </div>
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {file.title}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {file.originalName}
+                            </div>
                           </div>
                         </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {file.title}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {file.originalName}
-                          </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatFileSize(file.size)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center text-sm text-gray-500">
+                          <Eye className="mr-1 h-4 w-4" />
+                          {file.viewCount || 0}
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatFileSize(file.size)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Eye className="mr-1 h-4 w-4" />
-                        {getTotalViews(file.shareLinks)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Share2 className="mr-1 h-4 w-4" />
-                        {getActiveShareLinks(file.shareLinks)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDistanceToNow(new Date(file.createdAt), { addSuffix: true })}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link
-                        href={`/dashboard/files/${file.id}`}
-                        className="text-primary-600 hover:text-primary-900"
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </Link>
-                    </td>
-                  </tr>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center text-sm text-gray-500">
+                          <Share2 className="mr-1 h-4 w-4" />
+                          {getActiveShareLinks(file.shareLinks)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDistanceToNow(new Date(file.createdAt), { addSuffix: true })}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end space-x-2">
+                          <button
+                            onClick={() => toggleFileExpansion(file.id)}
+                            className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-50"
+                            title="Show shared links"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleShareClick(file)}
+                            className="text-primary-600 hover:text-primary-900 p-1 rounded hover:bg-primary-50"
+                            title="Create share link"
+                          >
+                            <Share className="h-4 w-4" />
+                          </button>
+                          <Link
+                            href={`/dashboard/files/${file.id}`}
+                            className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-50"
+                            title="View details"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                    {/* Expandable shared links row */}
+                    {expandedFiles.has(file.id) && (
+                      <tr key={`expanded-${file.id}`} className="bg-gray-50">
+                        <td colSpan={6} className="px-6 py-4">
+                          <div className="space-y-3">
+                            <h4 className="text-sm font-medium text-gray-900">Shared Links for "{file.title}"</h4>
+                            {shareLinks.length > 0 ? (
+                              <div className="space-y-2">
+                                {shareLinks.map((link) => (
+                                  <div key={link.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                                    <div className="flex-1">
+                                      <div className="text-sm font-medium text-gray-900">{link.title}</div>
+                                      <div className="text-xs text-gray-500">
+                                        <a 
+                                          href={`/view/${link.shareId}`} 
+                                          target="_blank" 
+                                          rel="noopener noreferrer" 
+                                          className="text-primary-600 hover:text-primary-900"
+                                        >
+                                          /view/{link.shareId}
+                                        </a>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center space-x-4 text-sm text-gray-500">
+                                      <div className="flex items-center">
+                                        <Eye className="h-3 w-3 mr-1" />
+                                        {link.viewCount} views
+                                      </div>
+                                      <div className="text-xs">
+                                        {formatDistanceToNow(new Date(link.createdAt), { addSuffix: true })}
+                                      </div>
+                                      <a 
+                                        href={`/view/${link.shareId}`} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className="text-primary-600 hover:text-primary-900 text-xs font-medium"
+                                      >
+                                        View
+                                      </a>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="text-sm text-gray-500 italic">No shared links created yet.</div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
                 ))}
               </tbody>
             </table>
           </div>
         )}
       </div>
+
+      {/* Share Link Modal */}
+      {selectedFile && (
+        <ShareLinkModal
+          isOpen={shareModalOpen}
+          onClose={() => {
+            setShareModalOpen(false);
+            setSelectedFile(null);
+          }}
+          file={selectedFile}
+          onSuccess={handleShareSuccess}
+        />
+      )}
     </div>
   );
 }

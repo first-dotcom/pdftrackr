@@ -156,11 +156,12 @@ app.use(metricsMiddleware);
 
 // CSRF Protection (applied selectively)
 app.use('/api', (req, res, next) => {
-  // Skip CSRF for webhooks and public endpoints
+  // Skip CSRF for webhooks, public endpoints, and share access
   if (req.path.includes('/webhook') || 
       req.path.includes('/public') ||
       req.path.includes('/health') ||
-      req.path.includes('/metrics')) {
+      req.path.includes('/metrics') ||
+      req.path.includes('/share/')) {  // Allow public share access
     return next();
   }
   return csrfProtection(req, res, next);

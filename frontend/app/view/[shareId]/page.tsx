@@ -1,28 +1,39 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { Document, Page, pdfjs } from 'react-pdf';
-import { ChevronLeft, ChevronRight, Download, Lock, Mail } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { config } from '@/lib/config';
 
-// Set up PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+// Dynamic imports for lucide-react components
+const Eye = dynamic(() => import('lucide-react').then(mod => mod.Eye), { ssr: false });
+const Download = dynamic(() => import('lucide-react').then(mod => mod.Download), { ssr: false });
+const Lock = dynamic(() => import('lucide-react').then(mod => mod.Lock), { ssr: false });
+const Mail = dynamic(() => import('lucide-react').then(mod => mod.Mail), { ssr: false });
+const Clock = dynamic(() => import('lucide-react').then(mod => mod.Clock), { ssr: false });
+const Users = dynamic(() => import('lucide-react').then(mod => mod.Users), { ssr: false });
 
-interface ShareLinkInfo {
-  id: number;
-  shareId: string;
-  title?: string;
-  description?: string;
-  emailGatingEnabled: boolean;
-  downloadEnabled: boolean;
-  watermarkEnabled: boolean;
-  requiresPassword: boolean;
-  file: {
+interface ShareLinkData {
+  shareLink: {
     id: number;
-    filename: string;
-    originalName: string;
-    title?: string;
-    size: number;
+    shareId: string;
+    title: string;
+    description: string;
+    emailGatingEnabled: boolean;
+    downloadEnabled: boolean;
+    watermarkEnabled: boolean;
+    expiresAt: string | null;
+    maxViews: number | null;
+    viewCount: number;
+    isActive: boolean;
+    requiresPassword: boolean;
+    file: {
+      id: number;
+      filename: string;
+      originalName: string;
+      size: number;
+      title: string;
+    };
   };
 }
 
@@ -33,52 +44,53 @@ interface AccessData {
     id: number;
     filename: string;
     originalName: string;
-    title?: string;
+    title: string;
     size: number;
   };
   downloadEnabled: boolean;
   watermarkEnabled: boolean;
 }
 
-export default function ViewerPage() {
+export default function SharePage() {
   const params = useParams();
   const shareId = params.shareId as string;
   
-  const [shareInfo, setShareInfo] = useState<ShareLinkInfo | null>(null);
+  const [shareData, setShareData] = useState<ShareLinkData | null>(null);
   const [accessData, setAccessData] = useState<AccessData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showAccessForm, setShowAccessForm] = useState(false);
   
   // Access form state
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
-  const [showAccessForm, setShowAccessForm] = useState(false);
-  const [accessLoading, setAccessLoading] = useState(false);
-  
-  // PDF viewer state
-  const [numPages, setNumPages] = useState<number>(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [scale, setScale] = useState(1.0);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (shareId) {
-      fetchShareInfo();
-    }
+    fetchShareInfo();
   }, [shareId]);
 
   const fetchShareInfo = async () => {
     try {
-      const response = await fetch(`/api/share/${shareId}`);
-      const data = await response.json();
+      const response = await fetch(`${config.api.url}/api/share/${shareId}`);
       
       if (response.ok) {
-        setShareInfo(data.data.shareLink);
-        setShowAccessForm(true);
+        const data = await response.json();
+        setShareData(data.data);
+        
+        // If no password or email gating required, show access form
+        if (!data.data.shareLink.requiresPassword && !data.data.shareLink.emailGatingEnabled) {
+          setShowAccessForm(true);
+        } else {
+          setShowAccessForm(true);
+        }
       } else {
-        setError(data.error?.message || 'Share link not found');
+        const errorData = await response.json();
+        setError(errorData.message || 'Share link not found');
       }
     } catch (err) {
+      console.error('Failed to fetch share info:', err);
       setError('Failed to load share link');
     } finally {
       setLoading(false);
@@ -87,82 +99,46 @@ export default function ViewerPage() {
 
   const handleAccess = async (e: React.FormEvent) => {
     e.preventDefault();
-    setAccessLoading(true);
-    setError(null);
+    setSubmitting(true);
 
     try {
-      const response = await fetch(`/api/share/${shareId}/access`, {
+      const payload: any = {};
+      
+      if (shareData?.shareLink.requiresPassword) {
+        payload.password = password;
+      }
+      
+      if (shareData?.shareLink.emailGatingEnabled) {
+        payload.email = email;
+        if (name) payload.name = name;
+      }
+
+      const response = await fetch(`${config.api.url}/api/share/${shareId}/access`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          password: password || undefined,
-          email: email || undefined,
-          name: name || undefined,
-        }),
+        body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
-      
       if (response.ok) {
+        const data = await response.json();
         setAccessData(data.data);
         setShowAccessForm(false);
-        startTracking(data.data.sessionId);
       } else {
-        setError(data.error?.message || 'Access denied');
+        const errorData = await response.json();
+        setError(errorData.message || 'Access denied');
       }
     } catch (err) {
-      setError('Failed to access file');
+      console.error('Failed to access share:', err);
+      setError('Failed to access document');
     } finally {
-      setAccessLoading(false);
+      setSubmitting(false);
     }
   };
 
-  const startTracking = (sessionId: string) => {
-    // Track page views and scroll depth
-    let startTime = Date.now();
-    let maxScrollDepth = 0;
-
-    const trackPageView = (pageNum: number) => {
-      const duration = Math.floor((Date.now() - startTime) / 1000);
-      
-      fetch(`/api/share/${shareId}/track`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          sessionId,
-          pageNumber: pageNum,
-          duration,
-          scrollDepth: maxScrollDepth,
-        }),
-      }).catch(console.error);
-
-      startTime = Date.now();
-      maxScrollDepth = 0;
-    };
-
-    // Track when user leaves the page
-    const handleBeforeUnload = () => {
-      trackPageView(currentPage);
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      trackPageView(currentPage);
-    };
-  };
-
-  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-    setNumPages(numPages);
-  };
-
   const handleDownload = () => {
-    if (accessData?.downloadEnabled && accessData.fileUrl) {
+    if (accessData?.fileUrl) {
       const link = document.createElement('a');
       link.href = accessData.fileUrl;
       link.download = accessData.file.originalName;
@@ -172,120 +148,179 @@ export default function ViewerPage() {
     }
   };
 
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
+          <div className="w-12 h-12 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
+            <Lock className="h-6 w-6 text-red-600" />
+          </div>
+          <h1 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h1>
           <p className="text-gray-600">{error}</p>
         </div>
       </div>
     );
   }
 
-  if (showAccessForm && shareInfo) {
+  if (!shareData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6">
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">
-              {shareInfo.title || shareInfo.file.title || shareInfo.file.originalName}
-            </h1>
-            {shareInfo.description && (
-              <p className="text-gray-600 mt-2">{shareInfo.description}</p>
-            )}
-          </div>
-
-          <form onSubmit={handleAccess} className="space-y-4">
-            {shareInfo.emailGatingEnabled && (
-              <>
-                <div>
-                  <label className="label">Email *</label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <input
-                      type="email"
-                      required
-                      className="input pl-10 w-full"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="label">Name (optional)</label>
-                  <input
-                    type="text"
-                    className="input w-full"
-                    placeholder="Enter your name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </div>
-              </>
-            )}
-
-            {shareInfo.requiresPassword && (
-              <div>
-                <label className="label">Password *</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <input
-                    type="password"
-                    required
-                    className="input pl-10 w-full"
-                    placeholder="Enter password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-              </div>
-            )}
-
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-md p-3">
-                <p className="text-sm text-red-800">{error}</p>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={accessLoading}
-              className="w-full btn-primary btn-md"
-            >
-              {accessLoading ? 'Accessing...' : 'Access Document'}
-            </button>
-          </form>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
+          <h1 className="text-xl font-semibold text-gray-900 mb-2">Share Link Not Found</h1>
+          <p className="text-gray-600">This share link may have expired or been removed.</p>
         </div>
       </div>
     );
   }
 
+  if (showAccessForm && !accessData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
+          <div className="text-center mb-6">
+            <div className="w-12 h-12 mx-auto bg-primary-100 rounded-full flex items-center justify-center mb-4">
+              <Eye className="h-6 w-6 text-primary-600" />
+            </div>
+            <h1 className="text-2xl font-semibold text-gray-900">{shareData.shareLink.title}</h1>
+            {shareData.shareLink.description && (
+              <p className="text-gray-600 mt-2">{shareData.shareLink.description}</p>
+            )}
+          </div>
+
+          <div className="space-y-4 mb-6">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-500">Document:</span>
+              <span className="font-medium">{shareData.shareLink.file.originalName}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-500">Size:</span>
+              <span className="font-medium">{formatFileSize(shareData.shareLink.file.size)}</span>
+            </div>
+            {shareData.shareLink.viewCount > 0 && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">Views:</span>
+                <span className="font-medium">{shareData.shareLink.viewCount}</span>
+              </div>
+            )}
+          </div>
+
+          <form onSubmit={handleAccess} className="space-y-4">
+            {shareData.shareLink.emailGatingEnabled && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email Address <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="input w-full border border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-200 focus:ring-opacity-50 text-sm text-gray-900 placeholder-gray-400"
+                    placeholder="Enter your email"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Name <span className="text-gray-400">(optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="input w-full border border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-200 focus:ring-opacity-50 text-sm text-gray-900 placeholder-gray-400"
+                    placeholder="Enter your name"
+                  />
+                </div>
+              </>
+            )}
+
+            {shareData.shareLink.requiresPassword && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Password <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="input w-full border border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-200 focus:ring-opacity-50 text-sm text-gray-900 placeholder-gray-400"
+                  placeholder="Enter password"
+                  required
+                />
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="btn-primary btn-md w-full"
+            >
+              {submitting ? 'Accessing...' : 'View Document'}
+            </button>
+          </form>
+
+          <div className="mt-6 pt-4 border-t">
+            <div className="flex items-center justify-center space-x-4 text-xs text-gray-500">
+              {shareData.shareLink.downloadEnabled && (
+                <div className="flex items-center">
+                  <Download className="h-3 w-3 mr-1" />
+                  Download allowed
+                </div>
+              )}
+              {shareData.shareLink.watermarkEnabled && (
+                <div className="flex items-center">
+                  <Users className="h-3 w-3 mr-1" />
+                  Watermarked
+                </div>
+              )}
+              {shareData.shareLink.expiresAt && (
+                <div className="flex items-center">
+                  <Clock className="h-3 w-3 mr-1" />
+                  Expires {new Date(shareData.shareLink.expiresAt).toLocaleDateString()}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // PDF Viewer (once access is granted)
   if (accessData) {
     return (
       <div className="min-h-screen bg-gray-900">
         {/* Header */}
         <div className="bg-white border-b border-gray-200 px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-lg font-medium text-gray-900 truncate">
-              {accessData.file.title || accessData.file.originalName}
-            </h1>
-            <div className="flex items-center space-x-4">
+            <div>
+              <h1 className="text-lg font-medium text-gray-900">{shareData.shareLink.title}</h1>
+              <p className="text-sm text-gray-500">{accessData.file.originalName}</p>
+            </div>
+            <div className="flex items-center space-x-3">
               {accessData.downloadEnabled && (
                 <button
                   onClick={handleDownload}
                   className="btn-outline btn-sm flex items-center"
                 >
-                  <Download className="mr-2 h-4 w-4" />
+                  <Download className="h-4 w-4 mr-2" />
                   Download
                 </button>
               )}
@@ -294,61 +329,28 @@ export default function ViewerPage() {
         </div>
 
         {/* PDF Viewer */}
-        <div className="flex flex-col items-center py-4">
-          <div className="bg-white shadow-lg">
-            <Document
-              file={accessData.fileUrl}
-              onLoadSuccess={onDocumentLoadSuccess}
-              loading={
-                <div className="flex items-center justify-center p-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-                </div>
-              }
-            >
-              <Page
-                pageNumber={currentPage}
-                scale={scale}
-                renderTextLayer={false}
-                renderAnnotationLayer={false}
-              />
-            </Document>
-          </div>
-
-          {/* Controls */}
-          <div className="mt-4 flex items-center space-x-4 bg-white px-4 py-2 rounded-lg shadow">
-            <button
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage <= 1}
-              className="btn-ghost btn-sm"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            
-            <span className="text-sm text-gray-600">
-              Page {currentPage} of {numPages}
-            </span>
-            
-            <button
-              onClick={() => setCurrentPage(Math.min(numPages, currentPage + 1))}
-              disabled={currentPage >= numPages}
-              className="btn-ghost btn-sm"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-
-            <div className="border-l border-gray-300 pl-4">
-              <select
-                value={scale}
-                onChange={(e) => setScale(parseFloat(e.target.value))}
-                className="text-sm border border-gray-300 rounded px-2 py-1"
+        <div className="flex-1 p-4">
+          <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg">
+            <div className="p-6 text-center">
+              <div className="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <Eye className="h-8 w-8 text-red-600" />
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">PDF Viewer</h2>
+              <p className="text-gray-600 mb-6">
+                Click the link below to view the PDF in a new tab
+              </p>
+              <a
+                href={accessData.fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary btn-lg inline-flex items-center"
               >
-                <option value={0.5}>50%</option>
-                <option value={0.75}>75%</option>
-                <option value={1.0}>100%</option>
-                <option value={1.25}>125%</option>
-                <option value={1.5}>150%</option>
-                <option value={2.0}>200%</option>
-              </select>
+                <Eye className="h-5 w-5 mr-2" />
+                Open PDF
+              </a>
+              <p className="text-xs text-gray-500 mt-4">
+                PDF will open in a new browser tab with built-in PDF viewer
+              </p>
             </div>
           </div>
         </div>

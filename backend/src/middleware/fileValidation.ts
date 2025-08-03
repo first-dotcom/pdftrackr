@@ -6,6 +6,7 @@ import crypto from 'crypto';
 // Sanitize filenames to prevent injection attacks
 export const sanitizeFilename = (filename: string): string => {
   return filename
+    .normalize('NFC') // Normalize to ensure consistent encoding
     .replace(/[<>:"|?*\x00-\x1f\\\/]/g, '') // Remove dangerous chars
     .replace(/\.\./g, '') // Prevent path traversal
     .replace(/^\.+/, '') // Remove leading dots
