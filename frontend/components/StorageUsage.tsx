@@ -49,16 +49,23 @@ export default function StorageUsage() {
         return;
       }
 
+      console.log('Fetching storage info from:', `${config.api.url}/api/users/profile`);
       const response = await fetch(`${config.api.url}/api/users/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
       
+      console.log('Storage response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('Storage data received:', data);
         
         const { user: userData, quotas } = data.data;
+        
+        console.log('User data:', userData);
+        console.log('Quotas:', quotas);
         
         setStorage({
           storageUsed: userData.storageUsed || 0,
@@ -69,25 +76,15 @@ export default function StorageUsage() {
         });
       } else {
         console.error('Failed to fetch storage info:', response.status, response.statusText);
-        // Don't show error for storage info - just use defaults
-        setStorage({
-          storageUsed: 0,
-          storageQuota: 500 * 1024 * 1024, // 500MB default
-          filesCount: 0,
-          filesQuota: 25, // 25 files default
-          plan: 'free',
-        });
+        const errorData = await response.json().catch(() => null);
+        console.error('Error response data:', errorData);
+        
+        // Show the actual error instead of using defaults
+        setError(`Failed to load storage info: ${response.status} ${response.statusText}`);
       }
     } catch (error) {
       console.error('Failed to fetch storage info:', error);
-      // Don't show error for storage info - just use defaults
-      setStorage({
-        storageUsed: 0,
-        storageQuota: 500 * 1024 * 1024, // 500MB default
-        filesCount: 0,
-        filesQuota: 25, // 25 files default
-        plan: 'free',
-      });
+      setError('Network error loading storage info');
     } finally {
       setLoading(false);
     }
@@ -174,8 +171,14 @@ export default function StorageUsage() {
         </div>
         <div className="card-body">
           <div className="text-center py-8">
-            <HardDrive className="mx-auto h-8 w-8 text-gray-400" />
-            <p className="mt-2 text-sm text-gray-500">Storage information unavailable</p>
+            <HardDrive className="mx-auto h-8 w-8 text-red-400" />
+            <p className="mt-2 text-sm text-red-600">{error}</p>
+            <button 
+              onClick={fetchStorageInfo}
+              className="mt-4 btn-outline btn-sm"
+            >
+              Retry
+            </button>
           </div>
         </div>
       </div>

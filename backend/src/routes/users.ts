@@ -16,7 +16,7 @@ router.get('/profile', authenticate, asyncHandler(async (req, res) => {
   // Get current usage stats
   const usage = await db.select({
     filesCount: sql<number>`COUNT(${files.id})`,
-    storageUsed: sum(files.size),
+    storageUsed: sql<number>`SUM(${files.size})`,
   })
     .from(files)
     .where(eq(files.userId, user.id));
@@ -84,7 +84,7 @@ router.get('/stats', authenticate, asyncHandler(async (req, res) => {
   // For now, we'll return basic stats
   const fileStats = await db.select({
     totalFiles: sql<number>`COUNT(*)`,
-    totalSize: sum(files.size),
+    totalSize: sql<number>`SUM(${files.size})`,
   })
     .from(files)
     .where(eq(files.userId, userId));
