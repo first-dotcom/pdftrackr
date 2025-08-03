@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { X, Mail, Bell } from 'lucide-react';
-import { sanitizeUserInput, validateEmail, validatePlan, generateCSRFToken, createClientRateLimit } from '../utils/security';
-import { config } from '../lib/config';
+import { sanitizeUserInput, validateEmail, validatePlan, generateCSRFToken, createClientRateLimit } from '@/utils/security';
+import { config } from '@/lib/config';
 
 // Rate limiting for waitlist submissions
 const waitlistRateLimit = createClientRateLimit(3, 60000); // 3 submissions per minute

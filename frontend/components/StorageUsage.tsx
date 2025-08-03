@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { HardDrive, Upload, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
-import { config } from '../lib/config';
+import { config } from '@/lib/config';
 
 interface StorageInfo {
   storageUsed: number;

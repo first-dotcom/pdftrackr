@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { FileText, Eye, Users, Mail } from 'lucide-react';
-import { config } from '../lib/config';
+import { config } from '@/lib/config';
 
 interface DashboardStatsData {
   totalFiles: number;

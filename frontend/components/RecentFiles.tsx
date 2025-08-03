@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FileText, Eye, Calendar, MoreHorizontal } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { config } from '../lib/config';
+import { config } from '@/lib/config';
 
 interface File {
   id: number;

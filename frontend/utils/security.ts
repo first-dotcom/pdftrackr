@@ -5,13 +5,13 @@
 
 import { z } from 'zod';
 
-// Zod schemas for validation
+// Zod schemas for robust validation
 export const emailSchema = z.string().email().max(254);
 export const planSchema = z.enum(['pro', 'team', 'either']);
 export const userInputSchema = z.string().max(1000).trim();
 export const filenameSchema = z.string().max(255).regex(/^[^<>:"|?*\x00-\x1f]+$/);
 
-// Validation helpers using Zod
+// Validation helpers using Zod - PROPER TYPE SAFETY
 export const validateEmail = (email: string): { valid: boolean; error?: string } => {
   try {
     emailSchema.parse(email);

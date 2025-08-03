@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// Frontend environment schema - SIMPLIFIED
+// Frontend environment schema - PROPER ZOD VALIDATION
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   
@@ -16,7 +16,7 @@ const envSchema = z.object({
   NEXT_PUBLIC_APP_ENV: z.string().default('development'),
 });
 
-// Parse and validate environment variables
+// Parse and validate environment variables - FAIL FAST on invalid config
 const env = envSchema.parse(process.env);
 
 export const config = {
