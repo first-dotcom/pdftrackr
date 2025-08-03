@@ -10,7 +10,8 @@ import {
   Mail, 
   Clock, 
   TrendingUp, 
-  BarChart3
+  BarChart3,
+  Plus
 } from 'lucide-react';
 import { config } from '@/lib/config';
 
@@ -161,6 +162,22 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
 
+      {/* Header with Upload Button */}
+      <div className="flex justify-between items-center">
+        <div className="flex-1">
+          {/* Welcome message is handled by header */}
+        </div>
+        <div className="ml-4">
+          <Link
+            href="/dashboard/files/upload"
+            className="btn-primary btn-md flex items-center"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Upload PDF
+          </Link>
+        </div>
+      </div>
+
       {/* Key Metrics */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat) => (
@@ -200,7 +217,7 @@ export default function DashboardPage() {
                 <div className="card-header">
                   <h3 className="text-lg font-medium text-gray-900 flex items-center">
                     <TrendingUp className="mr-2 h-5 w-5" />
-                    Top Performing Files
+                    Top Files
                   </h3>
                 </div>
                 <div className="card-body">
@@ -212,33 +229,20 @@ export default function DashboardPage() {
                             <span className="text-sm font-bold text-green-600">#{index + 1}</span>
                           </div>
                           <div className="ml-3 flex-1">
-                            <div className="text-sm font-medium text-gray-900">
+                            <div className="text-sm font-medium text-gray-900 truncate">
                               {file.fileName}
                             </div>
                             <div className="text-xs text-gray-500">
-                              {formatNumber(file.views)} total views
+                              {formatNumber(file.views)} views
                             </div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-sm text-gray-900">
-                            {formatNumber(file.uniqueViews)} unique
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {Number(file.views) > 0 && Number(file.uniqueViews) > 0 ? 
-                              `${Math.round((Number(file.uniqueViews) / Number(file.views)) * 100)}% return rate` : 
-                              'New file'
-                            }
-                          </div>
-                        </div>
-                        <div className="ml-4">
-                          <Link
-                            href={`/dashboard/files/${file.fileId}`}
-                            className="text-primary-600 hover:text-primary-800 text-sm font-medium"
-                          >
-                            View →
-                          </Link>
-                        </div>
+                        <Link
+                          href={`/dashboard/files/${file.fileId}`}
+                          className="text-primary-600 hover:text-primary-800 text-sm font-medium"
+                        >
+                          View
+                        </Link>
                       </div>
                     ))}
                   </div>
@@ -246,7 +250,7 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Recent Views - Only show if there are views */}
+            {/* Recent Activity - Simplified */}
             {dashboardData.recentViews && dashboardData.recentViews.length > 0 && (
               <div className="card">
                 <div className="card-header">
@@ -256,99 +260,27 @@ export default function DashboardPage() {
                   </h3>
                 </div>
                 <div className="card-body">
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Viewer
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            File
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Duration
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Date & Time
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Link
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {dashboardData.recentViews.slice(0, 10).map((view, index) => (
-                          <tr key={index} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center">
-                                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                  <Eye className="h-4 w-4 text-blue-600" />
-                                </div>
-                                <div className="ml-3">
-                                  <div className="text-sm font-medium text-gray-900">
-                                    {view.viewerName || view.viewerEmail || 'Anonymous'}
-                                  </div>
-                                  <div className="text-xs text-gray-500">
-                                    {view.viewerEmail ? 'Email provided' : 'No email'}
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm font-medium text-gray-900">
-                                <Link
-                                  href={`/dashboard/files/${view.fileId}`}
-                                  className="hover:underline"
-                                >
-                                  {view.fileName}
-                                </Link>
-                              </div>
-                              {view.shareTitle && view.shareTitle !== view.fileName && (
-                                <div className="text-xs text-gray-500">
-                                  Share ID: {view.shareId}
-                                </div>
-                              )}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">
-                                {view.duration > 0 ? formatDuration(view.duration) : 'Quick view'}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                {view.duration > 0 ? 'Engaged viewing' : 'Brief interaction'}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">
-                                {new Date(view.startedAt).toLocaleDateString('en-US', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  year: 'numeric'
-                                })}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                {new Date(view.startedAt).toLocaleTimeString('en-US', {
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-xs text-primary-600">
-                                <a 
-                                  href={`/view/${view.shareId}`} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="hover:underline"
-                                >
-                                  /view/{view.shareId}
-                                </a>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="space-y-3">
+                    {dashboardData.recentViews.slice(0, 5).map((view, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center flex-1">
+                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <Eye className="h-4 w-4 text-blue-600" />
+                          </div>
+                          <div className="ml-3 flex-1">
+                            <div className="text-sm font-medium text-gray-900">
+                              {view.viewerName || view.viewerEmail || 'Anonymous'}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {view.fileName} • {formatDuration(view.duration)}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {new Date(view.startedAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>

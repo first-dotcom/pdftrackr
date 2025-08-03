@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
-import { X, Copy, CheckCircle, Eye, EyeOff, Calendar, Users, Shield } from 'lucide-react';
+import { X, Copy, CheckCircle, Calendar, Shield } from 'lucide-react';
 import { config } from '@/lib/config';
 
 interface ShareLinkModalProps {
@@ -31,7 +31,6 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
   const [loading, setLoading] = useState(false);
   const [shareLink, setShareLink] = useState<any>(null);
   const [copied, setCopied] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const { getToken } = useAuth();
 
   const [form, setForm] = useState<ShareLinkForm>({
@@ -318,9 +317,8 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
                   value={form.title}
                   onChange={(e) => handleFieldChange('title', e.target.value)}
                   onBlur={() => handleFieldBlur('title')}
-                  className={`input w-full ${errors.title && touched.title ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : ''}`}
-                  placeholder="Enter a title for this share link"
-                  required
+                  className={`input w-full ${errors.title && touched.title ? 'border-red-500' : ''}`}
+                  placeholder="Enter a title for your share link"
                 />
                 {errors.title && touched.title && (
                   <p className="text-red-500 text-xs mt-1">{errors.title}</p>
@@ -329,98 +327,79 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description <span className="text-gray-400 text-xs">(optional)</span>
+                  Description
                 </label>
                 <textarea
                   value={form.description}
                   onChange={(e) => handleFieldChange('description', e.target.value)}
-                  className="input w-full h-20 resize-none"
-                  placeholder="Add a description for viewers"
-                  maxLength={1000}
+                  className="input w-full"
+                  rows={2}
+                  placeholder="Optional description for your share link"
                 />
-                <p className="text-xs text-gray-500 mt-1">{form.description.length}/1000 characters</p>
               </div>
             </div>
 
             {/* Security Settings */}
-            <div className="border-t pt-4">
-              <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
-                <Shield className="h-4 w-4 mr-2" />
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium text-gray-900 flex items-center">
+                <Shield className="mr-2 h-4 w-4" />
                 Security & Access
-              </h3>
-
+              </h4>
+              
               <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Password Protection <span className="text-gray-400 text-xs">(optional)</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={form.password}
-                      onChange={(e) => handleFieldChange('password', e.target.value)}
-                      onBlur={() => handleFieldBlur('password')}
-                      className={`input w-full pr-10 ${errors.password && touched.password ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : ''}`}
-                      placeholder="Enter password to protect this link"
-                      minLength={8}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Allow Downloads</p>
+                    <p className="text-xs text-gray-500">Let viewers download the file</p>
                   </div>
-                  {errors.password && touched.password && (
-                    <p className="text-red-500 text-xs mt-1">{errors.password}</p>
-                  )}
-                  {form.password && form.password.length > 0 && (
-                    <div className="mt-1">
-                      <div className="flex items-center space-x-1 text-xs">
-                        <div className={`h-1 w-1 rounded-full ${form.password.length >= 8 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                        <span className={form.password.length >= 8 ? 'text-green-600' : 'text-gray-500'}>
-                          At least 8 characters
-                        </span>
-                      </div>
-                    </div>
-                  )}
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={form.downloadEnabled}
+                      onChange={(e) => handleFieldChange('downloadEnabled', e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                  </label>
                 </div>
 
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="emailGating"
-                    checked={form.emailGatingEnabled}
-                    onChange={(e) => handleFieldChange('emailGatingEnabled', e.target.checked)}
-                    className="rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
-                  />
-                  <label htmlFor="emailGating" className="ml-2 text-sm text-gray-700">
-                    Require email to access <span className="text-gray-400">(recommended for lead generation)</span>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Require Email</p>
+                    <p className="text-xs text-gray-500">Collect viewer email addresses</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={form.emailGatingEnabled}
+                      onChange={(e) => handleFieldChange('emailGatingEnabled', e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
                   </label>
                 </div>
               </div>
             </div>
 
-            {/* Expiration Settings */}
-            <div className="border-t pt-4">
-              <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
-                <Calendar className="h-4 w-4 mr-2" />
-                Expiration
-              </h3>
-
-              <div className="grid grid-cols-2 gap-3">
+            {/* Advanced Options */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium text-gray-900 flex items-center">
+                <Calendar className="mr-2 h-4 w-4" />
+                Advanced Options
+              </h4>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Expires On <span className="text-gray-400 text-xs">(optional)</span>
+                    Expires After
                   </label>
                   <input
-                    type="datetime-local"
+                    type="date"
                     value={form.expiresAt}
                     onChange={(e) => handleFieldChange('expiresAt', e.target.value)}
                     onBlur={() => handleFieldBlur('expiresAt')}
-                    className={`input w-full text-sm ${errors.expiresAt && touched.expiresAt ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : ''}`}
-                    min={new Date().toISOString().slice(0, 16)}
+                    className={`input w-full ${errors.expiresAt && touched.expiresAt ? 'border-red-500' : ''}`}
+                    min={new Date().toISOString().split('T')[0]}
                   />
                   {errors.expiresAt && touched.expiresAt && (
                     <p className="text-red-500 text-xs mt-1">{errors.expiresAt}</p>
@@ -429,15 +408,15 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Max Views <span className="text-gray-400 text-xs">(optional)</span>
+                    Max Views
                   </label>
                   <input
                     type="number"
                     value={form.maxViews}
                     onChange={(e) => handleFieldChange('maxViews', e.target.value)}
                     onBlur={() => handleFieldBlur('maxViews')}
-                    className={`input w-full ${errors.maxViews && touched.maxViews ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : ''}`}
-                    placeholder="e.g. 100"
+                    className={`input w-full ${errors.maxViews && touched.maxViews ? 'border-red-500' : ''}`}
+                    placeholder="Unlimited"
                     min="1"
                   />
                   {errors.maxViews && touched.maxViews && (
@@ -447,56 +426,18 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
               </div>
             </div>
 
-            {/* Viewer Settings */}
-            <div className="border-t pt-4">
-              <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
-                <Users className="h-4 w-4 mr-2" />
-                Viewer Permissions
-              </h3>
-
-              <div className="space-y-3">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="downloadEnabled"
-                    checked={form.downloadEnabled}
-                    onChange={(e) => handleFieldChange('downloadEnabled', e.target.checked)}
-                    className="rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
-                  />
-                  <label htmlFor="downloadEnabled" className="ml-2 text-sm text-gray-700">
-                    Allow PDF download <span className="text-gray-400">(viewers can save the PDF)</span>
-                  </label>
-                </div>
-
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="watermarkEnabled"
-                    checked={form.watermarkEnabled}
-                    onChange={(e) => handleFieldChange('watermarkEnabled', e.target.checked)}
-                    className="rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
-                  />
-                  <label htmlFor="watermarkEnabled" className="ml-2 text-sm text-gray-700">
-                    Add viewer watermark <span className="text-gray-400">(protects content)</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-3 pt-4 border-t">
+            <div className="flex gap-3 pt-4">
               <button
                 type="button"
                 onClick={handleClose}
                 className="flex-1 btn-outline btn-md"
-                disabled={loading}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex-1 btn-primary btn-md"
                 disabled={loading}
+                className="flex-1 btn-primary btn-md"
               >
                 {loading ? 'Creating...' : 'Create Share Link'}
               </button>

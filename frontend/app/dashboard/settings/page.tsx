@@ -246,24 +246,6 @@ export default function SettingsPage() {
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-700">Browser Notifications</p>
-              <p className="text-xs text-gray-500">Show notifications in your browser</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.notifications.browser}
-                onChange={(e) => updateSettings({ 
-                  notifications: { ...settings.notifications, browser: e.target.checked }
-                })}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-            </label>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
               <p className="text-sm font-medium text-gray-700">New View Notifications</p>
               <p className="text-xs text-gray-500">Notify when someone views your files</p>
             </div>
@@ -273,24 +255,6 @@ export default function SettingsPage() {
                 checked={settings.notifications.newViews}
                 onChange={(e) => updateSettings({ 
                   notifications: { ...settings.notifications, newViews: e.target.checked }
-                })}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-            </label>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-700">Weekly Reports</p>
-              <p className="text-xs text-gray-500">Receive weekly analytics summaries</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.notifications.weeklyReport}
-                onChange={(e) => updateSettings({ 
-                  notifications: { ...settings.notifications, weeklyReport: e.target.checked }
                 })}
                 className="sr-only peer"
               />
@@ -320,24 +284,6 @@ export default function SettingsPage() {
                 checked={settings.privacy.trackAnalytics}
                 onChange={(e) => updateSettings({ 
                   privacy: { ...settings.privacy, trackAnalytics: e.target.checked }
-                })}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-            </label>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-700">Share Usage Data</p>
-              <p className="text-xs text-gray-500">Help improve PDFTrackr with anonymous usage data</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.privacy.shareUsageData}
-                onChange={(e) => updateSettings({ 
-                  privacy: { ...settings.privacy, shareUsageData: e.target.checked }
                 })}
                 className="sr-only peer"
               />
