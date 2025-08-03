@@ -52,6 +52,7 @@ export default function DashboardPage() {
   const isReady = authLoaded && userLoaded;
 
   useEffect(() => {
+    console.log('Dashboard: isReady=', isReady, 'user=', !!user, 'user details:', user);
     if (isReady && user) {
       fetchDashboardData();
     }
@@ -83,9 +84,10 @@ export default function DashboardPage() {
   };
 
   const formatDuration = (seconds: number) => {
+    if (seconds === 0) return '—'; // Show dash when no duration is tracked
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}m ${remainingSeconds}s`;
+    return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
   };
 
   const formatNumber = (num: number | string | undefined | null) => {
@@ -203,9 +205,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Storage Usage */}
         <div>
-          <Suspense fallback={<LoadingSpinner />}>
-            <StorageUsage />
-          </Suspense>
+          <StorageUsage />
         </div>
         
         {/* Analytics Section - Only show if there's data */}

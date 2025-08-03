@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth, useUser } from '@clerk/nextjs';
-import { Search, FileText, Eye, Share2, Share, Plus } from 'lucide-react';
+import { Search, FileText, Eye, Share2, Share, Plus, Trash2, Download, Edit } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { config } from '@/lib/config';
 import ShareLinkModal from '@/components/ShareLinkModal';
@@ -15,7 +15,6 @@ interface File {
   size: number;
   createdAt: string;
   viewCount: number;
-  folder?: string;
   shareLinks?: Array<{
     id: number;
     shareId: string;
@@ -40,7 +39,6 @@ export default function FilesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [selectedFolder, setSelectedFolder] = useState<string>('all');
   
   // Add proper loading states for Clerk
   const { getToken, isLoaded: authLoaded } = useAuth();
@@ -96,6 +94,69 @@ export default function FilesPage() {
     fetchFiles();
   };
 
+  const handleDeleteFile = async (fileId: number) => {
+    if (!confirm('Are you sure you want to delete this file? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const token = await getToken();
+      if (!token) return;
+
+      const response = await fetch(`${config.api.url}/api/files/${fileId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        // Remove file from local state
+        setFiles(prev => prev.filter(f => f.id !== fileId));
+      } else {
+        alert('Failed to delete file');
+      }
+    } catch (error) {
+      console.error('Failed to delete file:', error);
+      alert('Failed to delete file');
+    }
+  };
+
+  const handleDownloadFile = async (file: File) => {
+    try {
+      const token = await getToken();
+      if (!token) return;
+
+      const response = await fetch(`${config.api.url}/api/files/${file.id}/download`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.originalName;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        alert('Failed to download file');
+      }
+    } catch (error) {
+      console.error('Failed to download file:', error);
+      alert('Failed to download file');
+    }
+  };
+
+  const handleEditFile = (file: File) => {
+    // For now, just navigate to file details page where editing can be done
+    window.location.href = `/dashboard/files/${file.id}`;
+  };
+
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -108,24 +169,11 @@ export default function FilesPage() {
     return shareLinks.filter(link => link.isActive).length;
   };
 
-  // Group files by folder
-  const groupedFiles = files.reduce((acc, file) => {
-    const folder = file.folder || 'General';
-    if (!acc[folder]) {
-      acc[folder] = [];
-    }
-    acc[folder].push(file);
-    return acc;
-  }, {} as Record<string, File[]>);
-
-  const folders = Object.keys(groupedFiles);
-
   const filteredFiles = files.filter(file => {
     const matchesSearch = file.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          file.originalName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFolder = selectedFolder === 'all' || (file.folder || 'General') === selectedFolder;
     
-    return matchesSearch && matchesFolder;
+    return matchesSearch;
   });
 
   // Show loading state while Clerk is initializing
@@ -186,16 +234,6 @@ export default function FilesPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <select 
-              className="input w-auto min-w-[150px]"
-              value={selectedFolder}
-              onChange={(e) => setSelectedFolder(e.target.value)}
-            >
-              <option value="all">All Folders</option>
-              {folders.map(folder => (
-                <option key={folder} value={folder}>{folder}</option>
-              ))}
-            </select>
           </div>
         </div>
         <div className="ml-4">
@@ -289,6 +327,20 @@ export default function FilesPage() {
                     >
                       <Share className="h-4 w-4" />
                     </button>
+                    <button
+                      onClick={() => handleDownloadFile(file)}
+                      className="text-green-600 hover:text-green-900 p-2 rounded hover:bg-green-50"
+                      title="Download file"
+                    >
+                      <Download className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleEditFile(file)}
+                      className="text-blue-600 hover:text-blue-900 p-2 rounded hover:bg-blue-50"
+                      title="Edit file"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </button>
                     <Link
                       href={`/dashboard/files/${file.id}`}
                       className="text-gray-600 hover:text-gray-900 p-2 rounded hover:bg-gray-50"
@@ -296,6 +348,13 @@ export default function FilesPage() {
                     >
                       <Eye className="h-4 w-4" />
                     </Link>
+                    <button
+                      onClick={() => handleDeleteFile(file.id)}
+                      className="text-red-600 hover:text-red-900 p-2 rounded hover:bg-red-50"
+                      title="Delete file"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
               ))}

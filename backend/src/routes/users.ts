@@ -11,23 +11,39 @@ const router = Router();
 
 // Get user profile with usage stats
 router.get('/profile', authenticate, asyncHandler(async (req, res) => {
-  const user = req.user!;
+  try {
+    console.log('=== STARTING USER PROFILE REQUEST ===');
+    const user = req.user!;
+    
+    console.log('User profile request for user:', user.id, 'plan:', user.plan);
 
-  // Get current usage stats
-  const usage = await db.select({
-    filesCount: sql<number>`COUNT(${files.id})`,
-    storageUsed: sql<number>`SUM(${files.size})`,
-  })
-    .from(files)
-    .where(eq(files.userId, user.id));
+    // Get current usage stats
+    console.log('About to query database...');
+    const usage = await db.select({
+      filesCount: sql<number>`COUNT(${files.id})`,
+      storageUsed: sql<number>`SUM(${files.size})`,
+    })
+      .from(files)
+      .where(eq(files.userId, user.id));
 
-  const quotas = config.quotas[user.plan as keyof typeof config.quotas];
+    console.log('Usage stats:', usage);
 
-  res.json({
+    // Default to free plan if user plan is not found in config
+    console.log('About to check user plan...');
+    const userPlan = user.plan && config.quotas[user.plan as keyof typeof config.quotas] 
+      ? user.plan 
+      : 'free';
+    const quotas = config.quotas[userPlan as keyof typeof config.quotas];
+    
+    console.log('User plan:', userPlan, 'Quotas:', quotas);
+    console.log('=== USER PROFILE REQUEST SUCCESSFUL ===');
+
+    res.json({
     success: true,
     data: {
       user: {
         ...user,
+        plan: userPlan, // Use the validated plan
         filesCount: usage[0]?.filesCount || 0,
         storageUsed: usage[0]?.storageUsed || 0,
       },
@@ -42,6 +58,10 @@ router.get('/profile', authenticate, asyncHandler(async (req, res) => {
       },
     },
   });
+  } catch (error) {
+    console.error('Error in user profile request:', error);
+    throw error;
+  }
 }));
 
 // Update user plan
@@ -49,7 +69,7 @@ router.patch('/plan', authenticate, asyncHandler(async (req, res) => {
   const { plan } = req.body;
   const currentPlan = req.user!.plan;
 
-  if (!['free', 'pro', 'team'].includes(plan)) {
+  if (!['free', 'pro', 'business'].includes(plan)) {
     return res.status(400).json({
       success: false,
       error: { message: 'Invalid plan' },

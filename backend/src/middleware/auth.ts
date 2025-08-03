@@ -17,12 +17,14 @@ declare global {
         id: number;
         clerkId: string;
         email: string;
-        firstName?: string;
-        lastName?: string;
+        firstName: string | null;
+        lastName: string | null;
         plan: string;
         storageUsed: number;
         filesCount: number;
-      };
+        createdAt: Date;
+        updatedAt: Date;
+      } | undefined;
     }
   }
 }
@@ -30,6 +32,8 @@ declare global {
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
+    
+    console.log('Auth middleware - token present:', !!token);
     
     if (!token) {
       throw new CustomError('Authentication token required', 401);
@@ -39,6 +43,8 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     const payload = await verifyToken(token, { 
       secretKey: config.clerk.secretKey 
     });
+
+    console.log('Auth middleware - token verified, sub:', payload.sub);
 
     if (!payload.sub) {
       throw new CustomError('Invalid token', 401);
@@ -85,8 +91,12 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
           })
           .returning();
 
-        req.user = newUser[0];
-        logger.info(`Created new user: ${email}`);
+        if (newUser.length > 0) {
+          req.user = newUser[0];
+          logger.info(`Created new user: ${email}`);
+        } else {
+          throw new CustomError('Failed to create user account', 500);
+        }
       } catch (clerkError) {
         logger.error('Failed to fetch user from Clerk:', {
           message: clerkError instanceof Error ? clerkError.message : String(clerkError),
@@ -95,7 +105,12 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
         throw new CustomError('Failed to create user account', 500);
       }
     } else {
-      req.user = userRecord[0];
+      const user = userRecord[0];
+      if (user) {
+        req.user = user;
+      } else {
+        throw new CustomError('User not found', 404);
+      }
     }
 
     next();
@@ -127,7 +142,10 @@ export const optionalAuth = async (req: Request, res: Response, next: NextFuncti
           .limit(1);
 
         if (userRecord.length > 0) {
-          req.user = userRecord[0];
+          const user = userRecord[0];
+          if (user) {
+            req.user = user;
+          }
         }
       }
     }
@@ -141,13 +159,13 @@ export const optionalAuth = async (req: Request, res: Response, next: NextFuncti
 };
 
 // Check if user has a specific plan
-export const requirePlan = (requiredPlan: 'free' | 'pro' | 'team') => {
+export const requirePlan = (requiredPlan: 'free' | 'pro' | 'business') => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
       return next(new CustomError('Authentication required', 401));
     }
 
-    const planHierarchy = { free: 0, pro: 1, team: 2 };
+    const planHierarchy = { free: 0, pro: 1, business: 2 };
     const userPlanLevel = planHierarchy[req.user.plan as keyof typeof planHierarchy];
     const requiredPlanLevel = planHierarchy[requiredPlan];
 
@@ -167,7 +185,7 @@ const checkSuspiciousActivity = async (req: Request, userId: string) => {
   
   try {
     // Track authentication attempts
-    const attempts = await CacheService.get(key);
+    const attempts = await CacheService.get<string>(key);
     const attemptCount = attempts ? parseInt(attempts) : 0;
     
     // Log unusual patterns
@@ -185,7 +203,7 @@ const checkSuspiciousActivity = async (req: Request, userId: string) => {
     
     // Check for multiple IPs per user (potential account sharing/compromise)
     const userIpKey = `user_ips:${userId}`;
-    const userIps = await CacheService.get(userIpKey);
+    const userIps = await CacheService.get<string>(userIpKey);
     
     if (userIps) {
       const ips = JSON.parse(userIps);

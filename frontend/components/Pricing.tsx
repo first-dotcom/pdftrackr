@@ -34,7 +34,7 @@ const plans = [
       '50 MB max file size',
       'Custom branding',
       'Remove PDFTrackr branding',
-      'Folder organization',
+      'Advanced analytics',
       '1-year analytics retention',
       'Priority support',
     ],
