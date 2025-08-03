@@ -11,7 +11,7 @@ interface UploadFile {
   id: string;
   status: 'pending' | 'uploading' | 'success' | 'error';
   progress: number;
-  error?: string;
+  error?: string | null;
 }
 
 export default function UploadPage() {

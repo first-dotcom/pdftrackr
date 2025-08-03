@@ -3,7 +3,7 @@ import { authenticate } from '../middleware/auth';
 import { asyncHandler } from '../middleware/errorHandler';
 import { db } from '../utils/database';
 import { users, files } from '../models/schema';
-import { eq, count, sum } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { config } from '../config';
 import { planUpgrades } from '../middleware/metrics';
 
@@ -15,7 +15,7 @@ router.get('/profile', authenticate, asyncHandler(async (req, res) => {
 
   // Get current usage stats
   const usage = await db.select({
-    filesCount: count(files.id),
+    filesCount: sql<number>`COUNT(${files.id})`,
     storageUsed: sum(files.size),
   })
     .from(files)
@@ -83,7 +83,7 @@ router.get('/stats', authenticate, asyncHandler(async (req, res) => {
   // This would typically aggregate from the analytics_summary table
   // For now, we'll return basic stats
   const fileStats = await db.select({
-    totalFiles: count(),
+    totalFiles: sql<number>`COUNT(*)`,
     totalSize: sum(files.size),
   })
     .from(files)

@@ -7,7 +7,10 @@ export const redis = createClient({
 });
 
 redis.on('error', (err) => {
-  logger.error('Redis Client Error:', err);
+  logger.error('Redis Client Error:', {
+    message: err instanceof Error ? err.message : String(err),
+    stack: err instanceof Error ? err.stack : undefined,
+  });
 });
 
 redis.on('connect', () => {
@@ -27,7 +30,10 @@ export async function connectRedis() {
     await redis.connect();
     logger.info('Redis connected successfully');
   } catch (error) {
-    logger.error('Redis connection failed:', error);
+    logger.error('Redis connection failed:', {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     throw error;
   }
 }
@@ -37,7 +43,10 @@ export async function closeRedis() {
     await redis.quit();
     logger.info('Redis connection closed');
   } catch (error) {
-    logger.error('Error closing Redis connection:', error);
+    logger.error('Error closing Redis connection:', {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     throw error;
   }
 }

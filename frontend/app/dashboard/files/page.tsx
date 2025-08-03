@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useAuth } from '@clerk/nextjs';
+import { useAuth, useUser } from '@clerk/nextjs';
 import { Plus, Search, Filter, FileText, Eye, Share2, MoreVertical, Share } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { config } from '@/lib/config';
@@ -43,11 +43,19 @@ export default function FilesPage() {
   const [shareLinks, setShareLinks] = useState<ShareLink[]>([]);
   const [expandedFiles, setExpandedFiles] = useState<Set<number>>(new Set());
   const [selectedFolder, setSelectedFolder] = useState<string>('all');
-  const { getToken } = useAuth();
+  
+  // Add proper loading states for Clerk
+  const { getToken, isLoaded: authLoaded } = useAuth();
+  const { user, isLoaded: userLoaded } = useUser();
+
+  // Wait for both auth and user to be loaded
+  const isReady = authLoaded && userLoaded;
 
   useEffect(() => {
-    fetchFiles();
-  }, []);
+    if (isReady && user) {
+      fetchFiles();
+    }
+  }, [isReady, user]);
 
   const fetchFiles = async () => {
     try {
@@ -164,6 +172,59 @@ export default function FilesPage() {
     const matchesFolder = selectedFolder === 'all' || (file.folder || 'General') === selectedFolder;
     return matchesSearch && matchesFolder;
   });
+
+  // Show loading state while Clerk is initializing
+  if (!isReady) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Files</h1>
+            <p className="text-gray-600">Manage your PDF files and share links</p>
+          </div>
+        </div>
+        <div className="card">
+          <div className="card-body">
+            <div className="space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-10 h-10 bg-gray-200 rounded"></div>
+                    <div className="flex-1">
+                      <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                    </div>
+                    <div className="w-20 h-4 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show sign-in prompt if user is not authenticated
+  if (!user) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Files</h1>
+            <p className="text-gray-600">Manage your PDF files and share links</p>
+          </div>
+        </div>
+        <div className="card">
+          <div className="card-body text-center py-12">
+            <FileText className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">Authentication Required</h3>
+            <p className="mt-1 text-sm text-gray-500">Please sign in to view your files.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

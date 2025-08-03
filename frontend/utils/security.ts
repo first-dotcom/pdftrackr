@@ -106,7 +106,7 @@ export const isValidEmail = (email: string): boolean => {
 export const generateNonce = (): string => {
   const array = new Uint8Array(16);
   crypto.getRandomValues(array);
-  return btoa(String.fromCharCode(...array));
+  return btoa(String.fromCharCode(...Array.from(array)));
 };
 
 // Safe JSON parsing

@@ -88,7 +88,10 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
         req.user = newUser[0];
         logger.info(`Created new user: ${email}`);
       } catch (clerkError) {
-        logger.error('Failed to fetch user from Clerk:', clerkError);
+        logger.error('Failed to fetch user from Clerk:', {
+          message: clerkError instanceof Error ? clerkError.message : String(clerkError),
+          stack: clerkError instanceof Error ? clerkError.stack : undefined,
+        });
         throw new CustomError('Failed to create user account', 500);
       }
     } else {
@@ -97,7 +100,10 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 
     next();
   } catch (error) {
-    logger.error('Authentication error:', error);
+    logger.error('Authentication error:', {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     next(new CustomError('Authentication failed', 401));
   }
 };

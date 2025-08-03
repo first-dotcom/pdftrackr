@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useAuth } from '@clerk/nextjs';
+import { useAuth, useUser } from '@clerk/nextjs';
 import { FileText, Eye, Calendar, MoreHorizontal } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { config } from '@/lib/config';
@@ -22,11 +22,19 @@ interface File {
 export default function RecentFiles() {
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(true);
-  const { getToken } = useAuth();
+  
+  // Add proper loading states for Clerk
+  const { getToken, isLoaded: authLoaded } = useAuth();
+  const { user, isLoaded: userLoaded } = useUser();
+
+  // Wait for both auth and user to be loaded
+  const isReady = authLoaded && userLoaded;
 
   useEffect(() => {
-    fetchFiles();
-  }, []);
+    if (isReady && user) {
+      fetchFiles();
+    }
+  }, [isReady, user]);
 
   const fetchFiles = async () => {
     try {
@@ -67,6 +75,49 @@ export default function RecentFiles() {
   const getTotalViews = (shareLinks: any[] = []) => {
     return shareLinks.reduce((total, link) => total + link.viewCount, 0);
   };
+
+  // Show loading state while Clerk is initializing
+  if (!isReady) {
+    return (
+      <div className="card">
+        <div className="card-header">
+          <h3 className="text-lg font-medium text-gray-900">Recent Files</h3>
+        </div>
+        <div className="card-body">
+          <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gray-200 rounded"></div>
+                  <div className="flex-1">
+                    <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-20"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show empty state if user is not authenticated
+  if (!user) {
+    return (
+      <div className="card">
+        <div className="card-header">
+          <h3 className="text-lg font-medium text-gray-900">Recent Files</h3>
+        </div>
+        <div className="card-body">
+          <div className="text-center py-8">
+            <FileText className="mx-auto h-8 w-8 text-gray-400" />
+            <p className="mt-2 text-sm text-gray-500">Please sign in to view your files.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

@@ -31,20 +31,18 @@ export const errorHandler = (
   const { statusCode = 500, message, stack } = error;
 
   // Log error details
-  logger.error({
-    error: {
-      message,
-      stack,
-      statusCode,
-      url: req.url,
-      method: req.method,
-      ip: req.ip,
-      userAgent: req.get('User-Agent'),
-    },
+  logger.error('Request error:', {
+    message,
+    stack,
+    statusCode,
+    url: req.url,
+    method: req.method,
+    ip: req.ip,
+    userAgent: req.get('User-Agent'),
   });
 
   // Don't expose internal errors in production
-  const isDevelopment = process.env.NODE_ENV === 'development';
+  const isDevelopment = process.env['NODE_ENV'] === 'development';
   const errorMessage = statusCode >= 500 && !isDevelopment 
     ? 'Internal Server Error' 
     : message;

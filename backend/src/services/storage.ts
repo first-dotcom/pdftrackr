@@ -75,7 +75,10 @@ export async function uploadToS3(
     console.log('  Error name:', (error as any)?.name);
     console.log('  Full error:', error);
     
-    logger.error(`Failed to upload file ${key}:`, error);
+    logger.error(`Failed to upload file ${key}:`, {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     throw new Error(`Upload failed: ${error}`);
   }
 }
@@ -90,7 +93,10 @@ export async function deleteFromS3(key: string): Promise<void> {
     await s3Client.send(command);
     logger.info(`File deleted successfully: ${key}`);
   } catch (error) {
-    logger.error(`Failed to delete file ${key}:`, error);
+    logger.error(`Failed to delete file ${key}:`, {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     throw new Error(`Delete failed: ${error}`);
   }
 }
@@ -108,7 +114,10 @@ export async function getSignedDownloadUrl(
     const signedUrl = await getSignedUrl(s3Client, command, { expiresIn });
     return signedUrl;
   } catch (error) {
-    logger.error(`Failed to generate signed URL for ${key}:`, error);
+    logger.error(`Failed to generate signed URL for ${key}:`, {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     throw new Error(`Failed to generate download URL: ${error}`);
   }
 }
@@ -132,7 +141,10 @@ export async function getSignedViewUrl(
     const signedUrl = await getSignedUrl(s3Client, command, { expiresIn });
     return signedUrl;
   } catch (error) {
-    logger.error(`Failed to generate signed view URL for ${key}:`, error);
+    logger.error(`Failed to generate signed view URL for ${key}:`, {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     throw new Error(`Failed to generate view URL: ${error}`);
   }
 }
@@ -153,7 +165,10 @@ export async function getSignedUploadUrl(
     const signedUrl = await getSignedUrl(s3Client, command, { expiresIn });
     return signedUrl;
   } catch (error) {
-    logger.error(`Failed to generate signed upload URL for ${key}:`, error);
+    logger.error(`Failed to generate signed upload URL for ${key}:`, {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     throw new Error(`Failed to generate upload URL: ${error}`);
   }
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@clerk/nextjs';
+import { useAuth, useUser } from '@clerk/nextjs';
 import { HardDrive, Upload, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { config } from '@/lib/config';
@@ -23,11 +23,19 @@ export default function StorageUsage() {
     plan: 'free',
   });
   const [loading, setLoading] = useState(true);
-  const { getToken } = useAuth();
+  
+  // Add proper loading states for Clerk
+  const { getToken, isLoaded: authLoaded } = useAuth();
+  const { user, isLoaded: userLoaded } = useUser();
+
+  // Wait for both auth and user to be loaded
+  const isReady = authLoaded && userLoaded;
 
   useEffect(() => {
-    fetchStorageInfo();
-  }, []);
+    if (isReady && user) {
+      fetchStorageInfo();
+    }
+  }, [isReady, user]);
 
   const fetchStorageInfo = async () => {
     try {
@@ -82,6 +90,42 @@ export default function StorageUsage() {
     if (percentage >= 75) return 'bg-yellow-500';
     return 'bg-green-500';
   };
+
+  // Show loading state while Clerk is initializing
+  if (!isReady) {
+    return (
+      <div className="card">
+        <div className="card-header">
+          <h3 className="text-lg font-medium text-gray-900">Storage Usage</h3>
+        </div>
+        <div className="card-body">
+          <div className="animate-pulse space-y-4">
+            <div className="h-4 bg-gray-200 rounded w-full"></div>
+            <div className="h-2 bg-gray-200 rounded w-full"></div>
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div className="h-2 bg-gray-200 rounded w-full"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show empty state if user is not authenticated
+  if (!user) {
+    return (
+      <div className="card">
+        <div className="card-header">
+          <h3 className="text-lg font-medium text-gray-900">Storage Usage</h3>
+        </div>
+        <div className="card-body">
+          <div className="text-center py-8">
+            <HardDrive className="mx-auto h-8 w-8 text-gray-400" />
+            <p className="mt-2 text-sm text-gray-500">Please sign in to view your storage usage.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
