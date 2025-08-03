@@ -6,6 +6,7 @@ export default authMiddleware({
     "/view/(.*)",
     "/api/public/(.*)",
     "/api/health",
+    "/api/share/(.*)",
   ],
 });
 

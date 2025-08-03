@@ -113,6 +113,30 @@ export async function getSignedDownloadUrl(
   }
 }
 
+export async function getSignedViewUrl(
+  key: string, 
+  expiresIn: number = 3600, // 1 hour default
+  downloadEnabled: boolean = true
+): Promise<string> {
+  try {
+    const command = new GetObjectCommand({
+      Bucket: config.storage.bucket,
+      Key: key,
+      // Add headers to control browser behavior for downloads
+      ResponseContentDisposition: downloadEnabled 
+        ? undefined 
+        : 'inline; filename="document.pdf"', // Force inline viewing
+      ResponseContentType: 'application/pdf',
+    });
+
+    const signedUrl = await getSignedUrl(s3Client, command, { expiresIn });
+    return signedUrl;
+  } catch (error) {
+    logger.error(`Failed to generate signed view URL for ${key}:`, error);
+    throw new Error(`Failed to generate view URL: ${error}`);
+  }
+}
+
 export async function getSignedUploadUrl(
   key: string,
   contentType: string,

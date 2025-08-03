@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /sign-in
+Disallow: /sign-up
+
+# Allow indexing of shared PDF view pages
+Allow: /view/
+
+Sitemap: https://pdftrackr.com/sitemap.xml

@@ -319,8 +319,8 @@ export default function FilesPage() {
                         <div className="flex items-center justify-end space-x-2">
                           <button
                             onClick={() => toggleFileExpansion(file.id)}
-                            className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-50"
-                            title="Show shared links"
+                            className={`text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-50 ${expandedFiles.has(file.id) ? 'bg-gray-100' : ''}`}
+                            title="Toggle shared links"
                           >
                             <MoreVertical className="h-4 w-4" />
                           </button>
@@ -334,7 +334,7 @@ export default function FilesPage() {
                           <Link
                             href={`/dashboard/files/${file.id}`}
                             className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-50"
-                            title="View details"
+                            title="View file details"
                           >
                             <Eye className="h-4 w-4" />
                           </Link>

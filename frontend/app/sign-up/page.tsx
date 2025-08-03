@@ -1,4 +1,14 @@
 import { SignUp } from '@clerk/nextjs';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Sign Up - PDFTrackr',
+  description: 'Create your PDFTrackr account and start sharing PDFs securely with advanced analytics.',
+  robots: 'noindex, nofollow',
+  alternates: {
+    canonical: 'https://pdftrackr.com/sign-up',
+  },
+};
 
 export default function Page() {
   return (

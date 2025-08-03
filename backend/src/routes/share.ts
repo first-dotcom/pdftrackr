@@ -15,7 +15,6 @@ import { pdfViews } from '../middleware/metrics';
 import { CacheService } from '../utils/redis';
 import { z } from 'zod';
 import { config } from '../config';
-import crypto from 'crypto';
 
 const router = Router();
 
@@ -77,7 +76,6 @@ router.post('/', authenticate, validateBody(createShareLinkSchema), asyncHandler
 // Get share links for a file
 router.get('/file/:fileId', authenticate, asyncHandler(async (req, res) => {
   const fileId = parseInt(req.params.fileId);
-  console.log('Fetching share links for file ID:', fileId, 'User ID:', req.user!.id);
 
   // Verify file ownership
   const file = await db.select()
@@ -88,8 +86,6 @@ router.get('/file/:fileId', authenticate, asyncHandler(async (req, res) => {
     ))
     .limit(1);
 
-  console.log('File found:', file.length > 0 ? 'Yes' : 'No');
-
   if (file.length === 0) {
     throw new CustomError('File not found', 404);
   }
@@ -98,8 +94,6 @@ router.get('/file/:fileId', authenticate, asyncHandler(async (req, res) => {
     .from(shareLinks)
     .where(eq(shareLinks.fileId, fileId))
     .orderBy(desc(shareLinks.createdAt));
-
-  console.log('Found', links.length, 'share links for file ID:', fileId);
 
   res.json({
     success: true,
@@ -178,8 +172,6 @@ router.get('/:shareId', optionalAuth, asyncHandler(async (req, res) => {
 router.post('/:shareId/access', createRateLimit(15 * 60 * 1000, 20, 'Too many access attempts'), validateBody(shareAccessSchema), normalizeIp, asyncHandler(async (req, res) => {
   const { shareId } = req.params;
   const { password, email, name } = req.body;
-  
-  console.log('Access request for shareId:', shareId, 'with data:', { password: !!password, email: !!email, name: !!name });
 
   const shareLink = await db.select()
     .from(shareLinks)
@@ -192,14 +184,6 @@ router.post('/:shareId/access', createRateLimit(15 * 60 * 1000, 20, 'Too many ac
   }
 
   const link = shareLink[0];
-  console.log('Found link data:', {
-    shareId: link.share_links.shareId,
-    hasPassword: !!link.share_links.password,
-    emailGatingEnabled: link.share_links.emailGatingEnabled,
-    isActive: link.share_links.isActive,
-    viewCount: link.share_links.viewCount,
-    maxViews: link.share_links.maxViews
-  });
 
   // Check if link is active and not expired
   if (!link.share_links.isActive) {
@@ -215,24 +199,16 @@ router.post('/:shareId/access', createRateLimit(15 * 60 * 1000, 20, 'Too many ac
   }
 
   // Check password if required
-  console.log('Password check - Has password:', !!link.share_links.password, 'Provided password:', !!password);
   if (link.share_links.password) {
     if (!password || !await bcrypt.compare(password, link.share_links.password)) {
-      console.log('Password validation failed');
       throw new CustomError('Invalid password', 401);
     }
-    console.log('Password validation passed');
-  } else {
-    console.log('No password required for this link');
   }
 
   // Check email gating
-  console.log('Email gating check - Enabled:', link.share_links.emailGatingEnabled, 'Provided email:', !!email);
   if (link.share_links.emailGatingEnabled && !email) {
-    console.log('Email gating validation failed');
     throw new CustomError('Email required to access this file', 400);
   }
-  console.log('Email gating validation passed or not required');
 
   // Create session ID
   const sessionId = uuidv4();
@@ -246,16 +222,13 @@ router.post('/:shareId/access', createRateLimit(15 * 60 * 1000, 20, 'Too many ac
     referer: req.get('Referer'),
   };
 
-  // Hash email for privacy
-  const emailHash = email ? crypto.createHash('sha256').update(email).digest('hex') : null;
-
-  // Check if this is a unique view (same IP + email hash in last 24 hours)
+  // Check if this is a unique view (same IP + email in last 24 hours)
   const recentSessions = await db.select()
     .from(viewSessions)
     .where(and(
       eq(viewSessions.shareId, shareId),
       eq(viewSessions.ipAddress, req.ip!),
-      emailHash ? eq(viewSessions.viewerEmail, emailHash) : undefined
+      viewerInfo.email ? eq(viewSessions.viewerEmail, viewerInfo.email) : undefined
     ))
     .limit(1);
 
@@ -265,7 +238,7 @@ router.post('/:shareId/access', createRateLimit(15 * 60 * 1000, 20, 'Too many ac
   await db.insert(viewSessions).values({
     shareId,
     sessionId,
-    viewerEmail: emailHash,
+    viewerEmail: viewerInfo.email,
     viewerName: viewerInfo.name,
     ipAddress: viewerInfo.ipAddress,
     userAgent: viewerInfo.userAgent,
@@ -273,11 +246,22 @@ router.post('/:shareId/access', createRateLimit(15 * 60 * 1000, 20, 'Too many ac
     isUnique,
   });
 
+  // Update view counts
+  await db.update(shareLinks)
+    .set({
+      viewCount: link.share_links.viewCount + 1,
+      uniqueViewCount: isUnique 
+        ? (link.share_links.uniqueViewCount || 0) + 1 
+        : (link.share_links.uniqueViewCount || 0),
+      updatedAt: new Date(),
+    })
+    .where(eq(shareLinks.id, link.share_links.id));
+
   // Store email capture if provided
   if (email) {
     await db.insert(emailCaptures).values({
       shareId,
-      email: emailHash,
+      email,
       name,
       ipAddress: req.ip,
       userAgent: req.get('User-Agent'),
@@ -298,24 +282,6 @@ router.post('/:shareId/access', createRateLimit(15 * 60 * 1000, 20, 'Too many ac
     viewerInfo,
     accessedAt: new Date(),
   }, 86400); // 24 hours
-
-  // Update view counts (only for share links table)
-  try {
-    console.log('Updating share link view counts...');
-    await db.update(shareLinks)
-      .set({
-        viewCount: link.share_links.viewCount + 1,
-        uniqueViewCount: isUnique 
-          ? link.share_links.uniqueViewCount + 1 
-          : link.share_links.uniqueViewCount,
-        updatedAt: new Date(),
-      })
-      .where(eq(shareLinks.id, link.share_links.id));
-    console.log('Share link view counts updated successfully');
-  } catch (error) {
-    console.error('Error updating share link view counts:', error);
-    throw error;
-  }
 
   res.json({
     success: true,
@@ -434,35 +400,5 @@ router.delete('/:shareId', authenticate, asyncHandler(async (req, res) => {
     message: 'Share link deleted successfully',
   });
 }));
-
-// Regenerate password for a share link
-router.post('/:shareId/regenerate-password', authenticate, asyncHandler(async (req, res) => {
-  const { shareId } = req.params;
-
-  // Generate a new password
-  const newPassword = generateRandomPassword();
-  const hashedPassword = await bcrypt.hash(newPassword, 12);
-
-  // Update the share link with the new password
-  const updated = await db.update(shareLinks)
-    .set({ password: hashedPassword })
-    .where(eq(shareLinks.shareId, shareId));
-
-  if (updated === 0) {
-    throw new CustomError('Failed to regenerate password', 500);
-  }
-
-  res.json({
-    success: true,
-    data: {
-      newPassword,
-    },
-  });
-}));
-
-// Helper function to generate a random password
-function generateRandomPassword() {
-  return Math.random().toString(36).slice(-8); // Simple example, consider using a more secure method
-}
 
 export default router;
