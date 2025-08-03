@@ -138,3 +138,41 @@ export const addRequestId = (req: Request, res: Response, next: NextFunction) =>
   res.setHeader('X-Request-ID', requestId);
   next();
 };
+
+// Rate limiting utility - CREATE THE MISSING FUNCTION
+export const createRateLimit = (windowMs: number, max: number, message: string = 'Too many requests') => {
+  const rateLimit = require('express-rate-limit');
+  
+  return rateLimit({
+    windowMs,
+    max,
+    message: {
+      error: message,
+      retryAfter: Math.ceil(windowMs / 1000)
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    // Remove deprecated onLimitReached
+    keyGenerator: (req: Request) => {
+      const forwarded = req.headers['x-forwarded-for'] as string;
+      const ip = forwarded ? forwarded.split(',')[0] : req.ip;
+      return ip || 'unknown';
+    },
+    handler: (req: Request, res: Response) => {
+      logger.warn('Rate limit exceeded', {
+        ip: req.ip,
+        path: req.path,
+        method: req.method
+      });
+      
+      res.status(429).json({
+        success: false,
+        error: {
+          message,
+          statusCode: 429,
+          retryAfter: Math.ceil(windowMs / 1000)
+        }
+      });
+    }
+  });
+};

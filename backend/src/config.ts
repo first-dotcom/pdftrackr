@@ -50,29 +50,61 @@ export const config = {
     secretKey: env.CLERK_SECRET_KEY,
   },
   storage: {
-    endpoint: env.S3_ENDPOINT,
-    bucket: env.S3_BUCKET,
-    accessKeyId: env.S3_ACCESS_KEY,
-    secretAccessKey: env.S3_SECRET_KEY,
+    endpoint: env.S3_ENDPOINT || 'https://nyc3.digitaloceanspaces.com',
+    bucket: env.S3_BUCKET || 'pdftrackr-files-placeholder',
+    accessKeyId: env.S3_ACCESS_KEY || '',
+    secretAccessKey: env.S3_SECRET_KEY || '',
+    enabled: !!(env.S3_ACCESS_KEY && env.S3_SECRET_KEY), // Only enable if credentials are provided
   },
   frontend: {
     url: env.FRONTEND_URL,
   },
   quotas: {
     free: {
-      storage: 100 * 1024 * 1024, // 100MB
-      fileCount: 10,
-      fileSize: 10 * 1024 * 1024, // 10MB
+      // Competitive with Papermark Free
+      storage: 500 * 1024 * 1024, // 500MB (more generous)
+      fileCount: 25, // 25 files vs Papermark's 50 documents
+      fileSize: 10 * 1024 * 1024, // 10MB per file
+      shareLinks: 25, // 25 share links vs Papermark's 50
+      analyticsRetention: 30, // 30 days
+      teamMembers: 1,
+      customBranding: false,
+      passwordProtection: true,
+      emailRequired: true,
     },
     pro: {
-      storage: 2 * 1024 * 1024 * 1024, // 2GB
-      fileCount: 100,
-      fileSize: 25 * 1024 * 1024, // 25MB
+      // Competitive pricing: $19/month (vs Papermark €24)
+      storage: 5 * 1024 * 1024 * 1024, // 5GB
+      fileCount: 200, // 200 files vs Papermark's 100
+      fileSize: 50 * 1024 * 1024, // 50MB per file (large uploads)
+      shareLinks: -1, // unlimited share links
+      analyticsRetention: 365, // 1 year
+      teamMembers: 1,
+      customBranding: true,
+      passwordProtection: true,
+      emailRequired: true,
+      folderOrganization: true,
+      removeBranding: true,
     },
-    team: {
-      storage: 10 * 1024 * 1024 * 1024, // 10GB
-      fileCount: -1, // unlimited
-      fileSize: 50 * 1024 * 1024, // 50MB
+    business: {
+      // Competitive pricing: $49/month (vs Papermark €59)
+      storage: 25 * 1024 * 1024 * 1024, // 25GB
+      fileCount: -1, // unlimited files
+      fileSize: 100 * 1024 * 1024, // 100MB per file
+      shareLinks: -1, // unlimited
+      analyticsRetention: 730, // 2 years
+      teamMembers: 5, // 5 team members vs Papermark's 3
+      customBranding: true,
+      passwordProtection: true,
+      emailRequired: true,
+      emailVerification: true,
+      folderOrganization: true,
+      removeBranding: true,
+      allowBlockList: true,
+      screenshotProtection: true,
+      customDomain: true,
+      webhooks: true,
+      prioritySupport: true,
     },
   },
 };

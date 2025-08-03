@@ -135,7 +135,7 @@ export const validateMimeType = (req: Request, res: Response, next: NextFunction
   next();
 };
 
-// Rate limiting specifically for file uploads
+// Rate limiting specifically for file uploads - FIXED DEPRECATED API
 export const createUploadRateLimit = () => {
   const rateLimit = require('express-rate-limit');
   return rateLimit({
@@ -151,10 +151,19 @@ export const createUploadRateLimit = () => {
       // Use IP + user ID for rate limiting
       return `${req.ip}-${req.userId || 'anonymous'}`;
     },
-    onLimitReached: (req: Request) => {
+    handler: (req: Request, res: Response) => {
       logger.warn('Upload rate limit reached', { 
         ip: req.ip,
         userId: req.userId 
+      });
+      
+      res.status(429).json({
+        success: false,
+        error: {
+          message: 'Too many file uploads. Please try again in 15 minutes.',
+          statusCode: 429,
+          retryAfter: 15 * 60
+        }
       });
     }
   });
