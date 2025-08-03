@@ -15,8 +15,9 @@ const envSchema = z.object({
   REDIS_URL: z.string().default('redis://redis:6379'),
   
   // Authentication
-  JWT_SECRET: z.string().default('dev-jwt-secret-change-in-production'),
-  CLERK_SECRET_KEY: z.string().default('sk_test_placeholder'),
+  JWT_SECRET: z.string(),
+  CLERK_PUBLISHABLE_KEY: z.string(),
+  CLERK_SECRET_KEY: z.string(),
   
   // Storage (using S3 format - works with DigitalOcean Spaces)
   S3_ENDPOINT: z.string().default('https://nyc3.digitaloceanspaces.com'),

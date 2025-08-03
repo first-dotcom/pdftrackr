@@ -7,8 +7,8 @@ import { validateFileUpload, normalizeIp } from '../middleware/security';
 import { validatePDFSecurity, validateMimeType, createUploadRateLimit } from '../middleware/fileValidation';
 import { fileUploadSchema, paginationSchema } from '../utils/validation';
 import { db } from '../utils/database';
-import { files, users } from '../models/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { files, users, shareLinks } from '../models/schema';
+import { eq, and, desc, sql } from 'drizzle-orm';
 import { config } from '../config';
 import { uploadToS3, deleteFromS3 } from '../services/storage';
 import { fileUploads, storageQuotaRejections } from '../middleware/metrics';
@@ -131,17 +131,38 @@ router.get('/', authenticate, validateQuery(paginationSchema), asyncHandler(asyn
   const { page, limit } = req.query as { page: number; limit: number };
   const offset = (page - 1) * limit;
 
-  const userFiles = await db.select()
+  // Get files with calculated view counts and share links
+  const userFiles = await db.select({
+    ...files,
+    viewCount: sql<number>`COALESCE(SUM(${shareLinks.viewCount}), 0)`,
+    shareLinksCount: sql<number>`COUNT(${shareLinks.id})`,
+  })
     .from(files)
+    .leftJoin(shareLinks, eq(files.id, shareLinks.fileId))
     .where(eq(files.userId, req.user!.id))
+    .groupBy(files.id)
     .orderBy(desc(files.createdAt))
     .limit(limit)
     .offset(offset);
 
+  // Fetch share links for each file
+  const filesWithShareLinks = await Promise.all(
+    userFiles.map(async (file) => {
+      const fileShareLinks = await db.select()
+        .from(shareLinks)
+        .where(eq(shareLinks.fileId, file.id));
+
+      return {
+        ...file,
+        shareLinks: fileShareLinks,
+      };
+    })
+  );
+
   res.json({
     success: true,
     data: {
-      files: userFiles,
+      files: filesWithShareLinks,
       pagination: {
         page,
         limit,
