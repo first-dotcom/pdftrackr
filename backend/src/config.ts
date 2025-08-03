@@ -14,8 +14,7 @@ const envSchema = z.object({
   // Redis - use URL format (simpler)  
   REDIS_URL: z.string().default('redis://redis:6379'),
   
-  // Authentication
-  JWT_SECRET: z.string(),
+  // Authentication - Only Clerk needed
   CLERK_PUBLISHABLE_KEY: z.string(),
   CLERK_SECRET_KEY: z.string(),
   
@@ -43,10 +42,6 @@ export const config = {
   },
   redis: {
     url: env.REDIS_URL,
-  },
-  jwt: {
-    secret: env.JWT_SECRET,
-    expiresIn: '7d',
   },
   clerk: {
     secretKey: env.CLERK_SECRET_KEY,

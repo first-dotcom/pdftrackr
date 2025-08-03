@@ -13,7 +13,7 @@ NODE_ENV=production
 PORT=3001
 DATABASE_URL=postgresql://postgres:PDFTrackr2024!@postgres:5432/pdftrackr
 REDIS_URL=redis://redis:6379
-JWT_SECRET=PDFTrackr-Super-Secure-JWT-Secret-Key-2024-Production
+# JWT_SECRET removed - using Clerk authentication only
 CLERK_SECRET_KEY=sk_test_Bi38YY9Da812z4VDDfNhScIvUM3ZYl6dco9Lfw0iOW
 FRONTEND_URL=http://159.203.175.104:3000
 

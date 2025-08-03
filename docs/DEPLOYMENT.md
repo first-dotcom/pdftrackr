@@ -58,7 +58,6 @@ DO_SPACES_SECRET=your-spaces-secret-key
 DO_SPACES_CDN_URL=https://your-bucket.nyc3.cdn.digitaloceanspaces.com
 
 # Security
-JWT_SECRET=your-super-secure-jwt-secret-change-this
 ```
 
 #### Frontend (.env.local)

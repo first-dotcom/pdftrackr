@@ -1,17 +1,20 @@
 // Global type declarations
-declare namespace NodeJS {
-  interface ProcessEnv {
-    NODE_ENV: string;
-    PORT: string;
-    DATABASE_URL: string;
-    JWT_SECRET: string;
-    CLERK_SECRET_KEY: string;
-    REDIS_URL: string;
-    S3_ENDPOINT: string;
-    S3_BUCKET: string;
-    S3_ACCESS_KEY: string;
-    S3_SECRET_KEY: string;
-    FRONTEND_URL: string;
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      NODE_ENV: 'development' | 'production' | 'test';
+      PORT: string;
+      DATABASE_URL: string;
+      REDIS_URL: string;
+      CLERK_PUBLISHABLE_KEY: string;
+      CLERK_SECRET_KEY: string;
+      S3_ENDPOINT?: string;
+      S3_REGION?: string;
+      S3_BUCKET: string;
+      S3_ACCESS_KEY: string;
+      S3_SECRET_KEY: string;
+      FRONTEND_URL: string;
+    }
   }
 }
 

@@ -69,24 +69,28 @@ export const paginationSchema = z.object({
 // IP address validation
 export const ipAddressSchema = z.string().ip();
 
-// Validate environment variables
+// Environment validation schema
 export const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'production', 'test']),
-  PORT: z.string().regex(/^\d+$/),
-  DB_HOST: z.string().min(1),
-  DB_PORT: z.string().regex(/^\d+$/),
-  DB_NAME: z.string().min(1),
-  DB_USER: z.string().min(1),
-  DB_PASSWORD: z.string().min(1),
-  REDIS_HOST: z.string().min(1),
-  REDIS_PORT: z.string().regex(/^\d+$/),
-  JWT_SECRET: z.string().min(32), // Require strong secret
-  CLERK_SECRET_KEY: z.string().min(1),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  PORT: z.string().default('3001'),
+  
+  // Database
+  DATABASE_URL: z.string().min(1),
+  
+  // Redis
+  REDIS_URL: z.string().min(1),
+  
+  // Authentication - Only Clerk needed
   CLERK_PUBLISHABLE_KEY: z.string().min(1),
-  DO_SPACES_ENDPOINT: z.string().url(),
-  DO_SPACES_REGION: z.string().min(1),
-  DO_SPACES_BUCKET: z.string().min(1),
-  DO_SPACES_KEY: z.string().min(1),
-  DO_SPACES_SECRET: z.string().min(1),
-  FRONTEND_URL: z.string().url(),
+  CLERK_SECRET_KEY: z.string().min(1),
+  
+  // Storage
+  S3_ENDPOINT: z.string().optional(),
+  S3_REGION: z.string().optional(),
+  S3_BUCKET: z.string().min(1),
+  S3_ACCESS_KEY: z.string().min(1),
+  S3_SECRET_KEY: z.string().min(1),
+  
+  // Frontend
+  FRONTEND_URL: z.string().min(1),
 });
