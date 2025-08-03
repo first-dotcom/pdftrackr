@@ -31,6 +31,8 @@ interface DashboardData {
     duration: number;
     fileName: string;
     shareTitle: string;
+    fileId: number;
+    shareId: string;
   }>;
   topFiles: Array<{
     fileId: number;
@@ -325,45 +327,110 @@ export default function DashboardPage() {
                 </h3>
               </div>
               <div className="card-body">
-                <div className="space-y-3">
-                  {dashboardData.recentViews.slice(0, 3).map((view, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                      <div className="flex items-center flex-1">
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                          <Eye className="h-4 w-4 text-blue-600" />
-                        </div>
-                        <div className="ml-3 flex-1">
-                          <div className="text-sm font-medium text-gray-900">
-                            {view.viewerName || view.viewerEmail || 'Anonymous'}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {view.fileName}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm text-gray-900">
-                          {view.duration > 0 ? formatDuration(view.duration) : 'Quick view'}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {new Date(view.startedAt).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {dashboardData.recentViews.length > 3 && (
-                    <div className="text-center pt-2">
-                      <button className="text-sm text-primary-600 hover:text-primary-800">
-                        View all activity →
-                      </button>
-                    </div>
-                  )}
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Viewer
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          File
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Duration
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Date & Time
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Link
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {dashboardData.recentViews.slice(0, 10).map((view, index) => (
+                        <tr key={index} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                <Eye className="h-4 w-4 text-blue-600" />
+                              </div>
+                              <div className="ml-3">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {view.viewerName || view.viewerEmail || 'Anonymous'}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {view.viewerEmail ? 'Email provided' : 'No email'}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">
+                              <Link
+                                href={`/dashboard/files/${view.fileId}`}
+                                className="hover:underline"
+                              >
+                                {view.fileName}
+                              </Link>
+                            </div>
+                            {view.shareTitle && view.shareTitle !== view.fileName && (
+                              <div className="text-xs text-gray-500">
+                                Shared as: {view.shareTitle}
+                              </div>
+                            )}
+                            <div className="text-xs text-gray-500">
+                              Share ID: {view.shareId}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              {view.duration > 0 ? formatDuration(view.duration) : 'Quick view'}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {view.duration > 0 ? 'Engaged viewing' : 'Brief interaction'}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              {new Date(view.startedAt).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric'
+                              })}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {new Date(view.startedAt).toLocaleTimeString('en-US', {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-xs text-primary-600">
+                              <a 
+                                href={`/view/${view.shareId}`} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="hover:underline"
+                              >
+                                /view/{view.shareId}
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
+                {dashboardData.recentViews.length > 10 && (
+                  <div className="text-center pt-4 border-t border-gray-200">
+                    <button className="text-sm text-primary-600 hover:text-primary-800">
+                      View all {dashboardData.recentViews.length} activities →
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}

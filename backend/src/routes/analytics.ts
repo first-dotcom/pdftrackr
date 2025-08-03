@@ -10,7 +10,7 @@ import {
   emailCaptures,
   analyticsSummary 
 } from '../models/schema';
-import { eq, and, desc, gte, sql, inArray, or, isNotNull, lt, count, avg } from 'drizzle-orm';
+import { eq, and, desc, gte, sql, inArray, or, isNotNull, lt } from 'drizzle-orm';
 
 const router = Router();
 
@@ -293,6 +293,8 @@ router.get('/dashboard', authenticate, asyncHandler(async (req: any, res: any) =
     ), ${viewSessions.totalDuration})`,
     fileName: sql<string>`COALESCE(${files.title}, ${files.originalName})`,
     shareTitle: shareLinks.title,
+    fileId: files.id,
+    shareId: shareLinks.shareId,
   })
     .from(viewSessions)
     .innerJoin(shareLinks, eq(viewSessions.shareId, shareLinks.shareId))
@@ -346,6 +348,8 @@ router.get('/dashboard', authenticate, asyncHandler(async (req: any, res: any) =
         duration: view.totalDuration,
         fileName: view.fileName,
         shareTitle: view.shareTitle,
+        fileId: view.fileId,
+        shareId: view.shareId,
       })),
       topFiles: topFiles.map(file => ({
         fileId: file.fileId,
