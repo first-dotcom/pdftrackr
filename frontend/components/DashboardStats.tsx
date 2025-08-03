@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useAuth } from '@clerk/nextjs';
 import { FileText, Eye, Users, Mail } from 'lucide-react';
 import { config } from '@/lib/config';
 
@@ -19,6 +20,7 @@ export default function DashboardStats() {
     totalEmailCaptures: 0,
   });
   const [loading, setLoading] = useState(true);
+  const { getToken } = useAuth();
 
   useEffect(() => {
     fetchStats();
@@ -26,15 +28,24 @@ export default function DashboardStats() {
 
   const fetchStats = async () => {
     try {
+      const token = await getToken();
+      if (!token) {
+        console.error('No authentication token available');
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch(`${config.api.url}/api/analytics/dashboard`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('clerk-token')}`,
+          'Authorization': `Bearer ${token}`,
         },
       });
       
       if (response.ok) {
         const data = await response.json();
         setStats(data.data);
+      } else {
+        console.error('Failed to fetch stats:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Failed to fetch stats:', error);

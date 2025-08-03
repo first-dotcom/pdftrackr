@@ -45,17 +45,21 @@ export const validatePDFSecurity = async (req: Request, res: Response, next: Nex
       throw new CustomError('File size mismatch - potential tampering', 400);
     }
     
-    // 4. Scan for potentially dangerous content
+    // 4. Scan for potentially dangerous content (relaxed for legitimate PDFs)
     const dangerousPatterns = [
       /\/JavaScript/gi,
-      /\/JS/gi,
-      /\/Action/gi,
-      /\/URI/gi,
+      /\/JS\s*\[/gi, // More specific JS pattern to avoid false positives
+      /\/Action\s*\/Launch/gi, // More specific - only launch actions are dangerous
       /\/Launch/gi,
       /<script/gi,
       /javascript:/gi,
       /vbscript:/gi,
+      /data:text\/html/gi, // Embedded HTML
+      /\/EmbeddedFile.*\/F\s*\(/gi, // Embedded executable files
     ];
+    
+    // Note: Removed /\/URI/gi as it's commonly used for legitimate hyperlinks
+    // Note: Made /\/Action/gi more specific to avoid false positives
     
     for (const pattern of dangerousPatterns) {
       if (pattern.test(bufferStr)) {

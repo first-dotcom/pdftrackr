@@ -78,6 +78,11 @@ router.post('/upload',
     const filename = `${nanoid()}_${Date.now()}${fileExtension}`;
     const storageKey = `files/${user.id}/${filename}`;
 
+    // Check if storage is enabled
+    if (!config.storage.enabled) {
+      throw new CustomError('File storage is not configured. Please contact administrator.', 503);
+    }
+
     // Upload to S3
     const uploadResult = await uploadToS3(storageKey, file.buffer, file.mimetype);
 
@@ -93,7 +98,7 @@ router.post('/upload',
       title: title || file.originalname,
       description,
       // Add security tracking
-      ipAddress: req.ip,
+      ipAddress: (req as any).normalizedIp || req.ip,
       userAgent: req.get('User-Agent'),
       fileHash: (req as any).fileHash, // From PDF validation
     }).returning();

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@clerk/nextjs';
 import { FileText, Eye, Calendar, MoreHorizontal } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { config } from '@/lib/config';
@@ -21,6 +22,7 @@ interface File {
 export default function RecentFiles() {
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(true);
+  const { getToken } = useAuth();
 
   useEffect(() => {
     fetchFiles();
@@ -28,15 +30,24 @@ export default function RecentFiles() {
 
   const fetchFiles = async () => {
     try {
+      const token = await getToken();
+      if (!token) {
+        console.error('No authentication token available');
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch(`${config.api.url}/api/files?limit=5`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('clerk-token')}`,
+          'Authorization': `Bearer ${token}`,
         },
       });
       
       if (response.ok) {
         const data = await response.json();
         setFiles(data.data.files);
+      } else {
+        console.error('Failed to fetch files:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Failed to fetch files:', error);

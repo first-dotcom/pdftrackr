@@ -126,8 +126,8 @@ export const normalizeIp = (req: Request, res: Response, next: NextFunction) => 
     ip = ip.substring(7);
   }
   
-  // Store normalized IP
-  req.ip = ip;
+  // Store normalized IP in custom property (req.ip is read-only)
+  (req as any).normalizedIp = ip;
   next();
 };
 

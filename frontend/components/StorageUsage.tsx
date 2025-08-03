@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useAuth } from '@clerk/nextjs';
 import { HardDrive, Upload, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { config } from '@/lib/config';
@@ -22,6 +23,7 @@ export default function StorageUsage() {
     plan: 'free',
   });
   const [loading, setLoading] = useState(true);
+  const { getToken } = useAuth();
 
   useEffect(() => {
     fetchStorageInfo();
@@ -29,9 +31,16 @@ export default function StorageUsage() {
 
   const fetchStorageInfo = async () => {
     try {
+      const token = await getToken();
+      if (!token) {
+        console.error('No authentication token available');
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch(`${config.api.url}/api/users/profile`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('clerk-token')}`,
+          'Authorization': `Bearer ${token}`,
         },
       });
       
@@ -45,6 +54,8 @@ export default function StorageUsage() {
           filesQuota: quotas.fileCount,
           plan: user.plan,
         });
+      } else {
+        console.error('Failed to fetch storage info:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Failed to fetch storage info:', error);

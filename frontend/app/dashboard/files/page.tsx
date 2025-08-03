@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@clerk/nextjs';
 import { Plus, Search, Filter, FileText, Eye, Share2, MoreVertical } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { config } from '@/lib/config';
@@ -25,6 +26,7 @@ export default function FilesPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const { getToken } = useAuth();
 
   useEffect(() => {
     fetchFiles();
@@ -32,15 +34,24 @@ export default function FilesPage() {
 
   const fetchFiles = async () => {
     try {
+      const token = await getToken();
+      if (!token) {
+        console.error('No authentication token available');
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch(`${config.api.url}/api/files`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('clerk-token')}`,
+          'Authorization': `Bearer ${token}`,
         },
       });
       
       if (response.ok) {
         const data = await response.json();
         setFiles(data.data.files);
+      } else {
+        console.error('Failed to fetch files:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Failed to fetch files:', error);

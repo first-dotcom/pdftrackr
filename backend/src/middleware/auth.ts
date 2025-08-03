@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { clerkClient } from '@clerk/express';
+import { clerkClient, verifyToken } from '@clerk/express';
 import { config } from '../config';
 import { CustomError } from './errorHandler';
 import { db } from '../utils/database';
@@ -36,7 +36,9 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     }
 
     // Verify token with Clerk
-    const payload = await clerkClient.verifyToken(token);
+    const payload = await verifyToken(token, { 
+      secretKey: config.clerk.secretKey 
+    });
 
     if (!payload.sub) {
       throw new CustomError('Invalid token', 401);
@@ -61,22 +63,34 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 
     if (userRecord.length === 0) {
       // Create user if doesn't exist (first time login)
-      const email = payload.email as string;
-      const firstName = payload.firstName as string;
-      const lastName = payload.lastName as string;
+      // Fetch user details from Clerk API
+      try {
+        const clerkUser = await clerkClient.users.getUser(payload.sub);
+        
+        const email = clerkUser.emailAddresses?.[0]?.emailAddress;
+        const firstName = clerkUser.firstName;
+        const lastName = clerkUser.lastName;
 
-      const newUser = await db.insert(users)
-        .values({
-          clerkId: payload.sub,
-          email,
-          firstName,
-          lastName,
-          plan: 'free',
-        })
-        .returning();
+        if (!email) {
+          throw new CustomError('User email not found in Clerk', 400);
+        }
 
-      req.user = newUser[0];
-      logger.info(`Created new user: ${email}`);
+        const newUser = await db.insert(users)
+          .values({
+            clerkId: payload.sub,
+            email,
+            firstName: firstName || null,
+            lastName: lastName || null,
+            plan: 'free',
+          })
+          .returning();
+
+        req.user = newUser[0];
+        logger.info(`Created new user: ${email}`);
+      } catch (clerkError) {
+        logger.error('Failed to fetch user from Clerk:', clerkError);
+        throw new CustomError('Failed to create user account', 500);
+      }
     } else {
       req.user = userRecord[0];
     }
@@ -94,7 +108,9 @@ export const optionalAuth = async (req: Request, res: Response, next: NextFuncti
     const token = req.headers.authorization?.replace('Bearer ', '');
     
     if (token) {
-              const payload = await clerkClient.verifyToken(token);
+      const payload = await verifyToken(token, { 
+        secretKey: config.clerk.secretKey 
+      });
 
       if (payload.sub) {
         req.userId = payload.sub;
@@ -159,7 +175,7 @@ const checkSuspiciousActivity = async (req: Request, userId: string) => {
     }
     
     // Increment counter
-    await CacheService.setex(key, 3600, (attemptCount + 1).toString()); // 1 hour TTL
+    await CacheService.set(key, (attemptCount + 1).toString(), 3600); // 1 hour TTL
     
     // Check for multiple IPs per user (potential account sharing/compromise)
     const userIpKey = `user_ips:${userId}`;
@@ -176,10 +192,10 @@ const checkSuspiciousActivity = async (req: Request, userId: string) => {
             currentIp: ip
           });
         }
-        await CacheService.setex(userIpKey, 86400, JSON.stringify(ips)); // 24 hours
+        await CacheService.set(userIpKey, JSON.stringify(ips), 86400); // 24 hours
       }
     } else {
-      await CacheService.setex(userIpKey, 86400, JSON.stringify([ip]));
+      await CacheService.set(userIpKey, JSON.stringify([ip]), 86400);
     }
     
   } catch (error) {
