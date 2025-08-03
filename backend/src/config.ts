@@ -20,7 +20,8 @@ const envSchema = z.object({
   
   // Storage (using S3 format - works with DigitalOcean Spaces)
   S3_ENDPOINT: z.string().default('https://nyc3.digitaloceanspaces.com'),
-  S3_BUCKET: z.string().default('pdftrackr-files'),
+  S3_REGION: z.string().default('nyc3'),
+  S3_BUCKET: z.string().default('pdftrackr'),
   S3_ACCESS_KEY: z.string().default(''),
   S3_SECRET_KEY: z.string().default(''),
   
@@ -51,7 +52,8 @@ export const config = {
   },
   storage: {
     endpoint: env.S3_ENDPOINT || 'https://nyc3.digitaloceanspaces.com',
-    bucket: env.S3_BUCKET || 'pdftrackr-files-placeholder',
+    region: env.S3_REGION || 'nyc3',
+    bucket: env.S3_BUCKET || 'pdftrackr',
     accessKeyId: env.S3_ACCESS_KEY || '',
     secretAccessKey: env.S3_SECRET_KEY || '',
     enabled: !!(env.S3_ACCESS_KEY && env.S3_SECRET_KEY), // Only enable if credentials are provided
