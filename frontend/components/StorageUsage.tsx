@@ -16,15 +16,14 @@ interface StorageInfo {
 export default function StorageUsage() {
   const [storage, setStorage] = useState<StorageInfo>({
     storageUsed: 0,
-    storageQuota: 0,
+    storageQuota: 500 * 1024 * 1024, // 500MB default
     filesCount: 0,
-    filesQuota: 0,
+    filesQuota: 25, // 25 files default
     plan: 'free',
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Add proper loading states for Clerk
   const { getToken, isLoaded: authLoaded } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
 
@@ -39,51 +38,45 @@ export default function StorageUsage() {
 
   const fetchStorageInfo = async () => {
     try {
-      setError(null);
+      setLoading(true);
       const token = await getToken();
+      
       if (!token) {
-        console.error('No authentication token available');
         setError('Authentication required');
-        setLoading(false);
         return;
       }
 
-      console.log('Fetching storage info from:', `${config.api.url}/api/users/profile`);
       const response = await fetch(`${config.api.url}/api/users/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
-      
-      console.log('Storage response status:', response.status);
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Storage data received:', data);
-        
-        const { user: userData, quotas } = data.data;
-        
-        console.log('User data:', userData);
-        console.log('Quotas:', quotas);
-        
-        setStorage({
-          storageUsed: userData.storageUsed || 0,
-          storageQuota: quotas.storage || 500 * 1024 * 1024, // 500MB default
-          filesCount: userData.filesCount || 0,
-          filesQuota: quotas.fileCount || 25, // 25 files default
-          plan: userData.plan || 'free',
-        });
-      } else {
-        console.error('Failed to fetch storage info:', response.status, response.statusText);
-        const errorData = await response.json().catch(() => null);
-        console.error('Error response data:', errorData);
-        
-        // Show the actual error instead of using defaults
-        setError(`Failed to load storage info: ${response.status} ${response.statusText}`);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Failed to fetch storage info' }));
+        setError(errorData.message || 'Failed to fetch storage info');
+        return;
       }
+
+      const data = await response.json();
+      
+      if (!data.success) {
+        setError(data.error || 'Failed to fetch storage info');
+        return;
+      }
+
+      const userData = data.data.user;
+      const quotas = data.data.quotas;
+
+      setStorage({
+        storageUsed: userData.storageUsed,
+        storageQuota: quotas.storage,
+        filesCount: userData.filesCount,
+        filesQuota: quotas.fileCount,
+        plan: userData.plan,
+      });
     } catch (error) {
-      console.error('Failed to fetch storage info:', error);
-      setError('Network error loading storage info');
+      setError('Failed to fetch storage information');
     } finally {
       setLoading(false);
     }

@@ -4,15 +4,12 @@ import { useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { X, Copy, CheckCircle, Calendar, Shield } from 'lucide-react';
 import { config } from '@/lib/config';
+import { File, ShareLink, CreateShareLinkRequest, ShareLinkResponse } from '../../shared/types';
 
 interface ShareLinkModalProps {
   isOpen: boolean;
   onClose: () => void;
-  file: {
-    id: number;
-    title: string;
-    originalName: string;
-  };
+  file: File;
   onSuccess?: () => void;
 }
 
@@ -29,12 +26,12 @@ interface ShareLinkForm {
 
 export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: ShareLinkModalProps) {
   const [loading, setLoading] = useState(false);
-  const [shareLink, setShareLink] = useState<any>(null);
+  const [shareLink, setShareLink] = useState<ShareLink | null>(null);
   const [copied, setCopied] = useState(false);
   const { getToken } = useAuth();
 
   const [form, setForm] = useState<ShareLinkForm>({
-    title: `${file.title} - Shared`,
+    title: `${file.title || file.originalName} - Shared`,
     description: '',
     password: '',
     emailGatingEnabled: false,
@@ -97,7 +94,7 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
 
     try {
       const token = await getToken();
-      const payload: any = {
+      const payload: CreateShareLinkRequest = {
         fileId: file.id,
         title: form.title.trim(),
         emailGatingEnabled: form.emailGatingEnabled,
@@ -129,7 +126,7 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const data: ShareLinkResponse = await response.json();
         setShareLink(data.data);
         onSuccess?.();
       } else {
@@ -169,7 +166,7 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
     setErrors({});
     setTouched({});
     setForm({
-      title: `${file.title} - Shared`,
+      title: `${file.title || file.originalName} - Shared`,
       description: '',
       password: '',
       emailGatingEnabled: false,

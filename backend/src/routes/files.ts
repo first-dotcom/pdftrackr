@@ -14,6 +14,10 @@ import { uploadToS3, deleteFromS3 } from '../services/storage';
 import { fileUploads, storageQuotaRejections } from '../middleware/metrics';
 import { nanoid } from 'nanoid';
 import { z } from 'zod';
+import { successResponse, errorResponse, paginatedResponse } from '../utils/response';
+import { logger } from '../utils/logger';
+import { Request, Response } from 'express';
+import { File, UpdateFileRequest, FilesResponse, FileResponse } from '../../../shared/types';
 
 const router = Router();
 
@@ -42,9 +46,9 @@ router.post('/upload',
   validateFileUpload, // Additional file validation
   validateBody(fileUploadSchema), 
   normalizeIp, 
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: Request, res: Response) => {
   if (!req.file) {
-    throw new CustomError('No file provided', 400);
+    return errorResponse(res, 'No file provided', 400);
   }
 
   const user = req.user!;
@@ -57,19 +61,19 @@ router.post('/upload',
   // Check file size limit
   if (file.size > quotas.fileSize) {
     storageQuotaRejections.labels(user.plan).inc();
-    throw new CustomError(`File size exceeds plan limit of ${quotas.fileSize / 1024 / 1024}MB`, 400);
+    return errorResponse(res, `File size exceeds plan limit of ${quotas.fileSize / 1024 / 1024}MB`, 400);
   }
 
   // Check storage quota
   if (user.storageUsed + file.size > quotas.storage) {
     storageQuotaRejections.labels(user.plan).inc();
-    throw new CustomError('Storage quota exceeded', 400);
+    return errorResponse(res, 'Storage quota exceeded', 400);
   }
 
   // Check file count limit (if not unlimited)
   if (quotas.fileCount !== -1 && user.filesCount >= quotas.fileCount) {
     storageQuotaRejections.labels(user.plan).inc();
-    throw new CustomError('File count limit exceeded', 400);
+    return errorResponse(res, 'File count limit exceeded', 400);
   }
 
   try {
@@ -80,7 +84,7 @@ router.post('/upload',
 
     // Check if storage is enabled
     if (!config.storage.enabled) {
-      throw new CustomError('File storage is not configured. Please contact administrator.', 503);
+      return errorResponse(res, 'File storage is not configured. Please contact administrator.', 503);
     }
 
     // Upload to S3
@@ -114,26 +118,47 @@ router.post('/upload',
 
     fileUploads.labels('success', user.plan).inc();
 
-    res.json({
-      success: true,
-      data: {
-        file: newFile[0],
-      },
-    });
+    successResponse(res, { file: newFile[0] }, 'File uploaded successfully');
   } catch (error) {
     fileUploads.labels('error', user.plan).inc();
+    logger.error('File upload failed', {
+      userId: user.id,
+      filename: file.originalname,
+      error: error instanceof Error ? error.message : String(error)
+    });
     throw error;
   }
 }));
 
 // Get user's files
-router.get('/', authenticate, validateQuery(paginationSchema), asyncHandler(async (req, res) => {
-  const { page, limit } = req.query as { page: number; limit: number };
+router.get('/', authenticate, validateQuery(paginationSchema), asyncHandler(async (req: Request, res: Response) => {
+  const page = parseInt(req.query['page'] as string) || 1;
+  const limit = parseInt(req.query['limit'] as string) || 10;
   const offset = (page - 1) * limit;
 
   // Get files with calculated view counts and share links
   const userFiles = await db.select({
-    ...files,
+    id: files.id,
+    userId: files.userId,
+    filename: files.filename,
+    originalName: files.originalName,
+    size: files.size,
+    mimeType: files.mimeType,
+    storageKey: files.storageKey,
+    storageUrl: files.storageUrl,
+    title: files.title,
+    description: files.description,
+    isPublic: files.isPublic,
+    downloadEnabled: files.downloadEnabled,
+    watermarkEnabled: files.watermarkEnabled,
+    password: files.password,
+    ipAddress: files.ipAddress,
+    userAgent: files.userAgent,
+    fileHash: files.fileHash,
+    scanStatus: files.scanStatus,
+    securityFlags: files.securityFlags,
+    createdAt: files.createdAt,
+    updatedAt: files.updatedAt,
     viewCount: sql<number>`COALESCE(SUM(${shareLinks.viewCount}), 0)`,
     shareLinksCount: sql<number>`COUNT(${shareLinks.id})`,
   })
@@ -159,21 +184,16 @@ router.get('/', authenticate, validateQuery(paginationSchema), asyncHandler(asyn
     })
   );
 
-  res.json({
-    success: true,
-    data: {
-      files: filesWithShareLinks,
-      pagination: {
-        page,
-        limit,
-        hasMore: userFiles.length === limit,
-      },
-    },
-  });
+  // Get total count for pagination
+  const totalCount = await db.select({ count: sql<number>`COUNT(*)` })
+    .from(files)
+    .where(eq(files.userId, req.user!.id));
+
+  paginatedResponse(res, filesWithShareLinks, page, limit, totalCount[0]?.count || 0);
 }));
 
 // Get single file
-router.get('/:id', authenticate, validateParams(z.object({ id: z.string().regex(/^\d+$/).transform(Number) })), asyncHandler(async (req, res) => {
+router.get('/:id', authenticate, validateParams(z.object({ id: z.string().regex(/^\d+$/).transform(Number) })), asyncHandler(async (req: Request, res: Response) => {
   const fileId = req.params.id;
 
   const file = await db.select()
@@ -185,15 +205,10 @@ router.get('/:id', authenticate, validateParams(z.object({ id: z.string().regex(
     .limit(1);
 
   if (file.length === 0) {
-    throw new CustomError('File not found', 404);
+    return errorResponse(res, 'File not found', 404);
   }
 
-  res.json({
-    success: true,
-    data: {
-      file: file[0],
-    },
-  });
+  successResponse(res, { file: file[0] });
 }));
 
 // Update file metadata
@@ -202,7 +217,7 @@ router.patch('/:id', authenticate, validateParams(z.object({ id: z.string().rege
   description: z.string().max(1000).trim().optional(),
   downloadEnabled: z.boolean().optional(),
   watermarkEnabled: z.boolean().optional(),
-})), asyncHandler(async (req, res) => {
+})), asyncHandler(async (req: Request, res: Response) => {
   const fileId = req.params.id;
   const { title, description, downloadEnabled, watermarkEnabled } = req.body;
 
@@ -221,19 +236,14 @@ router.patch('/:id', authenticate, validateParams(z.object({ id: z.string().rege
     .returning();
 
   if (updatedFile.length === 0) {
-    throw new CustomError('File not found', 404);
+    return errorResponse(res, 'File not found', 404);
   }
 
-  res.json({
-    success: true,
-    data: {
-      file: updatedFile[0],
-    },
-  });
+  successResponse(res, { file: updatedFile[0] }, 'File updated successfully');
 }));
 
 // Delete file
-router.delete('/:id', authenticate, validateParams(z.object({ id: z.string().regex(/^\d+$/).transform(Number) })), asyncHandler(async (req, res) => {
+router.delete('/:id', authenticate, validateParams(z.object({ id: z.string().regex(/^\d+$/).transform(Number) })), asyncHandler(async (req: Request, res: Response) => {
   const fileId = req.params.id;
 
   // Get file to delete from storage
@@ -246,12 +256,14 @@ router.delete('/:id', authenticate, validateParams(z.object({ id: z.string().reg
     .limit(1);
 
   if (file.length === 0) {
-    throw new CustomError('File not found', 404);
+    return errorResponse(res, 'File not found', 404);
   }
 
   try {
     // Delete from S3
-    await deleteFromS3(file[0].storageKey);
+    if (file[0]) {
+      await deleteFromS3(file[0].storageKey);
+    }
 
     // Delete from database
     await db.delete(files)
@@ -260,18 +272,20 @@ router.delete('/:id', authenticate, validateParams(z.object({ id: z.string().reg
     // Update user storage and file count
     await db.update(users)
       .set({
-        storageUsed: Math.max(0, req.user!.storageUsed - file[0].size),
+        storageUsed: Math.max(0, req.user!.storageUsed - (file[0]?.size || 0)),
         filesCount: Math.max(0, req.user!.filesCount - 1),
         updatedAt: new Date(),
       })
       .where(eq(users.id, req.user!.id));
 
-    res.json({
-      success: true,
-      message: 'File deleted successfully',
-    });
+    successResponse(res, null, 'File deleted successfully');
   } catch (error) {
-    throw new CustomError('Failed to delete file', 500);
+    logger.error('Failed to delete file', {
+      fileId,
+      userId: req.user!.id,
+      error: error instanceof Error ? error.message : String(error)
+    });
+    return errorResponse(res, 'Failed to delete file', 500);
   }
 }));
 

@@ -1,67 +1,61 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth';
-import { asyncHandler } from '../middleware/errorHandler';
+import { asyncHandler, CustomError } from '../middleware/errorHandler';
 import { db } from '../utils/database';
-import { users, files } from '../models/schema';
-import { eq, sql } from 'drizzle-orm';
+import { users } from '../models/schema';
+import { eq } from 'drizzle-orm';
 import { config } from '../config';
-import { planUpgrades } from '../middleware/metrics';
+import { logger } from '../utils/logger';
+import { successResponse } from '../utils/response';
 
 const router = Router();
 
 // Get user profile with usage stats
 router.get('/profile', authenticate, asyncHandler(async (req, res) => {
-  try {
-    console.log('=== STARTING USER PROFILE REQUEST ===');
-    const user = req.user!;
-    
-    console.log('User profile request for user:', user.id, 'plan:', user.plan);
+  const user = req.user!;
 
-    // Get current usage stats
-    console.log('About to query database...');
-    const usage = await db.select({
-      filesCount: sql<number>`COUNT(${files.id})`,
-      storageUsed: sql<number>`SUM(${files.size})`,
-    })
-      .from(files)
-      .where(eq(files.userId, user.id));
-
-    console.log('Usage stats:', usage);
-
-    // Default to free plan if user plan is not found in config
-    console.log('About to check user plan...');
-    const userPlan = user.plan && config.quotas[user.plan as keyof typeof config.quotas] 
-      ? user.plan 
-      : 'free';
-    const quotas = config.quotas[userPlan as keyof typeof config.quotas];
-    
-    console.log('User plan:', userPlan, 'Quotas:', quotas);
-    console.log('=== USER PROFILE REQUEST SUCCESSFUL ===');
-
-    res.json({
-    success: true,
-    data: {
-      user: {
-        ...user,
-        plan: userPlan, // Use the validated plan
-        filesCount: usage[0]?.filesCount || 0,
-        storageUsed: usage[0]?.storageUsed || 0,
-      },
-      quotas: {
-        storage: quotas.storage,
-        fileCount: quotas.fileCount,
-        fileSize: quotas.fileSize,
-      },
-      usage: {
-        storagePercent: ((usage[0]?.storageUsed || 0) / quotas.storage) * 100,
-        filesPercent: quotas.fileCount === -1 ? 0 : ((usage[0]?.filesCount || 0) / quotas.fileCount) * 100,
-      },
-    },
+  logger.debug('User profile request', { 
+    userId: user.id, 
+    plan: user.plan 
   });
-  } catch (error) {
-    console.error('Error in user profile request:', error);
-    throw error;
-  }
+
+  // Get usage stats
+  const usage = await db.select({
+    storageUsed: users.storageUsed,
+    filesCount: users.filesCount,
+  })
+    .from(users)
+    .where(eq(users.id, user.id))
+    .limit(1);
+
+  logger.debug('Usage stats retrieved', { 
+    userId: user.id, 
+    usage: usage[0] 
+  });
+
+  // Get plan quotas
+  const userPlan = user.plan as keyof typeof config.quotas;
+  const quotas = config.quotas[userPlan];
+
+  logger.debug('Plan quotas retrieved', { 
+    userId: user.id, 
+    plan: userPlan, 
+    quotas 
+  });
+
+  successResponse(res, {
+    user: {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      plan: user.plan,
+      storageUsed: usage[0]?.storageUsed || 0,
+      filesCount: usage[0]?.filesCount || 0,
+      createdAt: user.createdAt,
+    },
+    quotas,
+  });
 }));
 
 // Update user plan
@@ -86,7 +80,7 @@ router.patch('/plan', authenticate, asyncHandler(async (req, res) => {
     .returning();
 
   // Record metrics
-  planUpgrades.labels(currentPlan, plan).inc();
+  // planUpgrades.labels(currentPlan, plan).inc(); // This line was removed as per the new_code
 
   res.json({
     success: true,
@@ -103,11 +97,11 @@ router.get('/stats', authenticate, asyncHandler(async (req, res) => {
   // This would typically aggregate from the analytics_summary table
   // For now, we'll return basic stats
   const fileStats = await db.select({
-    totalFiles: sql<number>`COUNT(*)`,
-    totalSize: sql<number>`SUM(${files.size})`,
+    totalFiles: users.filesCount, // Changed from files.size to users.filesCount
+    totalSize: users.storageUsed, // Changed from files.size to users.storageUsed
   })
-    .from(files)
-    .where(eq(files.userId, userId));
+    .from(users)
+    .where(eq(users.id, userId));
 
   res.json({
     success: true,

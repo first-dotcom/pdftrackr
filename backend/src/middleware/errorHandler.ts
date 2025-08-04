@@ -31,7 +31,7 @@ export const errorHandler = (
   const { statusCode = 500, message, stack } = error;
 
   // Log error details
-  logger.error('Request error:', {
+  logger.error('Request error', {
     message,
     stack,
     statusCode,
@@ -47,24 +47,19 @@ export const errorHandler = (
     ? 'Internal Server Error' 
     : message;
 
+  // Use standardized error response format
   res.status(statusCode).json({
     success: false,
-    error: {
-      message: errorMessage,
-      statusCode,
-      ...(isDevelopment && { stack }),
-    },
+    error: errorMessage,
+    ...(isDevelopment && { stack }),
   });
 };
 
-// 404 handler
+// 404 handler with standardized response
 export const notFoundHandler = (req: Request, res: Response) => {
   res.status(404).json({
     success: false,
-    error: {
-      message: 'Route not found',
-      statusCode: 404,
-    },
+    error: 'Route not found',
   });
 };
 

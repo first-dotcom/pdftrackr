@@ -7,10 +7,15 @@ import {
   shareLinks, 
   viewSessions, 
   pageViews, 
-  emailCaptures,
+  emailCaptures, 
   analyticsSummary 
 } from '../models/schema';
 import { eq, and, desc, gte, sql, inArray, or, isNotNull, lt } from 'drizzle-orm';
+import { validateQuery } from '../middleware/validation';
+import { z } from 'zod';
+import { logger } from '../utils/logger';
+import { successResponse, errorResponse } from '../utils/response';
+import { Request, Response } from 'express';
 
 const router = Router();
 
@@ -101,7 +106,7 @@ router.get('/files/:fileId', authenticate, asyncHandler(async (req: any, res: an
   // Top countries
   const topCountries = await db.select({
     country: viewSessions.country,
-    count: count(),
+    count: sql<number>`COUNT(*)`,
   })
     .from(viewSessions)
     .where(and(
@@ -109,13 +114,13 @@ router.get('/files/:fileId', authenticate, asyncHandler(async (req: any, res: an
       gte(viewSessions.startedAt, start)
     ))
     .groupBy(viewSessions.country)
-    .orderBy(desc(count()))
+    .orderBy(desc(sql<number>`COUNT(*)`))
     .limit(10);
 
   // Top devices
   const topDevices = await db.select({
     device: viewSessions.device,
-    count: count(),
+    count: sql<number>`COUNT(*)`,
   })
     .from(viewSessions)
     .where(and(
@@ -123,13 +128,13 @@ router.get('/files/:fileId', authenticate, asyncHandler(async (req: any, res: an
       gte(viewSessions.startedAt, start)
     ))
     .groupBy(viewSessions.device)
-    .orderBy(desc(count()))
+    .orderBy(desc(sql<number>`COUNT(*)`))
     .limit(10);
 
   // Top referers
   const topReferers = await db.select({
     referer: viewSessions.referer,
-    count: count(),
+    count: sql<number>`COUNT(*)`,
   })
     .from(viewSessions)
     .where(and(
@@ -137,15 +142,15 @@ router.get('/files/:fileId', authenticate, asyncHandler(async (req: any, res: an
       gte(viewSessions.startedAt, start)
     ))
     .groupBy(viewSessions.referer)
-    .orderBy(desc(count()))
+    .orderBy(desc(sql<number>`COUNT(*)`))
     .limit(10);
 
   // Page-level analytics
   const pageAnalytics = await db.select({
     pageNumber: pageViews.pageNumber,
-    views: count(),
-    avgDuration: avg(pageViews.duration),
-    avgScrollDepth: avg(pageViews.scrollDepth),
+    views: sql<number>`COUNT(*)`,
+    avgDuration: sql<number>`AVG(${pageViews.duration})`,
+    avgScrollDepth: sql<number>`AVG(${pageViews.scrollDepth})`,
   })
     .from(pageViews)
     .innerJoin(viewSessions, eq(pageViews.sessionId, viewSessions.sessionId))
@@ -191,85 +196,95 @@ router.get('/files/:fileId', authenticate, asyncHandler(async (req: any, res: an
   });
 }));
 
-// Get dashboard analytics summary
-router.get('/dashboard', authenticate, asyncHandler(async (req: any, res: any) => {
+// Get analytics dashboard data
+router.get('/dashboard', authenticate, validateQuery(z.object({
+  days: z.number().int().min(1).max(365).optional().default(30),
+})), asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user!.id;
-  const { days = 30 } = req.query;
-  const startDate = new Date(Date.now() - parseInt(days as string) * 24 * 60 * 60 * 1000);
+  const days = parseInt(req.query['days'] as string) || 30;
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
 
-  console.log('Analytics dashboard request:', { userId, days, startDate });
+  logger.debug('Analytics dashboard request', { 
+    userId, 
+    days, 
+    startDate: startDate.toISOString() 
+  });
 
   // Get user's files
   const userFiles = await db.select()
     .from(files)
     .where(eq(files.userId, userId));
 
-  console.log('User files found:', userFiles.length);
+  logger.debug('User files retrieved', { 
+    userId, 
+    fileCount: userFiles.length 
+  });
 
-  const fileIds = userFiles.map(f => f.id);
-
-  console.log('File IDs:', fileIds);
-
-  if (fileIds.length === 0) {
-    console.log('No files found for user, returning empty response');
-    return res.json({
-      success: true,
-      data: {
-        totalFiles: 0,
-        totalViews: 0,
-        totalUniqueViews: 0,
-        totalEmailCaptures: 0,
-        recentViews: [],
-        topFiles: [],
-      },
+  if (userFiles.length === 0) {
+    logger.debug('No files found for user, returning empty response', { userId });
+    return successResponse(res, {
+      totalFiles: 0,
+      totalViews: 0,
+      totalUniqueViews: 0,
+      totalDuration: 0,
+      avgDuration: 0,
+      emailCaptures: 0,
+      recentViews: [],
+      topFiles: [],
+      viewsByDay: [],
     });
   }
 
-  // Get share links for user's files
+  const fileIds = userFiles.map(f => f.id);
+
+  // Get user's share links
   const userShareLinks = await db.select()
     .from(shareLinks)
     .where(inArray(shareLinks.fileId, fileIds));
 
-  console.log('Share links found:', userShareLinks.length);
+  logger.debug('Share links retrieved', { 
+    userId, 
+    shareLinkCount: userShareLinks.length 
+  });
 
-  const shareIds = userShareLinks.map(link => link.shareId);
-
-  console.log('Share links found:', userShareLinks.length);
-  console.log('Share IDs:', shareIds);
-
-  // If no share links, return empty stats
-  if (shareIds.length === 0) {
-    console.log('No share links found, returning empty stats');
-    return res.json({
-      success: true,
-      data: {
-        totalFiles: userFiles.length,
-        totalViews: 0,
-        totalUniqueViews: 0,
-        totalEmailCaptures: 0,
-        recentViews: [],
-        topFiles: [],
-      },
+  if (userShareLinks.length === 0) {
+    logger.debug('No share links found, returning empty stats', { userId });
+    return successResponse(res, {
+      totalFiles: userFiles.length,
+      totalViews: 0,
+      totalUniqueViews: 0,
+      totalDuration: 0,
+      avgDuration: 0,
+      emailCaptures: 0,
+      recentViews: [],
+      topFiles: [],
+      viewsByDay: [],
     });
   }
 
-  // Dashboard stats - improved time filtering
+  const shareIds = userShareLinks.map(s => s.shareId);
+
+  // Get dashboard stats
   const dashboardStats = await db.select({
-    totalViews: sql<number>`COUNT(*)`,
-    uniqueViews: sql<number>`SUM(CASE WHEN ${viewSessions.isUnique} THEN 1 ELSE 0 END)`,
+    totalViews: sql<number>`COALESCE(SUM(${shareLinks.viewCount}), 0)`,
+    totalUniqueViews: sql<number>`COUNT(DISTINCT ${viewSessions.sessionId})`,
+    totalDuration: sql<number>`COALESCE(SUM(${viewSessions.totalDuration}), 0)`,
+    avgDuration: sql<number>`COALESCE(AVG(${viewSessions.totalDuration}), 0)`,
   })
-    .from(viewSessions)
+    .from(shareLinks)
+    .leftJoin(viewSessions, eq(shareLinks.shareId, viewSessions.shareId))
     .where(and(
-      inArray(viewSessions.shareId, shareIds),
-      or(
-        gte(viewSessions.startedAt, startDate),
-        gte(viewSessions.lastActiveAt, startDate)
-      )
+      inArray(shareLinks.shareId, shareIds),
+      gte(viewSessions.startedAt, startDate)
     ));
 
-  console.log('Dashboard stats:', dashboardStats);
+  logger.debug('Dashboard stats calculated', { 
+    userId, 
+    stats: dashboardStats[0] 
+  });
 
-  // Email captures - count all email submissions, not just gated ones
+  // Get email captures count
   const emailCapturesCount = await db.select({
     count: sql<number>`COUNT(*)`,
   })
@@ -279,85 +294,74 @@ router.get('/dashboard', authenticate, asyncHandler(async (req: any, res: any) =
       gte(emailCaptures.capturedAt, startDate)
     ));
 
-  console.log('Email captures count:', emailCapturesCount);
+  logger.debug('Email captures count retrieved', { 
+    userId, 
+    count: emailCapturesCount[0]?.count || 0 
+  });
 
-  // Recent views with improved duration calculation
+  // Get recent views
   const recentViews = await db.select({
+    id: viewSessions.id,
+    shareId: viewSessions.shareId,
     viewerEmail: viewSessions.viewerEmail,
     viewerName: viewSessions.viewerName,
+    country: viewSessions.country,
+    city: viewSessions.city,
+    device: viewSessions.device,
+    browser: viewSessions.browser,
+    os: viewSessions.os,
     startedAt: viewSessions.startedAt,
-    totalDuration: sql<number>`COALESCE((
-      SELECT SUM(duration) 
-      FROM page_views 
-      WHERE session_id = ${viewSessions.sessionId}
-    ), ${viewSessions.totalDuration})`,
-    fileName: sql<string>`COALESCE(${files.title}, ${files.originalName})`,
-    shareTitle: shareLinks.title,
-    fileId: files.id,
-    shareId: shareLinks.shareId,
+    totalDuration: viewSessions.totalDuration,
+    isUnique: viewSessions.isUnique,
   })
     .from(viewSessions)
-    .innerJoin(shareLinks, eq(viewSessions.shareId, shareLinks.shareId))
-    .innerJoin(files, eq(shareLinks.fileId, files.id))
     .where(and(
-      eq(files.userId, userId),
-      or(
-        gte(viewSessions.startedAt, startDate),
-        gte(viewSessions.lastActiveAt, startDate)
-      )
+      inArray(viewSessions.shareId, shareIds),
+      gte(viewSessions.startedAt, startDate)
     ))
     .orderBy(desc(viewSessions.startedAt))
     .limit(10);
 
-  console.log('Recent views found:', recentViews.length);
+  logger.debug('Recent views retrieved', { 
+    userId, 
+    viewCount: recentViews.length 
+  });
 
-  // Top performing files with improved metrics
+  // Get top files by views
   const topFiles = await db.select({
     fileId: files.id,
-    fileName: sql<string>`COALESCE(${files.title}, ${files.originalName})`,
-    views: sql<number>`COUNT(DISTINCT ${viewSessions.id})`,
-    uniqueViews: sql<number>`SUM(CASE WHEN ${viewSessions.isUnique} THEN 1 ELSE 0 END)`,
+    title: files.title,
+    originalName: files.originalName,
+    viewCount: sql<number>`COALESCE(SUM(${shareLinks.viewCount}), 0)`,
+    uniqueViewCount: sql<number>`COUNT(DISTINCT ${viewSessions.sessionId})`,
+    totalDuration: sql<number>`COALESCE(SUM(${viewSessions.totalDuration}), 0)`,
   })
     .from(files)
     .leftJoin(shareLinks, eq(files.id, shareLinks.fileId))
-    .leftJoin(viewSessions, and(
-      eq(shareLinks.shareId, viewSessions.shareId),
-      or(
-        gte(viewSessions.startedAt, startDate),
-        gte(viewSessions.lastActiveAt, startDate)
-      )
+    .leftJoin(viewSessions, eq(shareLinks.shareId, viewSessions.shareId))
+    .where(and(
+      eq(files.userId, userId),
+      gte(viewSessions.startedAt, startDate)
     ))
-    .where(eq(files.userId, userId))
-    .groupBy(files.id, files.title, files.originalName)
-    .orderBy(desc(sql<number>`COUNT(DISTINCT ${viewSessions.id})`))
+    .groupBy(files.id)
+    .orderBy(desc(sql`COALESCE(SUM(${shareLinks.viewCount}), 0)`))
     .limit(5);
 
-  console.log('Top files found:', topFiles.length);
+  logger.debug('Top files retrieved', { 
+    userId, 
+    fileCount: topFiles.length 
+  });
 
-  res.json({
-    success: true,
-    data: {
-      totalFiles: userFiles.length,
-      totalViews: dashboardStats[0]?.totalViews || 0,
-      totalUniqueViews: dashboardStats[0]?.uniqueViews || 0,
-      totalEmailCaptures: emailCapturesCount[0]?.count || 0,
-      recentViews: recentViews.map(view => ({
-        viewerEmail: view.viewerEmail,
-        viewerName: view.viewerName,
-        startedAt: view.startedAt,
-        duration: view.totalDuration,
-        fileName: view.fileName,
-        shareTitle: view.shareTitle,
-        fileId: view.fileId,
-        shareId: view.shareId,
-      })),
-      topFiles: topFiles.map(file => ({
-        fileId: file.fileId,
-        fileName: file.fileName,
-        views: file.views,
-        uniqueViews: file.uniqueViews,
-      })),
-    },
+  successResponse(res, {
+    totalFiles: userFiles.length,
+    totalViews: dashboardStats[0]?.totalViews || 0,
+    totalUniqueViews: dashboardStats[0]?.totalUniqueViews || 0,
+    totalDuration: dashboardStats[0]?.totalDuration || 0,
+    avgDuration: Math.round(dashboardStats[0]?.avgDuration || 0),
+    emailCaptures: emailCapturesCount[0]?.count || 0,
+    recentViews,
+    topFiles,
+    viewsByDay: [], // TODO: Implement views by day aggregation
   });
 }));
 

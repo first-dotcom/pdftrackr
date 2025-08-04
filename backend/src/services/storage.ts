@@ -4,13 +4,13 @@ import { config } from '../config';
 import { logger } from '../utils/logger';
 
 // Configure S3 client for DigitalOcean Spaces
-console.log('🔧 DigitalOcean Spaces Configuration:');
-console.log('  Endpoint:', config.storage.endpoint);
-console.log('  Region: us-east-1 (hardcoded for DO Spaces)');
-console.log('  Bucket:', config.storage.bucket);
-console.log('  Access Key ID:', config.storage.accessKeyId);
-console.log('  Secret Key (masked):', config.storage.secretAccessKey ? '***' + config.storage.secretAccessKey.slice(-4) : 'NOT SET');
-console.log('  Storage Enabled:', config.storage.enabled);
+logger.info('Storage service initialized', {
+  endpoint: config.storage.endpoint,
+  region: 'us-east-1',
+  bucket: config.storage.bucket,
+  accessKeyId: config.storage.accessKeyId ? '***' + config.storage.accessKeyId.slice(-4) : 'NOT SET',
+  enabled: config.storage.enabled
+});
 
 const s3Client = new S3Client({
   forcePathStyle: false, // Configures to use subdomain/virtual calling format for DigitalOcean Spaces
@@ -35,12 +35,13 @@ export async function uploadToS3(
   metadata?: Record<string, string>
 ): Promise<UploadResult> {
   try {
-    console.log('🚀 Starting upload to DigitalOcean Spaces:');
-    console.log('  Key:', key);
-    console.log('  Bucket:', config.storage.bucket);
-    console.log('  Content Type:', contentType);
-    console.log('  Buffer Size:', buffer.length, 'bytes');
-    console.log('  Metadata:', metadata);
+    logger.debug('Starting file upload', {
+      key,
+      bucket: config.storage.bucket,
+      contentType,
+      bufferSize: buffer.length,
+      metadata
+    });
 
     const command = new PutObjectCommand({
       Bucket: config.storage.bucket,
@@ -51,33 +52,29 @@ export async function uploadToS3(
       ACL: 'private', // Files are private by default
     });
 
-    console.log('📡 Sending command to DigitalOcean Spaces...');
+    logger.debug('Sending upload command to DigitalOcean Spaces');
     const result = await s3Client.send(command);
-    console.log('✅ Upload successful! ETag:', result.ETag);
+    logger.info('File uploaded successfully', { 
+      key, 
+      etag: result.ETag,
+      size: buffer.length 
+    });
     
     // Construct URL (using CDN if available)
-    const url = config.storage.cdnUrl 
-      ? `${config.storage.cdnUrl}/${key}`
-      : `${config.storage.endpoint}/${config.storage.bucket}/${key}`;
-
-    logger.info(`File uploaded successfully: ${key}`);
+    const url = `${config.storage.endpoint}/${config.storage.bucket}/${key}`;
 
     return {
       key,
       url,
-      etag: result.ETag,
+      etag: result.ETag || '',
     };
   } catch (error) {
-    console.log('❌ Upload failed with error:');
-    console.log('  Error type:', error?.constructor?.name);
-    console.log('  Error message:', error?.message);
-    console.log('  Error code:', (error as any)?.Code);
-    console.log('  Error name:', (error as any)?.name);
-    console.log('  Full error:', error);
-    
-    logger.error(`Failed to upload file ${key}:`, {
-      message: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
+    logger.error('File upload failed', {
+      key,
+      error: error instanceof Error ? error.message : String(error),
+      errorCode: (error as any)?.Code,
+      errorName: (error as any)?.name,
+      stack: error instanceof Error ? error.stack : undefined
     });
     throw new Error(`Upload failed: ${error}`);
   }

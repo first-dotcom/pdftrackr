@@ -23,28 +23,43 @@ interface DashboardData {
   totalFiles: number;
   totalViews: number;
   totalUniqueViews: number;
-  totalEmailCaptures: number;
+  totalDuration: number;
+  avgDuration: number;
+  emailCaptures: number;
   recentViews: Array<{
+    id: number;
+    shareId: string;
     viewerEmail: string | null;
     viewerName: string | null;
+    country: string | null;
+    city: string | null;
+    device: string | null;
+    browser: string | null;
+    os: string | null;
     startedAt: string;
-    duration: number;
-    fileName: string;
-    shareTitle: string;
-    fileId: number;
-    shareId: string;
+    totalDuration: number;
+    isUnique: boolean;
   }>;
   topFiles: Array<{
     fileId: number;
-    fileName: string;
-    views: number | string;
-    uniqueViews: number | string;
+    title: string | null;
+    originalName: string;
+    viewCount: number;
+    uniqueViewCount: number;
+    totalDuration: number;
+  }>;
+  viewsByDay: Array<{
+    date: string;
+    views: number;
+    uniqueViews: number;
   }>;
 }
 
 export default function DashboardPage() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [timeRange] = useState('30d');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   const { getToken, isLoaded: authLoaded } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
@@ -52,35 +67,46 @@ export default function DashboardPage() {
   const isReady = authLoaded && userLoaded;
 
   useEffect(() => {
-    console.log('Dashboard: isReady=', isReady, 'user=', !!user, 'user details:', user);
     if (isReady && user) {
       fetchDashboardData();
     }
-  }, [isReady, user, timeRange]);
+  }, [isReady, user]);
 
   const fetchDashboardData = async () => {
     try {
+      setLoading(true);
       const token = await getToken();
+      
       if (!token) {
-        console.error('No authentication token available');
+        setError('Authentication required');
         return;
       }
 
-      const response = await fetch(`${config.api.url}/api/analytics/dashboard?days=${timeRange.replace('d', '')}`, {
+      const response = await fetch(`${config.api.url}/api/analytics/dashboard`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Failed to fetch dashboard data' }));
+        setError(errorData.message || 'Failed to fetch dashboard data');
+        return;
+      }
+
+      const data = await response.json();
       
-      if (response.ok) {
-        const data = await response.json();
-        setDashboardData(data.data);
-      } else {
-        console.error('Failed to fetch dashboard data:', response.status, response.statusText);
+      if (!data.success) {
+        setError(data.error || 'Failed to fetch dashboard data');
+        return;
       }
-          } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
-      }
+
+      setDashboardData(data.data);
+    } catch (error) {
+      setError('Failed to fetch dashboard information');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formatDuration = (seconds: number) => {
@@ -116,7 +142,7 @@ export default function DashboardPage() {
     },
     {
       name: 'Email Captures',
-      value: dashboardData?.totalEmailCaptures || 0,
+      value: dashboardData?.emailCaptures || 0,
       icon: Mail,
       color: 'bg-orange-500',
     },
@@ -230,10 +256,10 @@ export default function DashboardPage() {
                           </div>
                           <div className="ml-3 flex-1">
                             <div className="text-sm font-medium text-gray-900 truncate">
-                              {file.fileName}
+                              {file.originalName}
                             </div>
                             <div className="text-xs text-gray-500">
-                              {formatNumber(file.views)} views
+                              {formatNumber(file.viewCount)} views
                             </div>
                           </div>
                         </div>
@@ -272,7 +298,7 @@ export default function DashboardPage() {
                               {view.viewerName || view.viewerEmail || 'Anonymous'}
                             </div>
                             <div className="text-xs text-gray-500">
-                              {view.fileName} • {formatDuration(view.duration)}
+                              {view.originalName} • {formatDuration(view.totalDuration)}
                             </div>
                           </div>
                         </div>

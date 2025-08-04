@@ -7,31 +7,7 @@ import { Search, FileText, Eye, Share2, Share, Plus, Trash2, Download, Edit } fr
 import { formatDistanceToNow } from 'date-fns';
 import { config } from '@/lib/config';
 import ShareLinkModal from '@/components/ShareLinkModal';
-
-interface File {
-  id: number;
-  title: string;
-  originalName: string;
-  size: number;
-  createdAt: string;
-  viewCount: number;
-  shareLinks?: Array<{
-    id: number;
-    shareId: string;
-    title: string;
-    viewCount: number;
-    uniqueViewCount: number;
-    isActive: boolean;
-  }>;
-}
-
-interface ShareLink {
-  id: number;
-  shareId: string;
-  title: string;
-  viewCount: number;
-  createdAt: string;
-}
+import { File, FilesResponse } from '../../../../shared/types';
 
 export default function FilesPage() {
   const [files, setFiles] = useState<File[]>([]);
@@ -70,7 +46,11 @@ export default function FilesPage() {
       
       if (response.ok) {
         const data = await response.json();
-        setFiles(data.data.files || []);
+        if (data.success && data.data) {
+          setFiles(data.data.items || []);
+        } else {
+          console.error('Invalid response format:', data);
+        }
       } else {
         console.error('Failed to fetch files:', response.status, response.statusText);
         const errorData = await response.json().catch(() => null);
@@ -101,8 +81,6 @@ export default function FilesPage() {
 
     try {
       const token = await getToken();
-      if (!token) return;
-
       const response = await fetch(`${config.api.url}/api/files/${fileId}`, {
         method: 'DELETE',
         headers: {
@@ -111,22 +89,18 @@ export default function FilesPage() {
       });
 
       if (response.ok) {
-        // Remove file from local state
-        setFiles(prev => prev.filter(f => f.id !== fileId));
+        fetchFiles();
       } else {
-        alert('Failed to delete file');
+        console.error('Failed to delete file:', response.status);
       }
     } catch (error) {
       console.error('Failed to delete file:', error);
-      alert('Failed to delete file');
     }
   };
 
   const handleDownloadFile = async (file: File) => {
     try {
       const token = await getToken();
-      if (!token) return;
-
       const response = await fetch(`${config.api.url}/api/files/${file.id}/download`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -144,17 +118,16 @@ export default function FilesPage() {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
       } else {
-        alert('Failed to download file');
+        console.error('Failed to download file:', response.status);
       }
     } catch (error) {
       console.error('Failed to download file:', error);
-      alert('Failed to download file');
     }
   };
 
   const handleEditFile = (file: File) => {
-    // For now, just navigate to file details page where editing can be done
-    window.location.href = `/dashboard/files/${file.id}`;
+    // TODO: Implement edit functionality
+    console.log('Edit file:', file);
   };
 
   const formatFileSize = (bytes: number) => {
@@ -169,12 +142,10 @@ export default function FilesPage() {
     return shareLinks.filter(link => link.isActive).length;
   };
 
-  const filteredFiles = files.filter(file => {
-    const matchesSearch = file.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         file.originalName.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    return matchesSearch;
-  });
+  const filteredFiles = files.filter(file => 
+    file.originalName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (file.title && file.title.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   // Show loading state while Clerk is initializing
   if (!isReady) {

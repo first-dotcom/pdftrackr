@@ -33,7 +33,10 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
     
-    console.log('Auth middleware - token present:', !!token);
+    logger.debug('Authentication attempt', { 
+      hasToken: !!token,
+      ip: req.ip 
+    });
     
     if (!token) {
       throw new CustomError('Authentication token required', 401);
@@ -44,7 +47,10 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       secretKey: config.clerk.secretKey 
     });
 
-    console.log('Auth middleware - token verified, sub:', payload.sub);
+    logger.debug('Token verified successfully', { 
+      userId: payload.sub,
+      ip: req.ip 
+    });
 
     if (!payload.sub) {
       throw new CustomError('Invalid token', 401);
@@ -93,14 +99,15 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 
         if (newUser.length > 0) {
           req.user = newUser[0];
-          logger.info(`Created new user: ${email}`);
+          logger.info('New user created', { email, userId: payload.sub });
         } else {
           throw new CustomError('Failed to create user account', 500);
         }
       } catch (clerkError) {
-        logger.error('Failed to fetch user from Clerk:', {
+        logger.error('Failed to fetch user from Clerk', {
           message: clerkError instanceof Error ? clerkError.message : String(clerkError),
           stack: clerkError instanceof Error ? clerkError.stack : undefined,
+          userId: payload.sub
         });
         throw new CustomError('Failed to create user account', 500);
       }
@@ -115,9 +122,10 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 
     next();
   } catch (error) {
-    logger.error('Authentication error:', {
+    logger.error('Authentication error', {
       message: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
+      ip: req.ip
     });
     next(new CustomError('Authentication failed', 401));
   }

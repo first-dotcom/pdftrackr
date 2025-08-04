@@ -7,7 +7,7 @@ import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
 import { config } from './config';
 import { logger } from './utils/logger';
-import { errorHandler } from './middleware/errorHandler';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { metricsMiddleware } from './middleware/metrics';
 import { securityHeaders, addRequestId, csrfProtection } from './middleware/security';
 import { connectDatabase } from './utils/database';
@@ -103,7 +103,7 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      logger.warn(`Blocked CORS request from origin: ${origin}`);
+      logger.warn('Blocked CORS request', { origin });
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -187,12 +187,10 @@ app.use('/api/waitlist', waitlistRoutes);
 app.use('/api/upgrade', upgradeRoutes);
 
 // Metrics endpoint (no /api prefix for Prometheus)
-app.use('/metrics', metricsRoutes);
+// app.use('/metrics', metricsRoutes);
 
 // 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Route not found' });
-});
+app.use('*', notFoundHandler);
 
 // Error handling middleware
 app.use(errorHandler);
@@ -205,11 +203,13 @@ async function startServer() {
 
     const port = config.server.port;
     app.listen(port, () => {
-      logger.info(`Server running on port ${port}`);
-      logger.info(`Environment: ${config.env}`);
+      logger.info('Server started successfully', { 
+        port, 
+        environment: config.env 
+      });
     });
   } catch (error) {
-    logger.error('Failed to start server:', error);
+    logger.error('Failed to start server', { error });
     process.exit(1);
   }
 }

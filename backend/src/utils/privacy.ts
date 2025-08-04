@@ -9,11 +9,8 @@ import crypto from 'crypto';
  * This ensures we can't reverse-engineer the original IP
  */
 export function hashIPAddress(ipAddress: string): string {
-  // Add a salt to make the hash more secure
-  const salt = process.env.IP_HASH_SALT || 'pdftrackr-salt-2024';
-  const hash = crypto.createHash('sha256');
-  hash.update(ipAddress + salt);
-  return hash.digest('hex');
+  const salt = process.env['IP_HASH_SALT'] || 'pdftrackr-salt-2024';
+  return crypto.createHash('sha256').update(ipAddress + salt).digest('hex');
 }
 
 /**
