@@ -18,6 +18,7 @@ import { successResponse, errorResponse, paginatedResponse } from '../utils/resp
 import { logger } from '../utils/logger';
 import { Request, Response } from 'express';
 import { File, UpdateFileRequest, FilesResponse, FileResponse } from '../../../shared/types';
+import { invalidateUserDashboardCache } from './analytics';
 
 const router = Router();
 
@@ -117,6 +118,9 @@ router.post('/upload',
       .where(eq(users.id, user.id));
 
     fileUploads.labels('success', user.plan).inc();
+
+    // Invalidate dashboard cache for this user
+    await invalidateUserDashboardCache(user.id);
 
     successResponse(res, { file: newFile[0] }, 'File uploaded successfully');
   } catch (error) {

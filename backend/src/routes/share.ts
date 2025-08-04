@@ -16,6 +16,7 @@ import { pdfViews } from '../middleware/metrics';
 import { CacheService } from '../utils/redis';
 import { z } from 'zod';
 import { config } from '../config';
+import { invalidateUserDashboardCache } from './analytics';
 
 const router = Router();
 
@@ -64,6 +65,9 @@ router.post('/', authenticate, validateBody(createShareLinkSchema), asyncHandler
     expiresAt: expiresAt ? new Date(expiresAt) : null,
     maxViews: maxViews || null,
   }).returning();
+
+  // Invalidate dashboard cache for this user
+  await invalidateUserDashboardCache(req.user!.id);
 
   res.json({
     success: true,
@@ -290,6 +294,9 @@ router.post('/:shareId/access', createRateLimit(15 * 60 * 1000, 20, 'Too many ac
     viewerInfo,
     accessedAt: new Date(),
   }, 86400); // 24 hours
+
+  // Invalidate dashboard cache for the file owner
+  await invalidateUserDashboardCache(link.files.userId);
 
   res.json({
     success: true,

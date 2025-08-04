@@ -10,12 +10,13 @@ import {
   emailCaptures, 
   analyticsSummary 
 } from '../models/schema';
-import { eq, and, desc, gte, sql, inArray, or, isNotNull, lt } from 'drizzle-orm';
+import { eq, and, desc, gte, sql, inArray, or, isNotNull, lt, isNull, gt } from 'drizzle-orm';
 import { validateQuery } from '../middleware/validation';
 import { z } from 'zod';
 import { logger } from '../utils/logger';
 import { successResponse, errorResponse } from '../utils/response';
 import { Request, Response } from 'express';
+import { CacheService, redis } from '../utils/redis';
 
 const router = Router();
 
@@ -211,19 +212,173 @@ router.get('/dashboard', authenticate, validateQuery(z.object({
     startDate: startDate.toISOString() 
   });
 
-  // Get user's files
-  const userFiles = await db.select()
-    .from(files)
-    .where(eq(files.userId, userId));
+  // Cache key based on user and time range
+  const cacheKey = `dashboard:${userId}:${days}d`;
+  const CACHE_TTL = 300; // 5 minutes
 
-  logger.debug('User files retrieved', { 
-    userId, 
-    fileCount: userFiles.length 
-  });
+  try {
+    // Try to get cached data first
+    const cachedData = await CacheService.get(cacheKey);
+    if (cachedData) {
+      logger.debug('Dashboard data served from cache', { userId, days });
+      return successResponse(res, cachedData);
+    }
 
-  if (userFiles.length === 0) {
-    logger.debug('No files found for user, returning empty response', { userId });
-    return successResponse(res, {
+    logger.debug('Cache miss, calculating dashboard data', { userId, days });
+    // Single optimized query to get all dashboard data
+    const dashboardData = await db.select({
+      // File counts
+      totalFiles: sql<number>`COUNT(DISTINCT ${files.id})`,
+      
+      // View statistics (from actual view sessions, not counters)
+      totalViews: sql<number>`COUNT(${viewSessions.id})`,
+      totalUniqueViews: sql<number>`SUM(CASE WHEN ${viewSessions.isUnique} THEN 1 ELSE 0 END)`,
+      totalDuration: sql<number>`COALESCE(SUM(${viewSessions.totalDuration}), 0)`,
+      avgDuration: sql<number>`COALESCE(AVG(${viewSessions.totalDuration}), 0)`,
+      
+      // Email captures
+      emailCaptures: sql<number>`COUNT(DISTINCT ${emailCaptures.id})`,
+    })
+      .from(files)
+      .leftJoin(shareLinks, and(
+        eq(files.id, shareLinks.fileId),
+        eq(shareLinks.isActive, true), // Only active share links
+        or(
+          isNull(shareLinks.expiresAt),
+          gt(shareLinks.expiresAt, new Date()) // Not expired
+        )
+      ))
+      .leftJoin(viewSessions, and(
+        eq(shareLinks.shareId, viewSessions.shareId),
+        gte(viewSessions.startedAt, startDate)
+      ))
+      .leftJoin(emailCaptures, and(
+        eq(shareLinks.shareId, emailCaptures.shareId),
+        gte(emailCaptures.capturedAt, startDate)
+      ))
+      .where(eq(files.userId, userId));
+
+    const stats = dashboardData[0];
+
+    // Get recent views (last 5)
+    const recentViews = await db.select({
+      id: viewSessions.id,
+      shareId: viewSessions.shareId,
+      viewerEmail: viewSessions.viewerEmail,
+      viewerName: viewSessions.viewerName,
+      country: viewSessions.country,
+      city: viewSessions.city,
+      device: viewSessions.device,
+      browser: viewSessions.browser,
+      os: viewSessions.os,
+      startedAt: viewSessions.startedAt,
+      totalDuration: viewSessions.totalDuration,
+      isUnique: viewSessions.isUnique,
+    })
+      .from(viewSessions)
+      .innerJoin(shareLinks, eq(viewSessions.shareId, shareLinks.shareId))
+      .innerJoin(files, and(
+        eq(shareLinks.fileId, files.id),
+        eq(files.userId, userId)
+      ))
+      .where(and(
+        gte(viewSessions.startedAt, startDate),
+        eq(shareLinks.isActive, true),
+        or(
+          isNull(shareLinks.expiresAt),
+          gt(shareLinks.expiresAt, new Date())
+        )
+      ))
+      .orderBy(desc(viewSessions.startedAt))
+      .limit(5);
+
+    // Get top files by actual view count (not counter)
+    const topFiles = await db.select({
+      fileId: files.id,
+      title: files.title,
+      originalName: files.originalName,
+      viewCount: sql<number>`COUNT(${viewSessions.id})`,
+      uniqueViewCount: sql<number>`SUM(CASE WHEN ${viewSessions.isUnique} THEN 1 ELSE 0 END)`,
+      totalDuration: sql<number>`COALESCE(SUM(${viewSessions.totalDuration}), 0)`,
+    })
+      .from(files)
+      .leftJoin(shareLinks, and(
+        eq(files.id, shareLinks.fileId),
+        eq(shareLinks.isActive, true),
+        or(
+          isNull(shareLinks.expiresAt),
+          gt(shareLinks.expiresAt, new Date())
+        )
+      ))
+      .leftJoin(viewSessions, and(
+        eq(shareLinks.shareId, viewSessions.shareId),
+        gte(viewSessions.startedAt, startDate)
+      ))
+      .where(eq(files.userId, userId))
+      .groupBy(files.id)
+      .orderBy(desc(sql`COUNT(${viewSessions.id})`))
+      .limit(5);
+
+    // Get views by day for the last 30 days
+    const viewsByDay = await db.select({
+      date: sql<string>`DATE(${viewSessions.startedAt})`,
+      views: sql<number>`COUNT(${viewSessions.id})`,
+      uniqueViews: sql<number>`SUM(CASE WHEN ${viewSessions.isUnique} THEN 1 ELSE 0 END)`,
+    })
+      .from(viewSessions)
+      .innerJoin(shareLinks, eq(viewSessions.shareId, shareLinks.shareId))
+      .innerJoin(files, and(
+        eq(shareLinks.fileId, files.id),
+        eq(files.userId, userId)
+      ))
+      .where(and(
+        gte(viewSessions.startedAt, startDate),
+        eq(shareLinks.isActive, true),
+        or(
+          isNull(shareLinks.expiresAt),
+          gt(shareLinks.expiresAt, new Date())
+        )
+      ))
+      .groupBy(sql`DATE(${viewSessions.startedAt})`)
+      .orderBy(sql`DATE(${viewSessions.startedAt})`);
+
+    logger.debug('Dashboard analytics calculated', { 
+      userId,
+      totalFiles: stats?.totalFiles,
+      totalViews: stats?.totalViews,
+      totalUniqueViews: stats?.totalUniqueViews,
+      recentViewsCount: recentViews.length,
+      topFilesCount: topFiles.length,
+      viewsByDayCount: viewsByDay.length
+    });
+
+    const responseData = {
+      totalFiles: Number(stats?.totalFiles) || 0,
+      totalViews: Number(stats?.totalViews) || 0,
+      totalUniqueViews: Number(stats?.totalUniqueViews) || 0,
+      totalDuration: Number(stats?.totalDuration) || 0,
+      avgDuration: Math.round(Number(stats?.avgDuration) || 0),
+      emailCaptures: Number(stats?.emailCaptures) || 0,
+      recentViews,
+      topFiles,
+      viewsByDay,
+    };
+
+    // Cache the calculated data
+    await CacheService.set(cacheKey, responseData, CACHE_TTL);
+    logger.debug('Dashboard data cached', { userId, days, cacheKey });
+
+    successResponse(res, responseData);
+
+  } catch (error) {
+    logger.error('Dashboard analytics calculation failed', {
+      userId,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    
+    // Return safe fallback data
+    successResponse(res, {
       totalFiles: 0,
       totalViews: 0,
       totalUniqueViews: 0,
@@ -235,138 +390,6 @@ router.get('/dashboard', authenticate, validateQuery(z.object({
       viewsByDay: [],
     });
   }
-
-  const fileIds = userFiles.map(f => f.id);
-
-  // Get user's share links
-  const userShareLinks = await db.select()
-    .from(shareLinks)
-    .where(inArray(shareLinks.fileId, fileIds));
-
-  logger.debug('Share links retrieved', { 
-    userId, 
-    shareLinkCount: userShareLinks.length 
-  });
-
-  if (userShareLinks.length === 0) {
-    logger.debug('No share links found, returning empty stats', { userId });
-    return successResponse(res, {
-      totalFiles: userFiles.length,
-      totalViews: 0,
-      totalUniqueViews: 0,
-      totalDuration: 0,
-      avgDuration: 0,
-      emailCaptures: 0,
-      recentViews: [],
-      topFiles: [],
-      viewsByDay: [],
-    });
-  }
-
-  const shareIds = userShareLinks.map(s => s.shareId);
-
-  // Get dashboard stats - more robust calculations
-  const dashboardStats = await db.select({
-    totalViews: sql<number>`COALESCE(SUM(${shareLinks.viewCount}), 0)`,
-    totalUniqueViews: sql<number>`COUNT(DISTINCT ${viewSessions.sessionId})`,
-    totalDuration: sql<number>`COALESCE(SUM(${viewSessions.totalDuration}), 0)`,
-    avgDuration: sql<number>`COALESCE(AVG(${viewSessions.totalDuration}), 0)`,
-  })
-    .from(shareLinks)
-    .leftJoin(viewSessions, and(
-      eq(shareLinks.shareId, viewSessions.shareId),
-      gte(viewSessions.startedAt, startDate)
-    ))
-    .where(inArray(shareLinks.shareId, shareIds));
-
-  logger.debug('Dashboard stats calculated', { 
-    userId, 
-    stats: dashboardStats[0] 
-  });
-
-  // Get email captures count - more robust calculation
-  const emailCapturesCount = await db.select({
-    count: sql<number>`COALESCE(COUNT(*), 0)`,
-  })
-    .from(emailCaptures)
-    .where(and(
-      inArray(emailCaptures.shareId, shareIds),
-      gte(emailCaptures.capturedAt, startDate)
-    ));
-
-  logger.debug('Email captures count retrieved', { 
-    userId, 
-    count: emailCapturesCount[0]?.count || 0 
-  });
-
-  // Get recent views - limit to 5 most recent
-  const recentViews = await db.select({
-    id: viewSessions.id,
-    shareId: viewSessions.shareId,
-    viewerEmail: viewSessions.viewerEmail,
-    viewerName: viewSessions.viewerName,
-    country: viewSessions.country,
-    city: viewSessions.city,
-    device: viewSessions.device,
-    browser: viewSessions.browser,
-    os: viewSessions.os,
-    startedAt: viewSessions.startedAt,
-    totalDuration: viewSessions.totalDuration,
-    isUnique: viewSessions.isUnique,
-  })
-    .from(viewSessions)
-    .where(and(
-      inArray(viewSessions.shareId, shareIds),
-      gte(viewSessions.startedAt, startDate)
-    ))
-    .orderBy(desc(viewSessions.startedAt))
-    .limit(5);
-
-  logger.debug('Recent views retrieved', { 
-    userId, 
-    viewCount: recentViews.length 
-  });
-
-  // Get top files by views - limit to 5 most viewed
-  const topFiles = await db.select({
-    fileId: files.id,
-    title: files.title,
-    originalName: files.originalName,
-    viewCount: sql<number>`COALESCE(SUM(${shareLinks.viewCount}), 0)`,
-    uniqueViewCount: sql<number>`COUNT(DISTINCT ${viewSessions.sessionId})`,
-    totalDuration: sql<number>`COALESCE(SUM(${viewSessions.totalDuration}), 0)`,
-  })
-    .from(files)
-    .leftJoin(shareLinks, eq(files.id, shareLinks.fileId))
-    .leftJoin(viewSessions, eq(shareLinks.shareId, viewSessions.shareId))
-    .where(and(
-      eq(files.userId, userId),
-      gte(viewSessions.startedAt, startDate)
-    ))
-    .groupBy(files.id)
-    .orderBy(desc(sql`COALESCE(SUM(${shareLinks.viewCount}), 0)`))
-    .limit(5);
-
-  logger.debug('Top files retrieved', { 
-    userId, 
-    fileCount: topFiles.length 
-  });
-
-  // Ensure all calculations are robust with proper fallbacks
-  const stats = dashboardStats[0];
-  const emailCount = emailCapturesCount[0]?.count || 0;
-  
-  successResponse(res, {
-    totalFiles: userFiles.length,
-    totalViews: Number(stats?.totalViews) || 0,
-    totalUniqueViews: Number(stats?.totalUniqueViews) || 0,
-    totalDuration: Number(stats?.totalDuration) || 0,
-    avgDuration: Math.round(Number(stats?.avgDuration) || 0),
-    emailCaptures: Number(emailCount),
-    recentViews,
-    topFiles,
-    viewsByDay: [], // TODO: Implement views by day aggregation
-  });
 }));
 
 // Get share link analytics
@@ -534,5 +557,31 @@ router.post('/summary/generate', authenticate, asyncHandler(async (req: any, res
     message: `Analytics summary generated for ${date}`,
   });
 }));
+
+// Cache invalidation helpers
+export async function invalidateUserDashboardCache(userId: number): Promise<void> {
+  try {
+    // Get all cache keys for this user's dashboard
+    const keys = await redis.keys(`dashboard:${userId}:*`);
+    if (keys.length > 0) {
+      await redis.del(keys);
+      logger.debug('Invalidated dashboard cache for user', { userId, keysCount: keys.length });
+    }
+  } catch (error) {
+    logger.error('Failed to invalidate dashboard cache', { userId, error });
+  }
+}
+
+export async function invalidateAllDashboardCache(): Promise<void> {
+  try {
+    const keys = await redis.keys('dashboard:*');
+    if (keys.length > 0) {
+      await redis.del(keys);
+      logger.debug('Invalidated all dashboard cache', { keysCount: keys.length });
+    }
+  } catch (error) {
+    logger.error('Failed to invalidate all dashboard cache', { error });
+  }
+}
 
 export default router;
