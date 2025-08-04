@@ -1,10 +1,16 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useAuth } from '@clerk/nextjs';
-import { X, Copy, CheckCircle, Calendar, Shield } from 'lucide-react';
-import { config } from '@/lib/config';
-import { File, ShareLink, CreateShareLinkRequest, ShareLinkResponse } from '../../shared/types';
+import { config } from "@/lib/config";
+import { useAuth } from "@clerk/nextjs";
+import { Calendar, CheckCircle, Copy, Shield, X } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
+import type {
+  CreateShareLinkRequest,
+  File,
+  ShareLink,
+  ShareLinkResponse,
+} from "../../shared/types";
 
 interface ShareLinkModalProps {
   isOpen: boolean;
@@ -31,14 +37,14 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
   const { getToken } = useAuth();
 
   const [form, setForm] = useState<ShareLinkForm>({
-    title: `${file.title || 'Untitled Document'} - Shared`,
-    description: '',
-    password: '',
+    title: `${file.title || "Untitled Document"} - Shared`,
+    description: "",
+    password: "",
     emailGatingEnabled: false,
     downloadEnabled: true,
     watermarkEnabled: false,
-    expiresAt: '',
-    maxViews: '',
+    expiresAt: "",
+    maxViews: "",
   });
 
   const [errors, setErrors] = useState<Partial<ShareLinkForm>>({});
@@ -50,24 +56,24 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
 
     // Title is required
     if (!form.title.trim()) {
-      newErrors.title = 'Title is required';
+      newErrors.title = "Title is required";
     } else if (form.title.length > 255) {
-      newErrors.title = 'Title must be less than 255 characters';
+      newErrors.title = "Title must be less than 255 characters";
     }
 
     // Password validation (if provided)
     if (form.password && form.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
+      newErrors.password = "Password must be at least 8 characters";
     }
 
     // Max views validation (if provided)
-    if (form.maxViews && (isNaN(parseInt(form.maxViews)) || parseInt(form.maxViews) < 1)) {
-      newErrors.maxViews = 'Max views must be a positive number';
+    if (form.maxViews && (Number.isNaN(parseInt(form.maxViews)) || parseInt(form.maxViews) < 1)) {
+      newErrors.maxViews = "Max views must be a positive number";
     }
 
     // Expiration date validation (if provided)
     if (form.expiresAt && new Date(form.expiresAt) <= new Date()) {
-      newErrors.expiresAt = 'Expiration date must be in the future';
+      newErrors.expiresAt = "Expiration date must be in the future";
     }
 
     setErrors(newErrors);
@@ -76,7 +82,7 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Mark all fields as touched
     setTouched({
       title: true,
@@ -112,50 +118,53 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
       if (form.expiresAt.trim()) {
         payload.expiresAt = new Date(form.expiresAt).toISOString();
       }
-      if (form.maxViews.trim() && !isNaN(parseInt(form.maxViews.trim()))) {
+      if (form.maxViews.trim() && !Number.isNaN(parseInt(form.maxViews.trim()))) {
         payload.maxViews = parseInt(form.maxViews.trim());
       }
 
       const response = await fetch(`${config.api.url}/api/share`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
 
       if (response.ok) {
         const data: ShareLinkResponse = await response.json();
-        setShareLink(data.data);
+        setShareLink(data.data?.shareLink || null);
         onSuccess?.();
       } else {
         const error = await response.json();
-        console.error('API Error:', error);
-        
+        console.error("API Error:", error);
+
         // Handle validation errors from backend
         if (error.details) {
           const backendErrors: Partial<ShareLinkForm> = {};
-          error.details.forEach((detail: any) => {
+          for (const detail of error.details as Array<{ path?: string[]; message: string }>) {
             const field = detail.path?.[0];
-            if (field) backendErrors[field as keyof ShareLinkForm] = detail.message;
-          });
+            if (field) {
+              (backendErrors as any)[field as keyof ShareLinkForm] = detail.message;
+            }
+          }
           setErrors(backendErrors);
         } else {
-          alert(error.message || 'Failed to create share link');
+          alert(error.message || "Failed to create share link");
         }
       }
     } catch (error) {
-      console.error('Failed to create share link:', error);
-      alert('Failed to create share link');
+      console.error("Failed to create share link:", error);
+      alert("Failed to create share link");
     } finally {
       setLoading(false);
     }
   };
 
   const copyToClipboard = async () => {
-    if (shareLink?.url) {
-      await navigator.clipboard.writeText(shareLink.url);
+    if (shareLink?.shareId) {
+      const url = `${window.location.origin}/view/${shareLink.shareId}`;
+      await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -166,20 +175,20 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
     setErrors({});
     setTouched({});
     setForm({
-      title: `${file.title || 'Untitled Document'} - Shared`,
-      description: '',
-      password: '',
+      title: `${file.title || "Untitled Document"} - Shared`,
+      description: "",
+      password: "",
       emailGatingEnabled: false,
       downloadEnabled: true,
       watermarkEnabled: false,
-      expiresAt: '',
-      maxViews: '',
+      expiresAt: "",
+      maxViews: "",
     });
   };
 
   const handleFieldChange = (field: keyof ShareLinkForm, value: string | boolean) => {
     setForm({ ...form, [field]: value });
-    
+
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors({ ...errors, [field]: undefined });
@@ -196,21 +205,18 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
     onClose();
   };
 
-
-
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-lg font-semibold text-gray-900">
-            {shareLink ? 'Share Link Created!' : 'Create Share Link'}
+            {shareLink ? "Share Link Created!" : "Create Share Link"}
           </h2>
-          <button
-            onClick={handleClose}
-            className="text-gray-400 hover:text-gray-500"
-          >
+          <button type="button" onClick={handleClose} className="text-gray-400 hover:text-gray-500">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -230,11 +236,12 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
                 <div className="flex">
                   <input
                     type="text"
-                    value={shareLink.url}
+                    value={`${window.location.origin}/view/${shareLink.shareId}`}
                     readOnly
                     className="flex-1 input rounded-r-none"
                   />
                   <button
+                    type="button"
                     onClick={copyToClipboard}
                     className="btn-primary btn-md rounded-l-none flex items-center"
                   >
@@ -256,26 +263,26 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
               <div className="bg-gray-50 p-3 rounded-lg text-sm space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Title:</span>
-                  <span className="font-medium">{shareLink.shareLink.title}</span>
+                  <span className="font-medium">{shareLink.title}</span>
                 </div>
-                {shareLink.shareLink.expiresAt && (
+                {shareLink.expiresAt && (
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Expires:</span>
                     <span className="font-medium">
-                      {new Date(shareLink.shareLink.expiresAt).toLocaleDateString()}
+                      {new Date(shareLink.expiresAt).toLocaleDateString()}
                     </span>
                   </div>
                 )}
-                {shareLink.shareLink.maxViews && (
+                {shareLink.maxViews && (
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Max Views:</span>
-                    <span className="font-medium">{shareLink.shareLink.maxViews}</span>
+                    <span className="font-medium">{shareLink.maxViews}</span>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Download:</span>
                   <span className="font-medium">
-                    {shareLink.shareLink.downloadEnabled ? 'Enabled' : 'Disabled'}
+                    {shareLink.downloadEnabled ? "Enabled" : "Disabled"}
                   </span>
                 </div>
               </div>
@@ -283,15 +290,13 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
 
             <div className="flex gap-3">
               <button
+                type="button"
                 onClick={() => setShareLink(null)}
                 className="flex-1 btn-outline btn-md"
               >
                 Create Another
               </button>
-              <button
-                onClick={handleClose}
-                className="flex-1 btn-primary btn-md"
-              >
+              <button type="button" onClick={handleClose} className="flex-1 btn-primary btn-md">
                 Done
               </button>
             </div>
@@ -300,7 +305,8 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
           // Form state - create new link
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
             <div className="text-sm text-gray-600 mb-4">
-              Creating share link for: <span className="font-medium">{file.title || 'Untitled Document'}</span>
+              Creating share link for:{" "}
+              <span className="font-medium">{file.title || "Untitled Document"}</span>
             </div>
 
             {/* Basic Settings */}
@@ -312,9 +318,11 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
                 <input
                   type="text"
                   value={form.title}
-                  onChange={(e) => handleFieldChange('title', e.target.value)}
-                  onBlur={() => handleFieldBlur('title')}
-                  className={`input w-full ${errors.title && touched.title ? 'border-red-500' : ''}`}
+                  onChange={(e) => handleFieldChange("title", e.target.value)}
+                  onBlur={() => handleFieldBlur("title")}
+                  className={`input w-full ${
+                    errors.title && touched.title ? "border-red-500" : ""
+                  }`}
                   placeholder="Enter a title for your share link"
                 />
                 {errors.title && touched.title && (
@@ -323,12 +331,10 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea
                   value={form.description}
-                  onChange={(e) => handleFieldChange('description', e.target.value)}
+                  onChange={(e) => handleFieldChange("description", e.target.value)}
                   className="input w-full"
                   rows={2}
                   placeholder="Optional description for your share link"
@@ -342,7 +348,7 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
                 <Shield className="mr-2 h-4 w-4" />
                 Security & Access
               </h4>
-              
+
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
@@ -353,10 +359,10 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
                     <input
                       type="checkbox"
                       checked={form.downloadEnabled}
-                      onChange={(e) => handleFieldChange('downloadEnabled', e.target.checked)}
+                      onChange={(e) => handleFieldChange("downloadEnabled", e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600" />
                   </label>
                 </div>
 
@@ -369,10 +375,10 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
                     <input
                       type="checkbox"
                       checked={form.emailGatingEnabled}
-                      onChange={(e) => handleFieldChange('emailGatingEnabled', e.target.checked)}
+                      onChange={(e) => handleFieldChange("emailGatingEnabled", e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600" />
                   </label>
                 </div>
               </div>
@@ -384,7 +390,7 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
                 <Calendar className="mr-2 h-4 w-4" />
                 Advanced Options
               </h4>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -393,10 +399,12 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
                   <input
                     type="date"
                     value={form.expiresAt}
-                    onChange={(e) => handleFieldChange('expiresAt', e.target.value)}
-                    onBlur={() => handleFieldBlur('expiresAt')}
-                    className={`input w-full ${errors.expiresAt && touched.expiresAt ? 'border-red-500' : ''}`}
-                    min={new Date().toISOString().split('T')[0]}
+                    onChange={(e) => handleFieldChange("expiresAt", e.target.value)}
+                    onBlur={() => handleFieldBlur("expiresAt")}
+                    className={`input w-full ${
+                      errors.expiresAt && touched.expiresAt ? "border-red-500" : ""
+                    }`}
+                    min={new Date().toISOString().split("T")[0]}
                   />
                   {errors.expiresAt && touched.expiresAt && (
                     <p className="text-red-500 text-xs mt-1">{errors.expiresAt}</p>
@@ -404,15 +412,15 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Max Views
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Max Views</label>
                   <input
                     type="number"
                     value={form.maxViews}
-                    onChange={(e) => handleFieldChange('maxViews', e.target.value)}
-                    onBlur={() => handleFieldBlur('maxViews')}
-                    className={`input w-full ${errors.maxViews && touched.maxViews ? 'border-red-500' : ''}`}
+                    onChange={(e) => handleFieldChange("maxViews", e.target.value)}
+                    onBlur={() => handleFieldBlur("maxViews")}
+                    className={`input w-full ${
+                      errors.maxViews && touched.maxViews ? "border-red-500" : ""
+                    }`}
                     placeholder="Unlimited"
                     min="1"
                   />
@@ -424,19 +432,11 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
             </div>
 
             <div className="flex gap-3 pt-4">
-              <button
-                type="button"
-                onClick={handleClose}
-                className="flex-1 btn-outline btn-md"
-              >
+              <button type="button" onClick={handleClose} className="flex-1 btn-outline btn-md">
                 Cancel
               </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 btn-primary btn-md"
-              >
-                {loading ? 'Creating...' : 'Create Share Link'}
+              <button type="submit" disabled={loading} className="flex-1 btn-primary btn-md">
+                {loading ? "Creating..." : "Create Share Link"}
               </button>
             </div>
           </form>

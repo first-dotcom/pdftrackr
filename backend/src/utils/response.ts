@@ -1,5 +1,5 @@
-import { Response } from 'express';
-import { ApiResponse, PaginatedResponse } from '../../../shared/types';
+import type { Response } from "express";
+import type { ApiResponse, PaginatedResponse } from "../types/api";
 
 export const successResponse = <T>(res: Response, data: T, message?: string): void => {
   const response: ApiResponse<T> = {
@@ -14,7 +14,7 @@ export const successResponse = <T>(res: Response, data: T, message?: string): vo
   res.json(response);
 };
 
-export const errorResponse = (res: Response, error: string, statusCode: number = 400): void => {
+export const errorResponse = (res: Response, error: string, statusCode = 400): void => {
   const response: ApiResponse = {
     success: false,
     error,
@@ -28,7 +28,7 @@ export const paginatedResponse = <T>(
   data: T[],
   page: number,
   limit: number,
-  total: number
+  total: number,
 ): void => {
   const response: ApiResponse<PaginatedResponse<T>> = {
     success: true,
@@ -45,4 +45,4 @@ export const paginatedResponse = <T>(
   };
 
   res.json(response);
-}; 
+};

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { FileText, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { FileText, Menu, X } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -35,14 +35,11 @@ export default function Header() {
 
           {/* Mobile menu button */}
           <button
+            type="button"
             className="md:hidden p-2"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
-            {isMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
+            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
 
@@ -50,29 +47,29 @@ export default function Header() {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-gray-200">
             <nav className="flex flex-col space-y-4">
-              <Link 
-                href="#features" 
+              <Link
+                href="#features"
                 className="text-gray-600 hover:text-gray-900"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Features
               </Link>
-              <Link 
-                href="#pricing" 
+              <Link
+                href="#pricing"
                 className="text-gray-600 hover:text-gray-900"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Pricing
               </Link>
-              <Link 
-                href="/sign-in" 
+              <Link
+                href="/sign-in"
                 className="text-gray-600 hover:text-gray-900"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Sign In
               </Link>
-              <Link 
-                href="/sign-up" 
+              <Link
+                href="/sign-up"
                 className="btn-primary btn-sm w-fit"
                 onClick={() => setIsMenuOpen(false)}
               >

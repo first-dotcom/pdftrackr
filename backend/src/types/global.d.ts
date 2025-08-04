@@ -2,7 +2,7 @@
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
-      NODE_ENV: 'development' | 'production' | 'test';
+      NODE_ENV: "development" | "production" | "test";
       PORT: string;
       DATABASE_URL: string;
       REDIS_URL: string;
@@ -21,7 +21,7 @@ declare global {
 // Node.js Error extensions
 declare global {
   interface ErrorConstructor {
-    captureStackTrace?(thisArg: any, func: any): void;
+    captureStackTrace?(thisArg: object, func: (...args: unknown[]) => void): void;
   }
 }
 

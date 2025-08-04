@@ -1,4 +1,5 @@
-import { z } from 'zod';
+import type { Request } from "express";
+import { z } from "zod";
 
 // Common validation schemas
 export const emailSchema = z.string().email().max(255);
@@ -71,26 +72,84 @@ export const ipAddressSchema = z.string().ip();
 
 // Environment validation schema
 export const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  PORT: z.string().default('3001'),
-  
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+  PORT: z.string().default("3001"),
+
   // Database
   DATABASE_URL: z.string().min(1),
-  
+
   // Redis
   REDIS_URL: z.string().min(1),
-  
+
   // Authentication - Only Clerk needed
   CLERK_PUBLISHABLE_KEY: z.string().min(1),
   CLERK_SECRET_KEY: z.string().min(1),
-  
+
   // Storage
   S3_ENDPOINT: z.string().optional(),
   S3_REGION: z.string().optional(),
   S3_BUCKET: z.string().min(1),
   S3_ACCESS_KEY: z.string().min(1),
   S3_SECRET_KEY: z.string().min(1),
-  
+
   // Frontend
   FRONTEND_URL: z.string().min(1),
+});
+
+// Utility functions for handling strict TypeScript validation
+
+/**
+ * Safely extract and validate a numeric ID from request params
+ */
+export function getNumericId(req: Request, paramName = "id"): number {
+  const id = req.params[paramName];
+  if (!id) {
+    throw new Error(`${paramName} is required`);
+  }
+  const numericId = parseInt(id, 10);
+  if (isNaN(numericId)) {
+    throw new Error(`${paramName} must be a valid number`);
+  }
+  return numericId;
+}
+
+/**
+ * Safely extract user ID from request
+ */
+export function getUserId(req: Request): number {
+  if (!req.user?.id) {
+    throw new Error("User ID is required");
+  }
+  return req.user.id;
+}
+
+/**
+ * Safely extract user data with null checks
+ */
+export function getUserData(req: Request) {
+  if (!req.user) {
+    throw new Error("User data is required");
+  }
+  return {
+    id: req.user.id,
+    storageUsed: req.user.storageUsed ?? 0,
+    filesCount: req.user.filesCount ?? 0,
+  };
+}
+
+/**
+ * Safely extract query parameters with defaults
+ */
+export function getQueryParams(req: Request) {
+  return {
+    page: parseInt((req.query["page"] as string) || "1", 10),
+    limit: parseInt((req.query["limit"] as string) || "10", 10),
+  };
+}
+
+/**
+ * Zod schema for common ID parameters
+ */
+export const idParamSchema = z.object({
+  id: z.string().regex(/^\d+$/).transform(Number),
 });

@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import { ArrowRight, Shield, BarChart3, Share2 } from 'lucide-react';
+import { ArrowRight, BarChart3, Share2, Shield } from "lucide-react";
+import Link from "next/link";
 
 export default function Hero() {
   return (
@@ -12,12 +12,12 @@ export default function Hero() {
                 <span className="block">Secure PDF</span>
                 <span className="block text-primary-600">Sharing & Analytics</span>
               </h1>
-              
+
               <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                Upload PDFs, generate secure smart links, and track who views them with comprehensive analytics. 
-                Perfect for job seekers, consultants, and businesses.
+                Upload PDFs, generate secure smart links, and track who views them with
+                comprehensive analytics. Perfect for job seekers, consultants, and businesses.
               </p>
-              
+
               <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
                 <div className="rounded-md shadow">
                   <Link
@@ -28,7 +28,7 @@ export default function Hero() {
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </div>
-                
+
                 <div className="mt-3 sm:mt-0 sm:ml-3">
                   <Link
                     href="#features"
@@ -42,7 +42,7 @@ export default function Hero() {
           </main>
         </div>
       </div>
-      
+
       <div className="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2">
         <div className="h-56 w-full bg-gradient-to-br from-primary-50 to-primary-100 sm:h-72 md:h-96 lg:w-full lg:h-full flex items-center justify-center">
           <div className="grid grid-cols-2 gap-4 p-8">

@@ -1,0 +1,148 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.5.2/schema.json",
+  "files": {
+    "ignore": [
+      "node_modules",
+      "dist",
+      "*.config.js",
+      "*.config.ts",
+      "pnpm-lock.yaml",
+      "package-lock.json",
+      "yarn.lock",
+      ".next",
+      "build"
+    ]
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "suspicious": {
+        "noExplicitAny": "warn",
+        "noArrayIndexKey": "warn",
+        "noConsoleLog": "warn",
+        "noEmptyInterface": "warn",
+        "noMisleadingInstantiator": "warn"
+      },
+      "complexity": {
+        "noForEach": "warn",
+        "useOptionalChain": "warn",
+        "noExcessiveCognitiveComplexity": "warn",
+        "noMultipleSpacesInRegularExpressionLiterals": "warn",
+        "noStaticOnlyClass": "warn",
+        "useLiteralKeys": "warn"
+      },
+      "style": {
+        "noNonNullAssertion": "warn",
+        "noInferrableTypes": "warn",
+        "noParameterAssign": "warn",
+        "noRestrictedGlobals": "warn",
+        "noVar": "error",
+        "useBlockStatements": "warn",
+        "useConst": "warn",
+        "useDefaultParameterLast": "warn",
+        "useExponentiationOperator": "warn",
+        "useShorthandArrayType": "warn",
+        "useTemplate": "warn"
+      },
+      "correctness": {
+        "noUnusedVariables": "error",
+        "noUndeclaredVariables": "error"
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "error"
+      },
+      "nursery": {
+        "useImportType": "warn",
+        "useNodejsImportProtocol": "off"
+      }
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "trailingComma": "all",
+      "semicolons": "always"
+    }
+  },
+  "overrides": [
+    {
+      "include": ["tests/**/*", "**/*.test.ts", "**/*.spec.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off",
+            "noConsoleLog": "off"
+          },
+          "complexity": {
+            "noForEach": "off"
+          },
+          "style": {
+            "noNonNullAssertion": "off"
+          },
+          "correctness": {
+            "noUnusedVariables": "warn"
+          }
+        }
+      }
+    },
+    {
+      "include": ["**/*.config.ts", "**/*.config.js"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off"
+          }
+        }
+      }
+    },
+    {
+      "include": ["scripts/**/*"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsoleLog": "off"
+          }
+        }
+      }
+    },
+    {
+      "include": ["backend/**/*"],
+      "linter": {
+        "rules": {
+          "nursery": {
+            "useNodejsImportProtocol": "warn"
+          }
+        }
+      }
+    },
+    {
+      "include": ["frontend/**/*"],
+      "linter": {
+        "rules": {
+          "nursery": {
+            "useNodejsImportProtocol": "off"
+          }
+        }
+      }
+    },
+    {
+      "include": ["shared/**/*"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off"
+          },
+          "nursery": {
+            "useNodejsImportProtocol": "off"
+          }
+        }
+      }
+    }
+  ]
+}

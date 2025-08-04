@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { useAuth } from '@clerk/nextjs';
-import { ArrowLeft, FileText, Eye, Share2, Calendar, Download } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { config } from '@/lib/config';
+import { config } from "@/lib/config";
+import { useAuth } from "@clerk/nextjs";
+import { formatDistanceToNow } from "date-fns";
+import { ArrowLeft, Calendar, Download, Eye, FileText, Share2 } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface FileDetail {
   id: number;
@@ -54,13 +54,13 @@ export default function FileDetailPage() {
     try {
       const token = await getToken();
       if (!token) {
-        setError('Authentication required');
+        setError("Authentication required");
         return;
       }
 
       const response = await fetch(`${config.api.url}/api/files/${fileId}`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -68,22 +68,24 @@ export default function FileDetailPage() {
         const data = await response.json();
         setFile(data.data.file);
       } else {
-        setError('File not found');
+        setError("File not found");
       }
     } catch (err) {
-      console.error('Failed to fetch file details:', err);
-      setError('Failed to load file details');
+      console.error("Failed to fetch file details:", err);
+      setError("Failed to load file details");
     }
   };
 
   const fetchShareLinks = async () => {
     try {
       const token = await getToken();
-      if (!token) return;
+      if (!token) {
+        return;
+      }
 
       const response = await fetch(`${config.api.url}/api/share/file/${fileId}`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -92,23 +94,21 @@ export default function FileDetailPage() {
         setShareLinks(data.data.shareLinks);
       }
     } catch (err) {
-      console.error('Failed to fetch share links:', err);
+      console.error("Failed to fetch share links:", err);
     } finally {
       setLoading(false);
     }
   };
 
-
-
   if (loading) {
     return (
       <div className="space-y-6">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-4" />
+          <div className="h-4 bg-gray-200 rounded w-1/2 mb-8" />
           <div className="space-y-4">
-            <div className="h-32 bg-gray-200 rounded"></div>
-            <div className="h-48 bg-gray-200 rounded"></div>
+            <div className="h-32 bg-gray-200 rounded" />
+            <div className="h-48 bg-gray-200 rounded" />
           </div>
         </div>
       </div>
@@ -119,6 +119,7 @@ export default function FileDetailPage() {
     return (
       <div className="space-y-6">
         <button
+          type="button"
           onClick={() => router.back()}
           className="flex items-center text-primary-600 hover:text-primary-900"
         >
@@ -127,9 +128,7 @@ export default function FileDetailPage() {
         </button>
         <div className="text-center py-12">
           <FileText className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">
-            {error || 'File not found'}
-          </h3>
+          <h3 className="mt-2 text-sm font-medium text-gray-900">{error || "File not found"}</h3>
         </div>
       </div>
     );
@@ -141,9 +140,9 @@ export default function FileDetailPage() {
         <div className="card">
           <div className="card-body">
             <div className="animate-pulse space-y-4">
-              <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+              <div className="h-6 bg-gray-200 rounded w-1/3" />
+              <div className="h-4 bg-gray-200 rounded w-1/2" />
+              <div className="h-4 bg-gray-200 rounded w-2/3" />
             </div>
           </div>
         </div>
@@ -153,10 +152,7 @@ export default function FileDetailPage() {
             <FileText className="mx-auto h-12 w-12 text-red-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">Error</h3>
             <p className="mt-1 text-sm text-gray-500">{error}</p>
-            <button
-              onClick={() => router.back()}
-              className="mt-4 btn-outline btn-md"
-            >
+            <button type="button" onClick={() => router.back()} className="mt-4 btn-outline btn-md">
               Go Back
             </button>
           </div>
@@ -172,10 +168,13 @@ export default function FileDetailPage() {
                     <FileText className="h-6 w-6 text-red-600" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-medium text-gray-900">{file.title || 'Untitled Document'}</h2>
+                    <h2 className="text-lg font-medium text-gray-900">
+                      {file.title || "Untitled Document"}
+                    </h2>
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => router.back()}
                   className="btn-outline btn-sm flex items-center"
                 >
@@ -231,10 +230,10 @@ export default function FileDetailPage() {
                         <div className="flex-1">
                           <h3 className="font-medium text-gray-900">{link.title}</h3>
                           <div className="text-sm text-gray-500 mt-1">
-                            <a 
-                              href={`/view/${link.shareId}`} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
+                            <a
+                              href={`/view/${link.shareId}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
                               className="text-primary-600 hover:text-primary-900"
                             >
                               /view/{link.shareId}
@@ -247,19 +246,20 @@ export default function FileDetailPage() {
                             {link.viewCount} views
                           </div>
                           <div>
-                            Created {formatDistanceToNow(new Date(link.createdAt), { addSuffix: true })}
+                            Created{" "}
+                            {formatDistanceToNow(new Date(link.createdAt), { addSuffix: true })}
                           </div>
-                          <a 
-                            href={`/view/${link.shareId}`} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
+                          <a
+                            href={`/view/${link.shareId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="text-primary-600 hover:text-primary-900 font-medium"
                           >
                             View
                           </a>
                         </div>
                       </div>
-                      
+
                       {/* Link details */}
                       <div className="mt-3 flex items-center space-x-4 text-xs text-gray-500">
                         {link.emailGatingEnabled && (
@@ -284,7 +284,8 @@ export default function FileDetailPage() {
                         )}
                         {link.expiresAt && (
                           <span className="inline-flex items-center px-2 py-1 rounded-full bg-red-100 text-red-800">
-                            Expires {formatDistanceToNow(new Date(link.expiresAt), { addSuffix: true })}
+                            Expires{" "}
+                            {formatDistanceToNow(new Date(link.expiresAt), { addSuffix: true })}
                           </span>
                         )}
                         {!link.isActive && (

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Plus } from 'lucide-react';
+import { Plus } from "lucide-react";
+import Link from "next/link";
 
 export default function FloatingUploadButton() {
   return (
@@ -13,4 +13,4 @@ export default function FloatingUploadButton() {
       <span className="sr-only">Upload PDF</span>
     </Link>
   );
-} 
+}

@@ -1,8 +1,8 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-import { config } from '../config';
-import { logger } from './logger';
-import * as schema from '../models/schema';
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import { config } from "../config";
+import * as schema from "../models/schema";
+import { logger } from "./logger";
 
 // Create postgres client
 const client = postgres(config.database.url, {
@@ -18,9 +18,9 @@ export async function connectDatabase() {
   try {
     // Test the connection
     await client`SELECT 1`;
-    logger.info('Database connected successfully');
+    logger.info("Database connected successfully");
   } catch (error) {
-    logger.error('Database connection failed:', error);
+    logger.error("Database connection failed:", error);
     throw error;
   }
 }
@@ -28,9 +28,9 @@ export async function connectDatabase() {
 export async function closeDatabase() {
   try {
     await client.end();
-    logger.info('Database connection closed');
+    logger.info("Database connection closed");
   } catch (error) {
-    logger.error('Error closing database connection:', error);
+    logger.error("Error closing database connection:", error);
     throw error;
   }
 }

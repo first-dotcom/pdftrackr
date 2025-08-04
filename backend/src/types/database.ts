@@ -1,12 +1,12 @@
-import type { 
-  users, 
-  files, 
-  shareLinks, 
-  viewSessions, 
-  pageViews, 
-  emailCaptures, 
-  analyticsSummary 
-} from '../models/schema';
+import type {
+  analyticsSummary,
+  emailCaptures,
+  files,
+  pageViews,
+  shareLinks,
+  users,
+  viewSessions,
+} from "../models/schema";
 
 // Infer types from schema
 export type User = typeof users.$inferSelect;
@@ -31,7 +31,7 @@ export type AnalyticsSummary = typeof analyticsSummary.$inferSelect;
 export type NewAnalyticsSummary = typeof analyticsSummary.$inferInsert;
 
 // User plans
-export type UserPlan = 'free' | 'pro' | 'team';
+export type UserPlan = "free" | "pro" | "team";
 
 // File with relations
 export type FileWithUser = File & {

@@ -3,13 +3,16 @@
  * XSS Protection, Input Sanitization, and Zod Validation
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 // Zod schemas for robust validation
 export const emailSchema = z.string().email().max(254);
-export const planSchema = z.enum(['pro', 'team', 'either']);
+export const planSchema = z.enum(["pro", "team", "either"]);
 export const userInputSchema = z.string().max(1000).trim();
-export const filenameSchema = z.string().max(255).regex(/^[^<>:"|?*\x00-\x1f]+$/);
+export const filenameSchema = z
+  .string()
+  .max(255)
+  .regex(/^[^<>:"|?*\\\/]+$/);
 
 // Validation helpers using Zod - PROPER TYPE SAFETY
 export const validateEmail = (email: string): { valid: boolean; error?: string } => {
@@ -17,7 +20,10 @@ export const validateEmail = (email: string): { valid: boolean; error?: string }
     emailSchema.parse(email);
     return { valid: true };
   } catch (error) {
-    return { valid: false, error: error instanceof z.ZodError ? error.errors[0].message : 'Invalid email' };
+    return {
+      valid: false,
+      error: error instanceof z.ZodError ? error.errors[0].message : "Invalid email",
+    };
   }
 };
 
@@ -25,66 +31,74 @@ export const validatePlan = (plan: string): { valid: boolean; error?: string } =
   try {
     planSchema.parse(plan);
     return { valid: true };
-  } catch (error) {
-    return { valid: false, error: 'Invalid plan selection' };
+  } catch (_error) {
+    return { valid: false, error: "Invalid plan selection" };
   }
 };
 
 // Simple XSS protection for user-generated content
 export const sanitizeHtml = (input: string): string => {
-  if (!input) return '';
-  
+  if (!input) {
+    return "";
+  }
+
   return input
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-    .replace(/\//g, '&#x2F;')
-    .replace(/`/g, '&#x60;')
-    .replace(/=/g, '&#x3D;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;")
+    .replace(/\//g, "&#x2F;")
+    .replace(/`/g, "&#x60;")
+    .replace(/=/g, "&#x3D;");
 };
 
 // Sanitize user input for display
 export const sanitizeUserInput = (input: string): string => {
-  if (!input) return '';
-  
+  if (!input) {
+    return "";
+  }
+
   // Remove dangerous protocols
   const dangerousProtocols = /^(javascript|data|vbscript|file|ftp):/i;
   if (dangerousProtocols.test(input)) {
-    return '';
+    return "";
   }
-  
+
   // Basic HTML sanitization
   return sanitizeHtml(input.trim());
 };
 
 // Validate and sanitize URLs
 export const sanitizeUrl = (url: string): string => {
-  if (!url) return '';
-  
+  if (!url) {
+    return "";
+  }
+
   try {
     const parsed = new URL(url);
-    
+
     // Only allow safe protocols
-    const safeProtocols = ['http:', 'https:', 'mailto:'];
+    const safeProtocols = ["http:", "https:", "mailto:"];
     if (!safeProtocols.includes(parsed.protocol)) {
-      return '';
+      return "";
     }
-    
+
     return parsed.toString();
   } catch {
-    return '';
+    return "";
   }
 };
 
 // Safe filename for display
 export const sanitizeFilename = (filename: string): string => {
-  if (!filename) return '';
-  
+  if (!filename) {
+    return "";
+  }
+
   return filename
-    .replace(/[<>:"|?*\x00-\x1f]/g, '') // Remove dangerous chars
-    .replace(/\.\./g, '') // Prevent path traversal
+    .replace(/[<>:"|?*\\\/]/g, "") // Remove dangerous chars
+    .replace(/\.\./g, "") // Prevent path traversal
     .trim()
     .substring(0, 255); // Limit length
 };
@@ -93,7 +107,7 @@ export const sanitizeFilename = (filename: string): string => {
 export const generateCSRFToken = (): string => {
   const array = new Uint8Array(32);
   crypto.getRandomValues(array);
-  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+  return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("");
 };
 
 // Validate email format
@@ -110,7 +124,7 @@ export const generateNonce = (): string => {
 };
 
 // Safe JSON parsing
-export const safeParse = (json: string): any => {
+export const safeParse = (json: string): unknown => {
   try {
     return JSON.parse(json);
   } catch {
@@ -119,57 +133,56 @@ export const safeParse = (json: string): any => {
 };
 
 // Prevent XSS in React components
-export const createSafeProps = (props: Record<string, any>) => {
-  const safeProps: Record<string, any> = {};
-  
+export const createSafeProps = (props: Record<string, unknown>) => {
+  const safeProps: Record<string, unknown> = {};
+
   for (const [key, value] of Object.entries(props)) {
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       safeProps[key] = sanitizeUserInput(value);
-    } else if (key === 'dangerouslySetInnerHTML') {
+    } else if (key === "dangerouslySetInnerHTML") {
       // Skip dangerous props
-      continue;
     } else {
       safeProps[key] = value;
     }
   }
-  
+
   return safeProps;
 };
 
 // Rate limiting helper for frontend
 export const createClientRateLimit = (maxRequests: number, timeWindow: number) => {
   const requests: number[] = [];
-  
+
   return {
     canMakeRequest: (): boolean => {
       const now = Date.now();
       const windowStart = now - timeWindow;
-      
+
       // Remove old requests
       while (requests.length > 0 && requests[0] < windowStart) {
         requests.shift();
       }
-      
+
       // Check if we're within limits
       if (requests.length >= maxRequests) {
         return false;
       }
-      
+
       // Record this request
       requests.push(now);
       return true;
     },
-    
+
     getRemainingRequests: (): number => {
       const now = Date.now();
       const windowStart = now - timeWindow;
-      
+
       // Remove old requests
       while (requests.length > 0 && requests[0] < windowStart) {
         requests.shift();
       }
-      
+
       return Math.max(0, maxRequests - requests.length);
-    }
+    },
   };
 };

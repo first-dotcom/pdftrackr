@@ -1,23 +1,11 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Suspense } from 'react';
-import { useAuth, useUser } from '@clerk/nextjs';
-import { 
-  FileText, 
-  Eye, 
-  Users, 
-  Mail, 
-  Clock, 
-  TrendingUp, 
-  BarChart3,
-  Plus
-} from 'lucide-react';
-import { config } from '@/lib/config';
-
-import StorageUsage from '@/components/StorageUsage';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import Link from 'next/link';
+import StorageUsage from "@/components/StorageUsage";
+import { config } from "@/lib/config";
+import { useAuth, useUser } from "@clerk/nextjs";
+import { BarChart3, Clock, Eye, FileText, Mail, Plus, TrendingUp, Users } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface DashboardData {
   totalFiles: number;
@@ -57,10 +45,10 @@ interface DashboardData {
 
 export default function DashboardPage() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
-  const [timeRange] = useState('30d');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  
+  const [_timeRange] = useState("30d");
+  const [_loading, setLoading] = useState(true);
+  const [_error, setError] = useState<string | null>(null);
+
   const { getToken, isLoaded: authLoaded } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
 
@@ -76,75 +64,81 @@ export default function DashboardPage() {
     try {
       setLoading(true);
       const token = await getToken();
-      
+
       if (!token) {
-        setError('Authentication required');
+        setError("Authentication required");
         return;
       }
 
       const response = await fetch(`${config.api.url}/api/analytics/dashboard`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to fetch dashboard data' }));
-        setError(errorData.message || 'Failed to fetch dashboard data');
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Failed to fetch dashboard data" }));
+        setError(errorData.message || "Failed to fetch dashboard data");
         return;
       }
 
       const data = await response.json();
-      
+
       if (!data.success) {
-        setError(data.error || 'Failed to fetch dashboard data');
+        setError(data.error || "Failed to fetch dashboard data");
         return;
       }
 
       setDashboardData(data.data);
-    } catch (error) {
-      setError('Failed to fetch dashboard information');
+    } catch (_error) {
+      setError("Failed to fetch dashboard information");
     } finally {
       setLoading(false);
     }
   };
 
   const formatDuration = (seconds: number) => {
-    if (seconds === 0) return '—'; // Show dash when no duration is tracked
+    if (seconds === 0) {
+      return "—"; // Show dash when no duration is tracked
+    }
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
   };
 
   const formatNumber = (num: number | string | undefined | null) => {
-    if (num === undefined || num === null) return '0';
+    if (num === undefined || num === null) {
+      return "0";
+    }
     return Number(num).toLocaleString();
   };
 
   const statCards = [
     {
-      name: 'Total Files',
+      name: "Total Files",
       value: dashboardData?.totalFiles || 0,
       icon: FileText,
-      color: 'bg-blue-500',
+      color: "bg-blue-500",
     },
     {
-      name: 'Total Views',
+      name: "Total Views",
       value: dashboardData?.totalViews || 0,
       icon: Eye,
-      color: 'bg-green-500',
+      color: "bg-green-500",
     },
     {
-      name: 'Unique Viewers',
+      name: "Unique Viewers",
       value: dashboardData?.totalUniqueViews || 0,
       icon: Users,
-      color: 'bg-purple-500',
+      color: "bg-purple-500",
     },
     {
-      name: 'Email Captures',
+      name: "Email Captures",
       value: dashboardData?.emailCaptures || 0,
       icon: Mail,
-      color: 'bg-orange-500',
+      color: "bg-orange-500",
     },
   ];
 
@@ -152,16 +146,15 @@ export default function DashboardPage() {
   if (!isReady) {
     return (
       <div className="space-y-6">
-        
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="card animate-pulse">
+            <div key={`skeleton-${i}`} className="card animate-pulse">
               <div className="card-body">
                 <div className="flex items-center">
-                  <div className="w-8 h-8 bg-gray-200 rounded"></div>
+                  <div className="w-8 h-8 bg-gray-200 rounded" />
                   <div className="ml-4 flex-1">
-                    <div className="h-4 bg-gray-200 rounded w-20 mb-2"></div>
-                    <div className="h-6 bg-gray-200 rounded w-16"></div>
+                    <div className="h-4 bg-gray-200 rounded w-20 mb-2" />
+                    <div className="h-6 bg-gray-200 rounded w-16" />
                   </div>
                 </div>
               </div>
@@ -189,17 +182,11 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-
       {/* Header with Upload Button */}
       <div className="flex justify-between items-center">
-        <div className="flex-1">
-          {/* Welcome message is handled by header */}
-        </div>
+        <div className="flex-1">{/* Welcome message is handled by header */}</div>
         <div className="ml-4">
-          <Link
-            href="/dashboard/files/upload"
-            className="btn-primary btn-md flex items-center"
-          >
+          <Link href="/dashboard/files/upload" className="btn-primary btn-md flex items-center">
             <Plus className="h-4 w-4 mr-2" />
             Upload PDF
           </Link>
@@ -217,9 +204,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="ml-4 flex-1">
                   <p className="text-sm font-medium text-gray-600">{stat.name}</p>
-                  <p className="text-2xl font-semibold text-gray-900">
-                    {formatNumber(stat.value)}
-                  </p>
+                  <p className="text-2xl font-semibold text-gray-900">{formatNumber(stat.value)}</p>
                 </div>
               </div>
             </div>
@@ -233,94 +218,103 @@ export default function DashboardPage() {
         <div>
           <StorageUsage />
         </div>
-        
-        {/* Analytics Section - Only show if there's data */}
-        {dashboardData && (dashboardData.recentViews?.length > 0 || dashboardData.topFiles?.length > 0) && (
-          <div className="space-y-6">
-            {/* Top Performing Files - Show top 5 */}
-            {dashboardData.topFiles && dashboardData.topFiles.length > 0 && (
-              <div className="card">
-                <div className="card-header">
-                  <h3 className="text-lg font-medium text-gray-900 flex items-center">
-                    <TrendingUp className="mr-2 h-5 w-5" />
-                    Top Files
-                  </h3>
-                </div>
-                <div className="card-body">
-                  <div className="space-y-3">
-                    {dashboardData.topFiles.map((file, index) => (
-                      <div key={file.fileId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                        <div className="flex items-center flex-1">
-                          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                            <span className="text-sm font-bold text-green-600">#{index + 1}</span>
-                          </div>
-                          <div className="ml-3 flex-1">
-                            <div className="text-sm font-medium text-gray-900 truncate">
-                              {file.title || 'Untitled Document'}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {formatNumber(file.viewCount)} views
-                            </div>
-                          </div>
-                        </div>
-                        <Link
-                          href={`/dashboard/files/${file.fileId}`}
-                          className="text-primary-600 hover:text-primary-800 text-sm font-medium"
-                        >
-                          View
-                        </Link>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
 
-            {/* Recent Activity - Show last 5 */}
-            {dashboardData.recentViews && dashboardData.recentViews.length > 0 && (
-              <div className="card">
-                <div className="card-header">
-                  <h3 className="text-lg font-medium text-gray-900 flex items-center">
-                    <Clock className="mr-2 h-5 w-5" />
-                    Recent Activity
-                  </h3>
-                </div>
-                <div className="card-body">
-                  <div className="space-y-3">
-                    {dashboardData.recentViews.map((view, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center flex-1">
-                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                            <Eye className="h-4 w-4 text-blue-600" />
-                          </div>
-                          <div className="ml-3 flex-1">
-                            <div className="text-sm font-medium text-gray-900">
-                              {view.viewerName || view.viewerEmail || 'Anonymous'}
+        {/* Analytics Section - Only show if there's data */}
+        {dashboardData &&
+          (dashboardData.recentViews?.length > 0 || dashboardData.topFiles?.length > 0) && (
+            <div className="space-y-6">
+              {/* Top Performing Files - Show top 5 */}
+              {dashboardData.topFiles && dashboardData.topFiles.length > 0 && (
+                <div className="card">
+                  <div className="card-header">
+                    <h3 className="text-lg font-medium text-gray-900 flex items-center">
+                      <TrendingUp className="mr-2 h-5 w-5" />
+                      Top Files
+                    </h3>
+                  </div>
+                  <div className="card-body">
+                    <div className="space-y-3">
+                      {dashboardData.topFiles.map((file, index) => (
+                        <div
+                          key={file.fileId}
+                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                        >
+                          <div className="flex items-center flex-1">
+                            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                              <span className="text-sm font-bold text-green-600">#{index + 1}</span>
                             </div>
-                            <div className="text-xs text-gray-500">
-                              {formatDuration(view.totalDuration)}
+                            <div className="ml-3 flex-1">
+                              <div className="text-sm font-medium text-gray-900 truncate">
+                                {file.title || "Untitled Document"}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {formatNumber(file.viewCount)} views
+                              </div>
                             </div>
                           </div>
+                          <Link
+                            href={`/dashboard/files/${file.fileId}`}
+                            className="text-primary-600 hover:text-primary-800 text-sm font-medium"
+                          >
+                            View
+                          </Link>
                         </div>
-                        <div className="text-xs text-gray-500">
-                          {new Date(view.startedAt).toLocaleDateString()}
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+
+              {/* Recent Activity - Show last 5 */}
+              {dashboardData.recentViews && dashboardData.recentViews.length > 0 && (
+                <div className="card">
+                  <div className="card-header">
+                    <h3 className="text-lg font-medium text-gray-900 flex items-center">
+                      <Clock className="mr-2 h-5 w-5" />
+                      Recent Activity
+                    </h3>
+                  </div>
+                  <div className="card-body">
+                    <div className="space-y-3">
+                      {dashboardData.recentViews.map((view) => (
+                        <div
+                          key={view.id}
+                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                        >
+                          <div className="flex items-center flex-1">
+                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                              <Eye className="h-4 w-4 text-blue-600" />
+                            </div>
+                            <div className="ml-3 flex-1">
+                              <div className="text-sm font-medium text-gray-900">
+                                {view.viewerName || view.viewerEmail || "Anonymous"}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {formatDuration(view.totalDuration)}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {new Date(view.startedAt).toLocaleDateString()}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
         {/* Empty State - Show when no data */}
-        {dashboardData && (!dashboardData.recentViews?.length && !dashboardData.topFiles?.length) && (
+        {dashboardData && !dashboardData.recentViews?.length && !dashboardData.topFiles?.length && (
           <div className="card">
             <div className="card-body text-center py-12">
               <BarChart3 className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">No activity yet</h3>
-              <p className="mt-1 text-sm text-gray-500">Upload and share files to see analytics here</p>
+              <p className="mt-1 text-sm text-gray-500">
+                Upload and share files to see analytics here
+              </p>
             </div>
           </div>
         )}

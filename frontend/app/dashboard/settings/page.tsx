@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@clerk/nextjs';
-import { User, Shield, Bell, CreditCard, Download, Trash2 } from 'lucide-react';
-import { config } from '@/lib/config';
+import { config } from "@/lib/config";
+import { useAuth } from "@clerk/nextjs";
+import { Bell, CreditCard, Download, Shield, Trash2, User } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface UserSettings {
   email: string;
@@ -40,25 +40,25 @@ export default function SettingsPage() {
     try {
       const token = await getToken();
       if (!token) {
-        console.error('No authentication token available');
+        console.error("No authentication token available");
         setLoading(false);
         return;
       }
 
       const response = await fetch(`${config.api.url}/api/users/settings`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setSettings(data.data);
       } else {
         // For now, create default settings
         setSettings({
-          email: 'user@example.com',
-          name: 'User',
+          email: "user@example.com",
+          name: "User",
           notifications: {
             email: true,
             browser: true,
@@ -73,12 +73,12 @@ export default function SettingsPage() {
           storage: {
             used: 0,
             limit: 500 * 1024 * 1024, // 500MB
-            plan: 'free',
+            plan: "free",
           },
         });
       }
     } catch (error) {
-      console.error('Failed to fetch settings:', error);
+      console.error("Failed to fetch settings:", error);
     } finally {
       setLoading(false);
     }
@@ -89,23 +89,23 @@ export default function SettingsPage() {
     try {
       const token = await getToken();
       if (!token) {
-        throw new Error('Authentication required');
+        throw new Error("Authentication required");
       }
 
       const response = await fetch(`${config.api.url}/api/users/settings`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(newSettings),
       });
 
       if (response.ok) {
-        setSettings(prev => ({ ...prev!, ...newSettings }));
+        setSettings((prev) => (prev ? { ...prev, ...newSettings } : null));
       }
     } catch (error) {
-      console.error('Failed to update settings:', error);
+      console.error("Failed to update settings:", error);
     } finally {
       setSaving(false);
     }
@@ -117,7 +117,9 @@ export default function SettingsPage() {
   };
 
   const getStoragePercentage = () => {
-    if (!settings) return 0;
+    if (!settings) {
+      return 0;
+    }
     return (settings.storage.used / settings.storage.limit) * 100;
   };
 
@@ -126,10 +128,10 @@ export default function SettingsPage() {
       <div className="space-y-6">
         <div className="card animate-pulse">
           <div className="card-body">
-            <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/3 mb-4" />
             <div className="space-y-3">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-4 bg-gray-200 rounded"></div>
+                <div key={`skeleton-${i}`} className="h-4 bg-gray-200 rounded" />
               ))}
             </div>
           </div>
@@ -154,7 +156,6 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-
       {/* Account Information */}
       <div className="card">
         <div className="card-header">
@@ -202,16 +203,16 @@ export default function SettingsPage() {
               </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
+              <div
                 className="bg-primary-600 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${Math.min(getStoragePercentage(), 100)}%` }}
-              ></div>
+              />
             </div>
             <p className="text-xs text-gray-500 mt-1">
               {settings.storage.plan.charAt(0).toUpperCase() + settings.storage.plan.slice(1)} Plan
             </p>
           </div>
-          <button className="btn-outline btn-sm">
+          <button type="button" className="btn-outline btn-sm">
             Upgrade Plan
           </button>
         </div>
@@ -235,12 +236,14 @@ export default function SettingsPage() {
               <input
                 type="checkbox"
                 checked={settings.notifications.email}
-                onChange={(e) => updateSettings({ 
-                  notifications: { ...settings.notifications, email: e.target.checked }
-                })}
+                onChange={(e) =>
+                  updateSettings({
+                    notifications: { ...settings.notifications, email: e.target.checked },
+                  })
+                }
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600" />
             </label>
           </div>
 
@@ -253,12 +256,14 @@ export default function SettingsPage() {
               <input
                 type="checkbox"
                 checked={settings.notifications.newViews}
-                onChange={(e) => updateSettings({ 
-                  notifications: { ...settings.notifications, newViews: e.target.checked }
-                })}
+                onChange={(e) =>
+                  updateSettings({
+                    notifications: { ...settings.notifications, newViews: e.target.checked },
+                  })
+                }
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600" />
             </label>
           </div>
         </div>
@@ -282,12 +287,14 @@ export default function SettingsPage() {
               <input
                 type="checkbox"
                 checked={settings.privacy.trackAnalytics}
-                onChange={(e) => updateSettings({ 
-                  privacy: { ...settings.privacy, trackAnalytics: e.target.checked }
-                })}
+                onChange={(e) =>
+                  updateSettings({
+                    privacy: { ...settings.privacy, trackAnalytics: e.target.checked },
+                  })
+                }
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600" />
             </label>
           </div>
 
@@ -295,9 +302,11 @@ export default function SettingsPage() {
             <label className="block text-sm font-medium text-gray-700 mb-2">Data Retention</label>
             <select
               value={settings.privacy.dataRetention}
-              onChange={(e) => updateSettings({ 
-                privacy: { ...settings.privacy, dataRetention: parseInt(e.target.value) }
-              })}
+              onChange={(e) =>
+                updateSettings({
+                  privacy: { ...settings.privacy, dataRetention: parseInt(e.target.value) },
+                })
+              }
               className="input w-full"
             >
               <option value={30}>30 days</option>
@@ -324,7 +333,7 @@ export default function SettingsPage() {
               <p className="text-sm font-medium text-gray-700">Export My Data</p>
               <p className="text-xs text-gray-500">Download all your data in JSON format</p>
             </div>
-            <button className="btn-outline btn-sm">
+            <button type="button" className="btn-outline btn-sm">
               Export
             </button>
           </div>
@@ -334,7 +343,7 @@ export default function SettingsPage() {
               <p className="text-sm font-medium text-gray-700">Delete My Account</p>
               <p className="text-xs text-gray-500">Permanently delete your account and all data</p>
             </div>
-            <button className="btn-outline btn-sm text-red-600 hover:text-red-700">
+            <button type="button" className="btn-outline btn-sm text-red-600 hover:text-red-700">
               <Trash2 className="mr-1 h-4 w-4" />
               Delete
             </button>
@@ -349,4 +358,4 @@ export default function SettingsPage() {
       )}
     </div>
   );
-} 
+}

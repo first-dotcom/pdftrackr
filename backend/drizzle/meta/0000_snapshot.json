@@ -97,17 +97,12 @@
       "indexes": {
         "analytics_summary_file_id_date_idx": {
           "name": "analytics_summary_file_id_date_idx",
-          "columns": [
-            "file_id",
-            "date"
-          ],
+          "columns": ["file_id", "date"],
           "isUnique": true
         },
         "analytics_summary_date_idx": {
           "name": "analytics_summary_date_idx",
-          "columns": [
-            "date"
-          ],
+          "columns": ["date"],
           "isUnique": false
         }
       },
@@ -116,12 +111,8 @@
           "name": "analytics_summary_file_id_files_id_fk",
           "tableFrom": "analytics_summary",
           "tableTo": "files",
-          "columnsFrom": [
-            "file_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["file_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -186,23 +177,17 @@
       "indexes": {
         "email_captures_share_id_idx": {
           "name": "email_captures_share_id_idx",
-          "columns": [
-            "share_id"
-          ],
+          "columns": ["share_id"],
           "isUnique": false
         },
         "email_captures_email_idx": {
           "name": "email_captures_email_idx",
-          "columns": [
-            "email"
-          ],
+          "columns": ["email"],
           "isUnique": false
         },
         "email_captures_captured_at_idx": {
           "name": "email_captures_captured_at_idx",
-          "columns": [
-            "captured_at"
-          ],
+          "columns": ["captured_at"],
           "isUnique": false
         }
       },
@@ -211,12 +196,8 @@
           "name": "email_captures_share_id_share_links_share_id_fk",
           "tableFrom": "email_captures",
           "tableTo": "share_links",
-          "columnsFrom": [
-            "share_id"
-          ],
-          "columnsTo": [
-            "share_id"
-          ],
+          "columnsFrom": ["share_id"],
+          "columnsTo": ["share_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -364,30 +345,22 @@
       "indexes": {
         "files_user_id_idx": {
           "name": "files_user_id_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "files_created_at_idx": {
           "name": "files_created_at_idx",
-          "columns": [
-            "created_at"
-          ],
+          "columns": ["created_at"],
           "isUnique": false
         },
         "files_hash_idx": {
           "name": "files_hash_idx",
-          "columns": [
-            "file_hash"
-          ],
+          "columns": ["file_hash"],
           "isUnique": false
         },
         "files_ip_idx": {
           "name": "files_ip_idx",
-          "columns": [
-            "ip_address"
-          ],
+          "columns": ["ip_address"],
           "isUnique": false
         }
       },
@@ -396,12 +369,8 @@
           "name": "files_user_id_users_id_fk",
           "tableFrom": "files",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -456,23 +425,17 @@
       "indexes": {
         "page_views_session_id_idx": {
           "name": "page_views_session_id_idx",
-          "columns": [
-            "session_id"
-          ],
+          "columns": ["session_id"],
           "isUnique": false
         },
         "page_views_page_number_idx": {
           "name": "page_views_page_number_idx",
-          "columns": [
-            "page_number"
-          ],
+          "columns": ["page_number"],
           "isUnique": false
         },
         "page_views_viewed_at_idx": {
           "name": "page_views_viewed_at_idx",
-          "columns": [
-            "viewed_at"
-          ],
+          "columns": ["viewed_at"],
           "isUnique": false
         }
       },
@@ -481,12 +444,8 @@
           "name": "page_views_session_id_view_sessions_session_id_fk",
           "tableFrom": "page_views",
           "tableTo": "view_sessions",
-          "columnsFrom": [
-            "session_id"
-          ],
-          "columnsTo": [
-            "session_id"
-          ],
+          "columnsFrom": ["session_id"],
+          "columnsTo": ["session_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -606,23 +565,17 @@
       "indexes": {
         "share_links_share_id_idx": {
           "name": "share_links_share_id_idx",
-          "columns": [
-            "share_id"
-          ],
+          "columns": ["share_id"],
           "isUnique": true
         },
         "share_links_file_id_idx": {
           "name": "share_links_file_id_idx",
-          "columns": [
-            "file_id"
-          ],
+          "columns": ["file_id"],
           "isUnique": false
         },
         "share_links_expires_at_idx": {
           "name": "share_links_expires_at_idx",
-          "columns": [
-            "expires_at"
-          ],
+          "columns": ["expires_at"],
           "isUnique": false
         }
       },
@@ -631,12 +584,8 @@
           "name": "share_links_file_id_files_id_fk",
           "tableFrom": "share_links",
           "tableTo": "files",
-          "columnsFrom": [
-            "file_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["file_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -646,9 +595,7 @@
         "share_links_share_id_unique": {
           "name": "share_links_share_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "share_id"
-          ]
+          "columns": ["share_id"]
         }
       }
     },
@@ -725,16 +672,12 @@
       "indexes": {
         "users_clerk_id_idx": {
           "name": "users_clerk_id_idx",
-          "columns": [
-            "clerk_id"
-          ],
+          "columns": ["clerk_id"],
           "isUnique": true
         },
         "users_email_idx": {
           "name": "users_email_idx",
-          "columns": [
-            "email"
-          ],
+          "columns": ["email"],
           "isUnique": true
         }
       },
@@ -744,16 +687,12 @@
         "users_clerk_id_unique": {
           "name": "users_clerk_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "clerk_id"
-          ]
+          "columns": ["clerk_id"]
         },
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       }
     },
@@ -884,37 +823,27 @@
       "indexes": {
         "view_sessions_share_id_idx": {
           "name": "view_sessions_share_id_idx",
-          "columns": [
-            "share_id"
-          ],
+          "columns": ["share_id"],
           "isUnique": false
         },
         "view_sessions_session_id_idx": {
           "name": "view_sessions_session_id_idx",
-          "columns": [
-            "session_id"
-          ],
+          "columns": ["session_id"],
           "isUnique": true
         },
         "view_sessions_started_at_idx": {
           "name": "view_sessions_started_at_idx",
-          "columns": [
-            "started_at"
-          ],
+          "columns": ["started_at"],
           "isUnique": false
         },
         "view_sessions_ip_idx": {
           "name": "view_sessions_ip_idx",
-          "columns": [
-            "ip_address"
-          ],
+          "columns": ["ip_address"],
           "isUnique": false
         },
         "view_sessions_risk_idx": {
           "name": "view_sessions_risk_idx",
-          "columns": [
-            "risk_score"
-          ],
+          "columns": ["risk_score"],
           "isUnique": false
         }
       },
@@ -923,12 +852,8 @@
           "name": "view_sessions_share_id_share_links_share_id_fk",
           "tableFrom": "view_sessions",
           "tableTo": "share_links",
-          "columnsFrom": [
-            "share_id"
-          ],
-          "columnsTo": [
-            "share_id"
-          ],
+          "columnsFrom": ["share_id"],
+          "columnsTo": ["share_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1007,23 +932,17 @@
       "indexes": {
         "waitlist_email_idx": {
           "name": "waitlist_email_idx",
-          "columns": [
-            "email"
-          ],
+          "columns": ["email"],
           "isUnique": true
         },
         "waitlist_plan_idx": {
           "name": "waitlist_plan_idx",
-          "columns": [
-            "plan"
-          ],
+          "columns": ["plan"],
           "isUnique": false
         },
         "waitlist_created_at_idx": {
           "name": "waitlist_created_at_idx",
-          "columns": [
-            "created_at"
-          ],
+          "columns": ["created_at"],
           "isUnique": false
         }
       },
@@ -1033,9 +952,7 @@
         "waitlist_email_unique": {
           "name": "waitlist_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       }
     }

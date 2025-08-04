@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
-import { config } from '@/lib/config';
-
+import { config } from "@/lib/config";
+import dynamic from "next/dynamic";
+import type React from "react";
+import { useEffect, useState } from "react";
 
 // Dynamic imports for lucide-react components
-const Eye = dynamic(() => import('lucide-react').then(mod => mod.Eye), { ssr: false });
-const Download = dynamic(() => import('lucide-react').then(mod => mod.Download), { ssr: false });
-const Lock = dynamic(() => import('lucide-react').then(mod => mod.Lock), { ssr: false });
+const Eye = dynamic(() => import("lucide-react").then((mod) => mod.Eye), { ssr: false });
+const Download = dynamic(() => import("lucide-react").then((mod) => mod.Download), { ssr: false });
+const Lock = dynamic(() => import("lucide-react").then((mod) => mod.Lock), { ssr: false });
 
-const Clock = dynamic(() => import('lucide-react').then(mod => mod.Clock), { ssr: false });
-const Users = dynamic(() => import('lucide-react').then(mod => mod.Users), { ssr: false });
+const Clock = dynamic(() => import("lucide-react").then((mod) => mod.Clock), { ssr: false });
+const Users = dynamic(() => import("lucide-react").then((mod) => mod.Users), { ssr: false });
 
 interface ShareLinkData {
   shareLink: {
@@ -61,25 +61,25 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAccessForm, setShowAccessForm] = useState(false);
-  
+
   // Access form state
-  const [password, setPassword] = useState('');
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
+  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     fetchShareInfo();
-  }, [shareId]);
+  }, []);
 
   const fetchShareInfo = async () => {
     try {
       const response = await fetch(`${config.api.url}/api/share/${shareId}`);
-      
+
       if (response.ok) {
         const data = await response.json();
         setShareData(data.data);
-        
+
         // If no password or email gating required, show access form
         if (!data.data.shareLink.requiresPassword && !data.data.shareLink.emailGatingEnabled) {
           setShowAccessForm(true);
@@ -88,11 +88,11 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
         }
       } else {
         const errorData = await response.json();
-        setError(errorData.message || 'Share link not found');
+        setError(errorData.message || "Share link not found");
       }
     } catch (err) {
-      console.error('Failed to fetch share info:', err);
-      setError('Failed to load share link');
+      console.error("Failed to fetch share info:", err);
+      setError("Failed to load share link");
     } finally {
       setLoading(false);
     }
@@ -103,21 +103,23 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
     setSubmitting(true);
 
     try {
-      const payload: any = {};
-      
+      const payload: Record<string, string> = {};
+
       if (shareData?.shareLink.requiresPassword) {
         payload.password = password;
       }
-      
+
       if (shareData?.shareLink.emailGatingEnabled) {
         payload.email = email;
-        if (name) payload.name = name;
+        if (name) {
+          payload.name = name;
+        }
       }
 
       const response = await fetch(`${config.api.url}/api/share/${shareId}/access`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
@@ -128,11 +130,11 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
         setShowAccessForm(false);
       } else {
         const errorData = await response.json();
-        setError(errorData.message || 'Access denied');
+        setError(errorData.message || "Access denied");
       }
     } catch (err) {
-      console.error('Failed to access share:', err);
-      setError('Failed to access document');
+      console.error("Failed to access share:", err);
+      setError("Failed to access document");
     } finally {
       setSubmitting(false);
     }
@@ -140,9 +142,9 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
 
   const handleDownload = () => {
     if (accessData?.fileUrl) {
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = accessData.fileUrl;
-              link.download = accessData.file.title || 'document.pdf';
+      link.download = accessData.file.title || "document.pdf";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -150,17 +152,19 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) {
+      return "0 Bytes";
+    }
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
       </div>
     );
   }
@@ -207,7 +211,9 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
           <div className="space-y-4 mb-6">
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-500">Document:</span>
-              <span className="font-medium">{shareData.shareLink.file.title || 'Untitled Document'}</span>
+              <span className="font-medium">
+                {shareData.shareLink.file.title || "Untitled Document"}
+              </span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-500">Size:</span>
@@ -268,12 +274,8 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={submitting}
-              className="btn-primary btn-md w-full"
-            >
-              {submitting ? 'Accessing...' : 'View Document'}
+            <button type="submit" disabled={submitting} className="btn-primary btn-md w-full">
+              {submitting ? "Accessing..." : "View Document"}
             </button>
           </form>
 
@@ -313,11 +315,14 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-lg font-medium text-gray-900">{shareData.shareLink.title}</h1>
-              <p className="text-sm text-gray-500">{accessData.file.title || 'Untitled Document'}</p>
+              <p className="text-sm text-gray-500">
+                {accessData.file.title || "Untitled Document"}
+              </p>
             </div>
             <div className="flex items-center space-x-3">
               {accessData.downloadEnabled && (
                 <button
+                  type="button"
                   onClick={handleDownload}
                   className="btn-outline btn-sm flex items-center"
                 >
@@ -352,6 +357,7 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
                 </a>
                 {accessData.downloadEnabled && (
                   <button
+                    type="button"
                     onClick={handleDownload}
                     className="btn-outline btn-lg flex items-center"
                   >

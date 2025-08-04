@@ -1,32 +1,32 @@
-import dotenv from 'dotenv';
-import { z } from 'zod';
+import dotenv from "dotenv";
+import { z } from "zod";
 
 dotenv.config();
 
 // Define environment schema - SIMPLIFIED
 const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  PORT: z.string().default('3001'),
-  
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+  PORT: z.string().default("3001"),
+
   // Database - use URL format (simpler)
-  DATABASE_URL: z.string().default('postgresql://postgres:password@postgres:5432/pdftrackr'),
-  
-  // Redis - use URL format (simpler)  
-  REDIS_URL: z.string().default('redis://redis:6379'),
-  
+  DATABASE_URL: z.string().default("postgresql://postgres:password@postgres:5432/pdftrackr"),
+
+  // Redis - use URL format (simpler)
+  REDIS_URL: z.string().default("redis://redis:6379"),
+
   // Authentication - Only Clerk needed
   CLERK_PUBLISHABLE_KEY: z.string(),
   CLERK_SECRET_KEY: z.string(),
-  
+
   // Storage (using S3 format - works with DigitalOcean Spaces)
-  S3_ENDPOINT: z.string().default('https://nyc3.digitaloceanspaces.com'),
-  S3_REGION: z.string().default('nyc3'),
-  S3_BUCKET: z.string().default('pdftrackr'),
-  S3_ACCESS_KEY: z.string().default(''),
-  S3_SECRET_KEY: z.string().default(''),
-  
+  S3_ENDPOINT: z.string().default("https://nyc3.digitaloceanspaces.com"),
+  S3_REGION: z.string().default("nyc3"),
+  S3_BUCKET: z.string().default("pdftrackr"),
+  S3_ACCESS_KEY: z.string().default(""),
+  S3_SECRET_KEY: z.string().default(""),
+
   // Frontend
-  FRONTEND_URL: z.string().default('http://localhost:3000'),
+  FRONTEND_URL: z.string().default("http://localhost:3000"),
 });
 
 // Parse and validate environment variables
@@ -47,11 +47,11 @@ export const config = {
     secretKey: env.CLERK_SECRET_KEY,
   },
   storage: {
-    endpoint: env.S3_ENDPOINT || 'https://nyc3.digitaloceanspaces.com',
-    region: env.S3_REGION || 'nyc3',
-    bucket: env.S3_BUCKET || 'pdftrackr',
-    accessKeyId: env.S3_ACCESS_KEY || '',
-    secretAccessKey: env.S3_SECRET_KEY || '',
+    endpoint: env.S3_ENDPOINT || "https://nyc3.digitaloceanspaces.com",
+    region: env.S3_REGION || "nyc3",
+    bucket: env.S3_BUCKET || "pdftrackr",
+    accessKeyId: env.S3_ACCESS_KEY || "",
+    secretAccessKey: env.S3_SECRET_KEY || "",
     enabled: !!(env.S3_ACCESS_KEY && env.S3_SECRET_KEY), // Only enable if credentials are provided
   },
   frontend: {

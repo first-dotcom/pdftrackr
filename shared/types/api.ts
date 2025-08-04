@@ -1,7 +1,7 @@
 // Shared API Types for Backend-Frontend Communication
 
 // Base API Response Structure
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
@@ -84,6 +84,13 @@ export interface User {
 }
 
 // Analytics Types
+export interface ViewDataPoint {
+  date: string;
+  views: number;
+  uniqueViews: number;
+  duration: number;
+}
+
 export interface DashboardData {
   totalFiles: number;
   totalViews: number;
@@ -93,7 +100,7 @@ export interface DashboardData {
   emailCaptures: number;
   recentViews: ViewSession[];
   topFiles: TopFile[];
-  viewsByDay: any[]; // TODO: Define specific structure
+  viewsByDay: ViewDataPoint[];
 }
 
 export interface ViewSession {
@@ -133,7 +140,7 @@ export interface StorageInfo {
 export interface FilesResponse extends ApiResponse<PaginatedResponse<File>> {}
 export interface FileResponse extends ApiResponse<{ file: File }> {}
 export interface ShareLinksResponse extends ApiResponse<PaginatedResponse<ShareLink>> {}
-export interface ShareLinkResponse extends ApiResponse<{ shareLink: ShareLink }> {}
+export interface ShareLinkResponse extends ApiResponse<{ shareLink: ShareLink; url: string }> {}
 export interface UserResponse extends ApiResponse<{ user: User }> {}
 export interface DashboardResponse extends ApiResponse<DashboardData> {}
 export interface StorageResponse extends ApiResponse<StorageInfo> {}
@@ -183,4 +190,4 @@ export interface PaginationQuery {
 // Analytics Query Types
 export interface AnalyticsQuery extends PaginationQuery {
   days?: number;
-} 
+}

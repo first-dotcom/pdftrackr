@@ -1,10 +1,11 @@
-import { currentUser } from '@clerk/nextjs';
-import { redirect } from 'next/navigation';
-import DashboardSidebar from '@/components/DashboardSidebar';
-import DashboardHeader from '@/components/DashboardHeader';
-import FloatingUploadButton from '@/components/FloatingUploadButton';
-import Breadcrumbs from '@/components/Breadcrumbs';
-import WaitlistModal from '@/components/WaitlistModal';
+import Breadcrumbs from "@/components/Breadcrumbs";
+import DashboardHeader from "@/components/DashboardHeader";
+import DashboardSidebar from "@/components/DashboardSidebar";
+import FloatingUploadButton from "@/components/FloatingUploadButton";
+import WaitlistModal from "@/components/WaitlistModal";
+import { currentUser } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
+import type React from "react";
 
 export default async function DashboardLayout({
   children,
@@ -15,7 +16,7 @@ export default async function DashboardLayout({
 
   // Redirect unauthenticated users to sign in
   if (!user) {
-    redirect('/sign-in');
+    redirect("/sign-in");
   }
 
   return (

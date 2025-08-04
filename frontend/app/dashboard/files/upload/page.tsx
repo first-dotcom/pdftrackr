@@ -1,15 +1,16 @@
-'use client';
+"use client";
 
-import { useState, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@clerk/nextjs';
-import { Upload, FileText, X, CheckCircle, AlertCircle } from 'lucide-react';
-import { config } from '@/lib/config';
+import { config } from "@/lib/config";
+import { useAuth } from "@clerk/nextjs";
+import { AlertCircle, CheckCircle, FileText, Upload, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import type React from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface UploadFile {
   file: File;
   id: string;
-  status: 'pending' | 'uploading' | 'success' | 'error';
+  status: "pending" | "uploading" | "success" | "error";
   progress: number;
   error?: string | null;
 }
@@ -32,11 +33,13 @@ export default function UploadPage() {
   const fetchUserQuotas = async () => {
     try {
       const token = await getToken();
-      if (!token) return;
+      if (!token) {
+        return;
+      }
 
       const response = await fetch(`${config.api.url}/api/users/profile`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -54,27 +57,29 @@ export default function UploadPage() {
         }
       }
     } catch (error) {
-      console.error('Failed to fetch user quotas:', error);
+      console.error("Failed to fetch user quotas:", error);
     }
   };
 
   const validateFile = (file: File): string | null => {
     // Check file type
-    if (file.type !== 'application/pdf') {
-      return 'Only PDF files are allowed';
+    if (file.type !== "application/pdf") {
+      return "Only PDF files are allowed";
     }
-    
+
     // Check file size (10MB limit)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      return 'File size must be less than 10MB';
+      return "File size must be less than 10MB";
     }
 
     // Check user quotas if available
     if (userQuotas) {
       // Check storage quota
       if (userQuotas.storageUsed + file.size > userQuotas.storageQuota) {
-        return `Upload would exceed storage quota (${formatFileSize(userQuotas.storageUsed)} / ${formatFileSize(userQuotas.storageQuota)})`;
+        return `Upload would exceed storage quota (${formatFileSize(
+          userQuotas.storageUsed,
+        )} / ${formatFileSize(userQuotas.storageQuota)})`;
       }
 
       // Check file count quota (if not unlimited)
@@ -82,46 +87,57 @@ export default function UploadPage() {
         return `Upload would exceed file count limit (${userQuotas.filesCount} / ${userQuotas.filesQuota})`;
       }
     }
-    
+
     return null;
   };
 
-  const handleFileSelect = useCallback((selectedFiles: FileList | File[]) => {
-    const fileArray = Array.from(selectedFiles);
-    
-    // For single file upload, replace existing files
-    if (fileArray.length === 1) {
-      const file = fileArray[0];
-      const error = validateFile(file);
-      const newFile: UploadFile = {
-        file,
-        id: generateId(),
-        status: error ? 'error' : 'pending',
-        progress: 0,
-        error,
-      };
-      setFiles([newFile]);
-    } else {
-      // For multiple files, add to existing
-      const newFiles: UploadFile[] = [];
-      fileArray.forEach(file => {
+  const handleFileSelect = useCallback(
+    (selectedFiles: FileList | File[]) => {
+      const fileArray = Array.from(selectedFiles);
+
+      if (fileArray.length === 1) {
+        const file = fileArray[0];
         const error = validateFile(file);
-        newFiles.push({
+        const newFile: UploadFile = {
           file,
           id: generateId(),
-          status: error ? 'error' : 'pending',
+          status: error ? "error" : "pending",
           progress: 0,
           error,
-        });
-      });
-      setFiles(prev => [...prev, ...newFiles]);
+        };
+        setFiles([newFile]);
+      } else {
+        // For multiple files, add to existing
+        const newFiles: UploadFile[] = [];
+        for (const file of fileArray) {
+          const error = validateFile(file);
+          newFiles.push({
+            file,
+            id: generateId(),
+            status: error ? "error" : "pending",
+            progress: 0,
+            error,
+          });
+        }
+        setFiles((prev) => [...prev, ...newFiles]);
+      }
+    },
+    [generateId, validateFile],
+  );
+
+  const _apiCall = async (url: string, options: RequestInit) => {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Upload failed");
     }
-  }, [userQuotas]); // Add userQuotas dependency
+    return await response.json();
+  };
 
   // Fetch user quotas on component mount
   useEffect(() => {
     fetchUserQuotas();
-  }, []);
+  }, [fetchUserQuotas]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -133,46 +149,52 @@ export default function UploadPage() {
     setIsDragging(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    
-    const droppedFiles = e.dataTransfer.files;
-    handleFileSelect(droppedFiles);
-  }, [handleFileSelect]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
 
-  const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      handleFileSelect(e.target.files);
-    }
-  }, [handleFileSelect]);
+      const droppedFiles = e.dataTransfer.files;
+      handleFileSelect(droppedFiles);
+    },
+    [handleFileSelect],
+  );
+
+  const handleFileInput = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files) {
+        handleFileSelect(e.target.files);
+      }
+    },
+    [handleFileSelect],
+  );
 
   const removeFile = (id: string) => {
-    setFiles(prev => prev.filter(file => file.id !== id));
+    setFiles((prev) => prev.filter((file) => file.id !== id));
   };
 
   const uploadFile = async (uploadFile: UploadFile) => {
     try {
       const token = await getToken();
       if (!token) {
-        throw new Error('Authentication required');
+        throw new Error("Authentication required");
       }
 
       const formData = new FormData();
-      formData.append('file', uploadFile.file);
-      formData.append('title', uploadFile.file.name.replace('.pdf', ''));
+      formData.append("file", uploadFile.file);
+      formData.append("title", uploadFile.file.name.replace(".pdf", ""));
 
       const response = await fetch(`${config.api.url}/api/files/upload`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: formData,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Upload failed');
+        throw new Error(errorData.message || "Upload failed");
       }
 
       return await response.json();
@@ -182,89 +204,96 @@ export default function UploadPage() {
   };
 
   const startUpload = async () => {
-    if (files.length === 0) return;
+    if (files.length === 0) {
+      return;
+    }
 
     setIsUploading(true);
-    
-    const validFiles = files.filter(f => f.status === 'pending');
-    
+
+    const validFiles = files.filter((f) => f.status === "pending");
+
     for (const file of validFiles) {
-      setFiles(prev => prev.map(f => 
-        f.id === file.id ? { ...f, status: 'uploading', progress: 0 } : f
-      ));
+      setFiles((prev) =>
+        prev.map((f) => (f.id === file.id ? { ...f, status: "uploading", progress: 0 } : f)),
+      );
 
       try {
         // Simulate progress for better UX
         const progressInterval = setInterval(() => {
-          setFiles(prev => prev.map(f => 
-            f.id === file.id && f.progress < 90 
-              ? { ...f, progress: f.progress + 10 } 
-              : f
-          ));
+          setFiles((prev) =>
+            prev.map((f) =>
+              f.id === file.id && f.progress < 90 ? { ...f, progress: f.progress + 10 } : f,
+            ),
+          );
         }, 200);
 
         await uploadFile(file);
-        
+
         clearInterval(progressInterval);
-        setFiles(prev => prev.map(f => 
-          f.id === file.id ? { ...f, status: 'success', progress: 100 } : f
-        ));
+        setFiles((prev) =>
+          prev.map((f) => (f.id === file.id ? { ...f, status: "success", progress: 100 } : f)),
+        );
       } catch (error) {
-        setFiles(prev => prev.map(f => 
-          f.id === file.id ? { 
-            ...f, 
-            status: 'error', 
-            progress: 0,
-            error: error instanceof Error ? error.message : 'Upload failed'
-          } : f
-        ));
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.id === file.id
+              ? {
+                  ...f,
+                  status: "error",
+                  progress: 0,
+                  error: error instanceof Error ? error.message : "Upload failed",
+                }
+              : f,
+          ),
+        );
       }
     }
 
     setIsUploading(false);
-    
+
     // Redirect to files page after a short delay if all uploads succeeded
-    const allSuccess = files.every(f => f.status === 'success' || f.status === 'error');
-    const hasSuccess = files.some(f => f.status === 'success');
-    
+    const allSuccess = files.every((f) => f.status === "success" || f.status === "error");
+    const hasSuccess = files.some((f) => f.status === "success");
+
     if (allSuccess && hasSuccess) {
       setTimeout(() => {
-        router.push('/dashboard/files');
+        router.push("/dashboard/files");
       }, 2000);
     }
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) {
+      return "0 Bytes";
+    }
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
-  const getStatusIcon = (status: UploadFile['status']) => {
+  const getStatusIcon = (status: UploadFile["status"]) => {
     switch (status) {
-      case 'success':
+      case "success":
         return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'error':
+      case "error":
         return <AlertCircle className="h-5 w-5 text-red-500" />;
-      case 'uploading':
-        return <div className="animate-spin h-5 w-5 border-2 border-primary-600 border-t-transparent rounded-full" />;
+      case "uploading":
+        return (
+          <div className="animate-spin h-5 w-5 border-2 border-primary-600 border-t-transparent rounded-full" />
+        );
       default:
         return <FileText className="h-5 w-5 text-gray-400" />;
     }
   };
 
-  const pendingFiles = files.filter(f => f.status === 'pending').length;
-  const successFiles = files.filter(f => f.status === 'success').length;
+  const pendingFiles = files.filter((f) => f.status === "pending").length;
+  const successFiles = files.filter((f) => f.status === "success").length;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-end">
-        <button
-          onClick={() => router.back()}
-          className="btn-outline btn-md"
-        >
+        <button type="button" onClick={() => router.back()} className="btn-outline btn-md">
           Cancel
         </button>
       </div>
@@ -281,49 +310,59 @@ export default function UploadPage() {
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Storage</span>
                     <span className="text-gray-900">
-                      {formatFileSize(userQuotas.storageUsed)} / {formatFileSize(userQuotas.storageQuota)}
+                      {formatFileSize(userQuotas.storageUsed)} /{" "}
+                      {formatFileSize(userQuotas.storageQuota)}
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
                     <div
                       className={`h-2 rounded-full transition-all duration-300 ${
-                        (userQuotas.storageUsed / userQuotas.storageQuota) * 100 > 80 
-                          ? 'bg-red-500' 
-                          : (userQuotas.storageUsed / userQuotas.storageQuota) * 100 > 60 
-                          ? 'bg-yellow-500' 
-                          : 'bg-green-500'
+                        (userQuotas.storageUsed / userQuotas.storageQuota) * 100 > 80
+                          ? "bg-red-500"
+                          : (userQuotas.storageUsed / userQuotas.storageQuota) * 100 > 60
+                            ? "bg-yellow-500"
+                            : "bg-green-500"
                       }`}
-                      style={{ width: `${Math.min((userQuotas.storageUsed / userQuotas.storageQuota) * 100, 100)}%` }}
-                    ></div>
+                      style={{
+                        width: `${Math.min(
+                          (userQuotas.storageUsed / userQuotas.storageQuota) * 100,
+                          100,
+                        )}%`,
+                      }}
+                    />
                   </div>
                 </div>
                 <div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Files</span>
                     <span className="text-gray-900">
-                      {userQuotas.filesCount} / {userQuotas.filesQuota === -1 ? '∞' : userQuotas.filesQuota}
+                      {userQuotas.filesCount} /{" "}
+                      {userQuotas.filesQuota === -1 ? "∞" : userQuotas.filesQuota}
                     </span>
                   </div>
                   {userQuotas.filesQuota !== -1 && (
                     <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
                       <div
                         className={`h-2 rounded-full transition-all duration-300 ${
-                          (userQuotas.filesCount / userQuotas.filesQuota) * 100 > 80 
-                            ? 'bg-red-500' 
-                            : (userQuotas.filesCount / userQuotas.filesQuota) * 100 > 60 
-                            ? 'bg-yellow-500' 
-                            : 'bg-green-500'
+                          (userQuotas.filesCount / userQuotas.filesQuota) * 100 > 80
+                            ? "bg-red-500"
+                            : (userQuotas.filesCount / userQuotas.filesQuota) * 100 > 60
+                              ? "bg-yellow-500"
+                              : "bg-green-500"
                         }`}
-                        style={{ width: `${Math.min((userQuotas.filesCount / userQuotas.filesQuota) * 100, 100)}%` }}
-                      ></div>
+                        style={{
+                          width: `${Math.min(
+                            (userQuotas.filesCount / userQuotas.filesQuota) * 100,
+                            100,
+                          )}%`,
+                        }}
+                      />
                     </div>
                   )}
                 </div>
               </div>
               {(userQuotas.storageUsed / userQuotas.storageQuota) * 100 > 80 && (
-                <p className="text-xs text-red-600 mt-2">
-                  ⚠️ You're running low on storage space
-                </p>
+                <p className="text-xs text-red-600 mt-2">⚠️ You're running low on storage space</p>
               )}
             </div>
           )}
@@ -331,8 +370,8 @@ export default function UploadPage() {
           <div
             className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
               isDragging
-                ? 'border-primary-400 bg-primary-50'
-                : 'border-gray-300 hover:border-gray-400'
+                ? "border-primary-400 bg-primary-50"
+                : "border-gray-300 hover:border-gray-400"
             }`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -356,9 +395,7 @@ export default function UploadPage() {
                 onChange={handleFileInput}
               />
             </div>
-            <p className="text-sm text-gray-500 mt-2">
-              PDF files only, up to 10MB each
-            </p>
+            <p className="text-sm text-gray-500 mt-2">PDF files only, up to 10MB each</p>
           </div>
         </div>
       </div>
@@ -373,21 +410,18 @@ export default function UploadPage() {
             <div className="space-y-4">
               {files.map((file) => (
                 <div key={file.id} className="flex items-center space-x-4 p-4 border rounded-lg">
-                  <div className="flex-shrink-0">
-                    {getStatusIcon(file.status)}
-                  </div>
+                  <div className="flex-shrink-0">{getStatusIcon(file.status)}</div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium text-gray-900 truncate">
                           {file.file.name}
                         </p>
-                        <p className="text-sm text-gray-500">
-                          {formatFileSize(file.file.size)}
-                        </p>
+                        <p className="text-sm text-gray-500">{formatFileSize(file.file.size)}</p>
                       </div>
-                      {file.status !== 'uploading' && (
+                      {file.status !== "uploading" && (
                         <button
+                          type="button"
                           onClick={() => removeFile(file.id)}
                           className="text-gray-400 hover:text-gray-600"
                         >
@@ -395,21 +429,23 @@ export default function UploadPage() {
                         </button>
                       )}
                     </div>
-                    
-                    {file.status === 'uploading' && (
+
+                    {file.status === "uploading" && (
                       <div className="mt-2">
                         <div className="bg-gray-200 rounded-full h-2">
                           <div
-                            className="bg-primary-600 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${file.progress}%` }}
+                            className={`h-2 rounded-full transition-all duration-300 ${
+                              file.progress > 0 ? "bg-primary-600" : "bg-gray-300"
+                            }`}
+                            style={{
+                              width: `${Math.min(file.progress, 100)}%`,
+                            }}
                           />
                         </div>
                       </div>
                     )}
-                    
-                    {file.error && (
-                      <p className="text-sm text-red-600 mt-1">{file.error}</p>
-                    )}
+
+                    {file.error && <p className="text-sm text-red-600 mt-1">{file.error}</p>}
                   </div>
                 </div>
               ))}
@@ -423,18 +459,13 @@ export default function UploadPage() {
         <div className="flex justify-between items-center">
           <div className="text-sm text-gray-600">
             {successFiles > 0 && (
-              <span className="text-green-600 mr-4">
-                ✓ {successFiles} uploaded successfully
-              </span>
+              <span className="text-green-600 mr-4">✓ {successFiles} uploaded successfully</span>
             )}
-            {pendingFiles > 0 && (
-              <span>
-                {pendingFiles} files ready to upload
-              </span>
-            )}
+            {pendingFiles > 0 && <span>{pendingFiles} files ready to upload</span>}
           </div>
           <div className="space-x-4">
             <button
+              type="button"
               onClick={() => setFiles([])}
               className="btn-outline btn-md"
               disabled={isUploading}
@@ -442,11 +473,12 @@ export default function UploadPage() {
               Clear All
             </button>
             <button
+              type="button"
               onClick={startUpload}
               disabled={pendingFiles === 0 || isUploading}
               className="btn-primary btn-md"
             >
-              {isUploading ? 'Uploading...' : `Upload ${pendingFiles} Files`}
+              {isUploading ? "Uploading..." : `Upload ${pendingFiles} Files`}
             </button>
           </div>
         </div>

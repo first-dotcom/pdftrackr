@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import crypto from "node:crypto";
 
 /**
  * GDPR-compliant utilities for handling personal data
@@ -9,18 +9,21 @@ import crypto from 'crypto';
  * This ensures we can't reverse-engineer the original IP
  */
 export function hashIPAddress(ipAddress: string): string {
-  const salt = process.env['IP_HASH_SALT'] || 'pdftrackr-salt-2024';
-  return crypto.createHash('sha256').update(ipAddress + salt).digest('hex');
+  const salt = process.env.IP_HASH_SALT || "pdftrackr-salt-2024";
+  return crypto
+    .createHash("sha256")
+    .update(ipAddress + salt)
+    .digest("hex");
 }
 
 /**
  * Extract country from IP address without storing the IP
  * This provides geographic data without personal information
  */
-export function getCountryFromIP(ipAddress: string): string {
+export function getCountryFromIP(_ipAddress: string): string {
   // This is a simplified version - in production you'd use a proper IP geolocation service
   // For now, we'll return a placeholder
-  return 'US'; // Placeholder - implement with real IP geolocation service
+  return "US"; // Placeholder - implement with real IP geolocation service
 }
 
 /**
@@ -42,22 +45,22 @@ export function shouldDeleteData(retentionDate: Date): boolean {
 /**
  * Anonymize user data for GDPR compliance
  */
-export function anonymizeUserData(data: any): any {
-  const anonymized = { ...data };
-  
+export function anonymizeUserData<T extends Record<string, unknown>>(data: T): T {
+  const anonymized = { ...data } as T;
+
   // Remove or hash personal identifiers
   if (anonymized.email) {
-    anonymized.email = hashIPAddress(anonymized.email);
+    (anonymized as any).email = hashIPAddress(anonymized.email as string);
   }
-  
+
   if (anonymized.name) {
-    anonymized.name = 'Anonymous';
+    (anonymized as any).name = "Anonymous";
   }
-  
+
   if (anonymized.ipAddress) {
-    anonymized.ipAddress = hashIPAddress(anonymized.ipAddress);
+    (anonymized as any).ipAddress = hashIPAddress(anonymized.ipAddress as string);
   }
-  
+
   return anonymized;
 }
 
@@ -73,4 +76,4 @@ export function generateSessionId(): string {
  */
 export function hasConsent(consentGiven: boolean, trackingEnabled: boolean): boolean {
   return consentGiven && trackingEnabled;
-} 
+}

@@ -14,7 +14,11 @@
     "db:migrate": "docker-compose exec backend npm run db:migrate",
     "db:seed": "docker-compose exec backend npm run db:seed",
     "clean": "docker-compose down -v --remove-orphans",
-    "clean:all": "docker-compose down -v --remove-orphans && docker system prune -f"
+    "clean:all": "docker-compose down -v --remove-orphans && docker system prune -f",
+    "lint": "biome check .",
+    "lint:fix": "biome check --apply .",
+    "format": "biome format --write .",
+    "format:check": "biome format ."
   },
   "keywords": [
     "pdf",
@@ -26,6 +30,9 @@
   ],
   "author": "PDFTrackr Team",
   "license": "MIT",
+  "devDependencies": {
+    "@biomejs/biome": "1.5.2"
+  },
   "dependencies": {
     "@types/next": "^8.0.7",
     "@types/node": "^24.1.0",

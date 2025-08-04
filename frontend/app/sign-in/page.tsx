@@ -1,12 +1,12 @@
-import { SignIn } from '@clerk/nextjs';
-import { Metadata } from 'next';
+import { SignIn } from "@clerk/nextjs";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Sign In - PDFTrackr',
-  description: 'Sign in to your PDFTrackr account to manage your PDF sharing and analytics.',
-  robots: 'noindex, nofollow',
+  title: "Sign In - PDFTrackr",
+  description: "Sign in to your PDFTrackr account to manage your PDF sharing and analytics.",
+  robots: "noindex, nofollow",
   alternates: {
-    canonical: 'https://pdftrackr.com/sign-in',
+    canonical: "https://pdftrackr.com/sign-in",
   },
 };
 
@@ -18,16 +18,14 @@ export default function Page() {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Sign in to your account
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Welcome back to PDFTrackr
-          </p>
+          <p className="mt-2 text-center text-sm text-gray-600">Welcome back to PDFTrackr</p>
         </div>
-        <SignIn 
+        <SignIn
           appearance={{
             elements: {
               rootBox: "mx-auto",
-              card: "shadow-lg"
-            }
+              card: "shadow-lg",
+            },
           }}
           redirectUrl="/dashboard"
         />

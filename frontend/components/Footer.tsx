@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import { FileText } from 'lucide-react';
+import { FileText } from "lucide-react";
+import Link from "next/link";
 
 export default function Footer() {
   return (
@@ -15,7 +15,7 @@ export default function Footer() {
               Secure PDF sharing and analytics platform for professionals and businesses.
             </p>
           </div>
-          
+
           <div className="mt-12 grid grid-cols-2 gap-8 xl:mt-0 xl:col-span-2">
             <div className="md:grid md:grid-cols-2 md:gap-8">
               <div>
@@ -40,7 +40,7 @@ export default function Footer() {
                   </li>
                 </ul>
               </div>
-              
+
               <div className="mt-12 md:mt-0">
                 <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase">
                   Support
@@ -64,7 +64,7 @@ export default function Footer() {
                 </ul>
               </div>
             </div>
-            
+
             <div className="md:grid md:grid-cols-2 md:gap-8">
               <div>
                 <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase">
@@ -88,7 +88,7 @@ export default function Footer() {
                   </li>
                 </ul>
               </div>
-              
+
               <div className="mt-12 md:mt-0">
                 <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase">
                   Legal
@@ -109,7 +109,7 @@ export default function Footer() {
             </div>
           </div>
         </div>
-        
+
         <div className="mt-12 border-t border-gray-700 pt-8">
           <p className="text-base text-gray-400 xl:text-center">
             © 2024 PDFTrackr. All rights reserved.

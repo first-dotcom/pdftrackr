@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useAuth, useUser } from '@clerk/nextjs';
-import { FileText, Eye, Calendar, MoreHorizontal } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { config } from '@/lib/config';
+import { config } from "@/lib/config";
+import { useAuth, useUser } from "@clerk/nextjs";
+import { formatDistanceToNow } from "date-fns";
+import { Calendar, Eye, FileText, MoreHorizontal } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface File {
   id: number;
@@ -22,7 +22,7 @@ interface File {
 export default function RecentFiles() {
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Add proper loading states for Clerk
   const { getToken, isLoaded: authLoaded } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
@@ -40,39 +40,41 @@ export default function RecentFiles() {
     try {
       const token = await getToken();
       if (!token) {
-        console.error('No authentication token available');
+        console.error("No authentication token available");
         setLoading(false);
         return;
       }
 
       const response = await fetch(`${config.api.url}/api/files?limit=5`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setFiles(data.data.files);
       } else {
-        console.error('Failed to fetch files:', response.status, response.statusText);
+        console.error("Failed to fetch files:", response.status, response.statusText);
       }
     } catch (error) {
-      console.error('Failed to fetch files:', error);
+      console.error("Failed to fetch files:", error);
     } finally {
       setLoading(false);
     }
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) {
+      return "0 Bytes";
+    }
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
-  const getTotalViews = (shareLinks: Array<{viewCount: number}> = []) => {
+  const getTotalViews = (shareLinks: Array<{ viewCount: number }> = []) => {
     return shareLinks.reduce((total, link) => total + link.viewCount, 0);
   };
 
@@ -86,12 +88,12 @@ export default function RecentFiles() {
         <div className="card-body">
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="animate-pulse">
+              <div key={`skeleton-${i}`} className="animate-pulse">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gray-200 rounded"></div>
+                  <div className="w-10 h-10 bg-gray-200 rounded" />
                   <div className="flex-1">
-                    <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-20"></div>
+                    <div className="h-4 bg-gray-200 rounded w-32 mb-2" />
+                    <div className="h-3 bg-gray-200 rounded w-20" />
                   </div>
                 </div>
               </div>
@@ -128,12 +130,12 @@ export default function RecentFiles() {
         <div className="card-body">
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="animate-pulse">
+              <div key={`loading-${i}`} className="animate-pulse">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gray-200 rounded"></div>
+                  <div className="w-10 h-10 bg-gray-200 rounded" />
                   <div className="flex-1">
-                    <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-20"></div>
+                    <div className="h-4 bg-gray-200 rounded w-32 mb-2" />
+                    <div className="h-3 bg-gray-200 rounded w-20" />
                   </div>
                 </div>
               </div>
@@ -148,10 +150,7 @@ export default function RecentFiles() {
     <div className="card">
       <div className="card-header flex justify-between items-center">
         <h3 className="text-lg font-medium text-gray-900">Recent Files</h3>
-        <Link 
-          href="/dashboard/files" 
-          className="text-sm text-primary-600 hover:text-primary-700"
-        >
+        <Link href="/dashboard/files" className="text-sm text-primary-600 hover:text-primary-700">
           View all
         </Link>
       </div>
@@ -160,14 +159,9 @@ export default function RecentFiles() {
           <div className="text-center py-8">
             <FileText className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">No files</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Get started by uploading your first PDF.
-            </p>
+            <p className="mt-1 text-sm text-gray-500">Get started by uploading your first PDF.</p>
             <div className="mt-6">
-              <Link
-                href="/dashboard/files/upload"
-                className="btn-primary btn-sm"
-              >
+              <Link href="/dashboard/files/upload" className="btn-primary btn-sm">
                 Upload PDF
               </Link>
             </div>
@@ -183,9 +177,7 @@ export default function RecentFiles() {
                     </div>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {file.title}
-                    </p>
+                    <p className="text-sm font-medium text-gray-900 truncate">{file.title}</p>
                     <div className="flex items-center text-sm text-gray-500 space-x-4">
                       <span>{formatFileSize(file.size)}</span>
                       <span className="flex items-center">
@@ -200,10 +192,7 @@ export default function RecentFiles() {
                   </div>
                 </div>
                 <div className="flex-shrink-0">
-                  <Link
-                    href={`/dashboard/files/${file.id}`}
-                    className="btn-ghost btn-sm"
-                  >
+                  <Link href={`/dashboard/files/${file.id}`} className="btn-ghost btn-sm">
                     <MoreHorizontal className="h-4 w-4" />
                   </Link>
                 </div>

@@ -1,12 +1,13 @@
-import { SignUp } from '@clerk/nextjs';
-import { Metadata } from 'next';
+import { SignUp } from "@clerk/nextjs";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Sign Up - PDFTrackr',
-  description: 'Create your PDFTrackr account and start sharing PDFs securely with advanced analytics.',
-  robots: 'noindex, nofollow',
+  title: "Sign Up - PDFTrackr",
+  description:
+    "Create your PDFTrackr account and start sharing PDFs securely with advanced analytics.",
+  robots: "noindex, nofollow",
   alternates: {
-    canonical: 'https://pdftrackr.com/sign-up',
+    canonical: "https://pdftrackr.com/sign-up",
   },
 };
 
@@ -18,16 +19,14 @@ export default function Page() {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Create your account
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Get started with PDFTrackr
-          </p>
+          <p className="mt-2 text-center text-sm text-gray-600">Get started with PDFTrackr</p>
         </div>
-        <SignUp 
+        <SignUp
           appearance={{
             elements: {
               rootBox: "mx-auto",
-              card: "shadow-lg"
-            }
+              card: "shadow-lg",
+            },
           }}
           redirectUrl="/dashboard"
         />

@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useAuth, useUser } from '@clerk/nextjs';
-import { Search, FileText, Eye, Share2, Share, Plus, Trash2, Download, Edit } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { config } from '@/lib/config';
-import ShareLinkModal from '@/components/ShareLinkModal';
-import { File, FilesResponse } from '../../../../shared/types';
+import ShareLinkModal from "@/components/ShareLinkModal";
+import { config } from "@/lib/config";
+import { useAuth, useUser } from "@clerk/nextjs";
+import { formatDistanceToNow } from "date-fns";
+import { Download, Edit, Eye, FileText, Plus, Search, Share, Share2, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import type { File } from "../../../../shared/types";
 
 export default function FilesPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  
+
   // Add proper loading states for Clerk
   const { getToken, isLoaded: authLoaded } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
@@ -33,37 +33,35 @@ export default function FilesPage() {
     try {
       const token = await getToken();
       if (!token) {
-        console.error('No authentication token available');
+        console.error("No authentication token available");
         setLoading(false);
         return;
       }
 
       const response = await fetch(`${config.api.url}/api/files`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.data) {
           setFiles(data.data.items || []);
         } else {
-          console.error('Invalid response format:', data);
+          console.error("Invalid response format:", data);
         }
       } else {
-        console.error('Failed to fetch files:', response.status, response.statusText);
-        const errorData = await response.json().catch(() => null);
-        console.error('Error response data:', errorData);
+        console.error("Failed to fetch files:", response.status, response.statusText);
+        const errorData = await response.json().catch((): null => null);
+        console.error("Error response data:", errorData);
       }
     } catch (error) {
-      console.error('Failed to fetch files:', error);
+      console.error("Failed to fetch files:", error);
     } finally {
       setLoading(false);
     }
   };
-
-
 
   const handleShareClick = (file: File) => {
     setSelectedFile(file);
@@ -75,26 +73,26 @@ export default function FilesPage() {
   };
 
   const handleDeleteFile = async (fileId: number) => {
-    if (!confirm('Are you sure you want to delete this file? This action cannot be undone.')) {
+    if (!confirm("Are you sure you want to delete this file? This action cannot be undone.")) {
       return;
     }
 
     try {
       const token = await getToken();
       const response = await fetch(`${config.api.url}/api/files/${fileId}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
       if (response.ok) {
         fetchFiles();
       } else {
-        console.error('Failed to delete file:', response.status);
+        console.error("Failed to delete file:", response.status);
       }
     } catch (error) {
-      console.error('Failed to delete file:', error);
+      console.error("Failed to delete file:", error);
     }
   };
 
@@ -103,47 +101,46 @@ export default function FilesPage() {
       const token = await getToken();
       const response = await fetch(`${config.api.url}/api/files/${file.id}/download`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
-        a.download = file.title || 'document.pdf';
+        a.download = file.title || "document.pdf";
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
       } else {
-        console.error('Failed to download file:', response.status);
+        console.error("Failed to download file:", response.status);
       }
     } catch (error) {
-      console.error('Failed to download file:', error);
+      console.error("Failed to download file:", error);
     }
   };
 
-  const handleEditFile = (file: File) => {
-    // TODO: Implement edit functionality
-    console.log('Edit file:', file);
-  };
+  const handleEditFile = (_file: File) => {};
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) {
+      return "0 Bytes";
+    }
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
-  const getActiveShareLinks = (shareLinks: Array<{isActive: boolean}> = []) => {
-    return shareLinks.filter(link => link.isActive).length;
+  const getActiveShareLinks = (shareLinks: Array<{ isActive: boolean }> = []) => {
+    return shareLinks.filter((link) => link.isActive).length;
   };
 
-  const filteredFiles = files.filter(file => 
-    (file.title && file.title.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredFiles = files.filter((file) =>
+    file.title?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   // Show loading state while Clerk is initializing
@@ -154,14 +151,14 @@ export default function FilesPage() {
           <div className="card-body">
             <div className="space-y-4">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="animate-pulse">
+                <div key={`skeleton-${i}`} className="animate-pulse">
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-gray-200 rounded"></div>
+                    <div className="w-10 h-10 bg-gray-200 rounded" />
                     <div className="flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/3 mb-2" />
+                      <div className="h-3 bg-gray-200 rounded w-1/4" />
                     </div>
-                    <div className="w-20 h-4 bg-gray-200 rounded"></div>
+                    <div className="w-20 h-4 bg-gray-200 rounded" />
                   </div>
                 </div>
               ))}
@@ -189,7 +186,6 @@ export default function FilesPage() {
 
   return (
     <div className="space-y-6">
-
       {/* Header with Upload Button */}
       <div className="flex justify-between items-center">
         <div className="flex-1">
@@ -207,10 +203,7 @@ export default function FilesPage() {
           </div>
         </div>
         <div className="ml-4">
-          <Link
-            href="/dashboard/files/upload"
-            className="btn-primary btn-md flex items-center"
-          >
+          <Link href="/dashboard/files/upload" className="btn-primary btn-md flex items-center">
             <Plus className="h-4 w-4 mr-2" />
             Upload PDF
           </Link>
@@ -223,14 +216,14 @@ export default function FilesPage() {
           <div className="card-body">
             <div className="space-y-4">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="animate-pulse">
+                <div key={`loading-${i}`} className="animate-pulse">
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-gray-200 rounded"></div>
+                    <div className="w-10 h-10 bg-gray-200 rounded" />
                     <div className="flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/3 mb-2" />
+                      <div className="h-3 bg-gray-200 rounded w-1/4" />
                     </div>
-                    <div className="w-20 h-4 bg-gray-200 rounded"></div>
+                    <div className="w-20 h-4 bg-gray-200 rounded" />
                   </div>
                 </div>
               ))}
@@ -240,20 +233,16 @@ export default function FilesPage() {
           <div className="card-body text-center py-12">
             <FileText className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">
-              {files.length === 0 ? 'No files uploaded' : 'No files found'}
+              {files.length === 0 ? "No files uploaded" : "No files found"}
             </h3>
             <p className="mt-1 text-sm text-gray-500">
-              {files.length === 0 
-                ? 'Get started by uploading your first PDF file.'
-                : 'Try adjusting your search terms.'
-              }
+              {files.length === 0
+                ? "Get started by uploading your first PDF file."
+                : "Try adjusting your search terms."}
             </p>
             {files.length === 0 && (
               <div className="mt-6">
-                <Link
-                  href="/dashboard/files/upload"
-                  className="btn-primary btn-md"
-                >
+                <Link href="/dashboard/files/upload" className="btn-primary btn-md">
                   Upload your first PDF
                 </Link>
               </div>
@@ -263,7 +252,10 @@ export default function FilesPage() {
           <div className="card-body">
             <div className="space-y-4">
               {filteredFiles.map((file) => (
-                <div key={file.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                <div
+                  key={file.id}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                >
                   <div className="flex items-center space-x-4">
                     <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
                       <FileText className="h-5 w-5 text-red-600" />
@@ -273,7 +265,7 @@ export default function FilesPage() {
                         href={`/dashboard/files/${file.id}`}
                         className="text-sm font-medium text-gray-900 hover:text-primary-600 transition-colors block truncate"
                       >
-                        {file.title || 'Untitled Document'}
+                        {file.title || "Untitled Document"}
                       </Link>
                       <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
                         <span>{formatFileSize(file.size)}</span>
@@ -285,12 +277,15 @@ export default function FilesPage() {
                           <Share2 className="h-3 w-3 mr-1" />
                           {getActiveShareLinks(file.shareLinks)} links
                         </span>
-                        <span>{formatDistanceToNow(new Date(file.createdAt), { addSuffix: true })}</span>
+                        <span>
+                          {formatDistanceToNow(new Date(file.createdAt), { addSuffix: true })}
+                        </span>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
                     <button
+                      type="button"
                       onClick={() => handleShareClick(file)}
                       className="text-primary-600 hover:text-primary-900 p-2 rounded hover:bg-primary-50"
                       title="Create share link"
@@ -298,6 +293,7 @@ export default function FilesPage() {
                       <Share className="h-4 w-4" />
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleDownloadFile(file)}
                       className="text-green-600 hover:text-green-900 p-2 rounded hover:bg-green-50"
                       title="Download file"
@@ -305,6 +301,7 @@ export default function FilesPage() {
                       <Download className="h-4 w-4" />
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleEditFile(file)}
                       className="text-blue-600 hover:text-blue-900 p-2 rounded hover:bg-blue-50"
                       title="Edit file"
@@ -319,6 +316,7 @@ export default function FilesPage() {
                       <Eye className="h-4 w-4" />
                     </Link>
                     <button
+                      type="button"
                       onClick={() => handleDeleteFile(file.id)}
                       className="text-red-600 hover:text-red-900 p-2 rounded hover:bg-red-50"
                       title="Delete file"

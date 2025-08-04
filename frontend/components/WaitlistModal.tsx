@@ -1,60 +1,67 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { X, Mail, Bell } from 'lucide-react';
-import { sanitizeUserInput, validateEmail, validatePlan, generateCSRFToken, createClientRateLimit } from '@/utils/security';
-import { config } from '@/lib/config';
+import { config } from "@/lib/config";
+import {
+  createClientRateLimit,
+  generateCSRFToken,
+  sanitizeUserInput,
+  validateEmail,
+  validatePlan,
+} from "@/utils/security";
+import { Bell, Mail, X } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
 
 // Rate limiting for waitlist submissions
 const waitlistRateLimit = createClientRateLimit(3, 60000); // 3 submissions per minute
 
 export default function WaitlistModal() {
-  const [email, setEmail] = useState('');
-  const [plan, setPlan] = useState('pro');
+  const [email, setEmail] = useState("");
+  const [plan, setPlan] = useState("pro");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
       // Client-side validation with Zod
       const sanitizedEmail = sanitizeUserInput(email);
       const emailValidation = validateEmail(sanitizedEmail);
-      
+
       if (!emailValidation.valid) {
-        setError(emailValidation.error || 'Please enter a valid email address');
+        setError(emailValidation.error || "Please enter a valid email address");
         setLoading(false);
         return;
       }
 
       const planValidation = validatePlan(plan);
       if (!planValidation.valid) {
-        setError(planValidation.error || 'Please select a valid plan');
+        setError(planValidation.error || "Please select a valid plan");
         setLoading(false);
         return;
       }
 
       // Rate limiting check
       if (!waitlistRateLimit.canMakeRequest()) {
-        setError('Too many requests. Please wait a moment before trying again.');
+        setError("Too many requests. Please wait a moment before trying again.");
         setLoading(false);
         return;
       }
 
       const response = await fetch(`${config.api.url}/api/waitlist`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': generateCSRFToken(), // Add CSRF protection
+          "Content-Type": "application/json",
+          "X-CSRF-Token": generateCSRFToken(), // Add CSRF protection
         },
-        body: JSON.stringify({ 
-          email: sanitizedEmail, 
+        body: JSON.stringify({
+          email: sanitizedEmail,
           plan: sanitizeUserInput(plan),
-          source: 'modal'
+          source: "modal",
         }),
       });
 
@@ -65,22 +72,22 @@ export default function WaitlistModal() {
         }, 3000);
       } else {
         const errorData = await response.json();
-        setError(errorData.message || 'Failed to join waitlist. Please try again.');
+        setError(errorData.message || "Failed to join waitlist. Please try again.");
       }
     } catch (error) {
-      console.error('Failed to join waitlist:', error);
-      setError('Network error. Please check your connection and try again.');
+      console.error("Failed to join waitlist:", error);
+      setError("Network error. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
   };
 
   const closeModal = () => {
-    document.getElementById('waitlist-modal')?.classList.add('hidden');
-    setEmail('');
-    setPlan('pro');
+    document.getElementById("waitlist-modal")?.classList.add("hidden");
+    setEmail("");
+    setPlan("pro");
     setSubmitted(false);
-    setError('');
+    setError("");
   };
 
   return (
@@ -88,17 +95,29 @@ export default function WaitlistModal() {
       id="waitlist-modal"
       className="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
       onClick={(e) => {
-        if (e.target === e.currentTarget) closeModal();
+        if (e.target === e.currentTarget) {
+          closeModal();
+        }
       }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") {
+          closeModal();
+        }
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="waitlist-modal-title"
     >
       <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium text-gray-900">
+          <h3 id="waitlist-modal-title" className="text-lg font-medium text-gray-900">
             Join the Waitlist
           </h3>
           <button
+            type="button"
             onClick={closeModal}
             className="text-gray-400 hover:text-gray-600"
+            aria-label="Close modal"
           >
             <X className="h-5 w-5" />
           </button>
@@ -113,10 +132,8 @@ export default function WaitlistModal() {
                   Be the first to know when premium plans launch!
                 </p>
               </div>
-              
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
+
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
               <input
                 type="email"
                 value={email}
@@ -126,9 +143,7 @@ export default function WaitlistModal() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="your@email.com"
               />
-              {error && (
-                <p className="text-sm text-red-600 mt-1">{error}</p>
-              )}
+              {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
             </div>
 
             <div className="mb-6">
@@ -159,22 +174,18 @@ export default function WaitlistModal() {
                 disabled={loading}
                 className="flex-1 py-2 px-4 bg-primary-600 text-white rounded-md text-sm font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Joining...' : 'Join Waitlist'}
+                {loading ? "Joining..." : "Join Waitlist"}
               </button>
             </div>
           </form>
         ) : (
           <div className="text-center py-6">
             <Mail className="h-12 w-12 text-green-500 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              You're on the list!
-            </h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">You're on the list!</h3>
             <p className="text-sm text-gray-600 mb-4">
               We'll email you as soon as premium plans are available.
             </p>
-            <p className="text-xs text-gray-500">
-              This window will close automatically...
-            </p>
+            <p className="text-xs text-gray-500">This window will close automatically...</p>
           </div>
         )}
       </div>
