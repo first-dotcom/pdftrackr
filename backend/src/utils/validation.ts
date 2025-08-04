@@ -82,7 +82,6 @@ export const envSchema = z.object({
   REDIS_URL: z.string().min(1),
 
   // Authentication - Only Clerk needed
-  CLERK_PUBLISHABLE_KEY: z.string().min(1),
   CLERK_SECRET_KEY: z.string().min(1),
 
   // Storage

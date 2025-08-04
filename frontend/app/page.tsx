@@ -3,16 +3,16 @@ import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Pricing from "@/components/Pricing";
-import { currentUser } from "@clerk/nextjs";
-import { redirect } from "next/navigation";
+// Temporarily disabled Clerk for testing
+// import { currentUser } from "@clerk/nextjs";
+// import { redirect } from "next/navigation";
 
 export default async function HomePage() {
-  const user = await currentUser();
-
-  // Redirect authenticated users to dashboard
-  if (user) {
-    redirect("/dashboard");
-  }
+  // Temporarily disabled Clerk authentication for testing
+  // const user = await currentUser();
+  // if (user) {
+  //   redirect("/dashboard");
+  // }
 
   return (
     <div className="min-h-screen">

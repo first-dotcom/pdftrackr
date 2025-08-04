@@ -83,51 +83,81 @@ app.use(
   }),
 );
 
-// Rate limiting (more reasonable)
+// Rate limiting - production-optimized
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: config.env === "production" ? 200 : 500, // More reasonable limits
+  max: config.env === "production" ? 100 : 500, // Stricter limits for production
   message: {
     error: "Too many requests from this IP, please try again later.",
     retryAfter: "15 minutes",
   },
   standardHeaders: true,
   legacyHeaders: false,
-  skipSuccessfulRequests: false,
-  keyGenerator: (req: Request) => req.ip || "unknown", // Use IP for rate limiting
+  skipSuccessfulRequests: true, // Don't count successful requests in production
+  skipFailedRequests: false, // Always count failed requests
+  keyGenerator: (req: Request) => {
+    // Use forwarded IP for production (behind proxy/load balancer)
+    return req.ip || req.connection.remoteAddress || "unknown";
+  },
+  skip: (req) => {
+    // Skip rate limiting for health checks
+    return req.path === "/health";
+  },
 });
 app.use(limiter);
 
-// CORS configuration (more permissive for development)
+// CORS configuration - production-ready with strict origin validation
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow same origin and configured frontend URL
+      // Define allowed origins based on environment
       const allowedOrigins = [config.frontend.url];
+      
+      // Add development origins only in development
       if (config.env === "development") {
         allowedOrigins.push(
           "http://localhost:3000",
-          "http://127.0.0.1:3000",
+          "http://127.0.0.1:3000", 
           "http://localhost:3001",
         );
       }
 
-      // In development, be more permissive
+      // Production: Strict origin checking
+      if (config.env === "production") {
+        if (!origin) {
+          return callback(new Error("Origin required in production"));
+        }
+        if (!allowedOrigins.includes(origin)) {
+          logger.warn("Blocked CORS request from unauthorized origin", { origin });
+          return callback(new Error("Not allowed by CORS"));
+        }
+      }
+
+      // Development: More permissive for local development
       if (config.env === "development" && !origin) {
         return callback(null, true);
       }
 
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        logger.warn("Blocked CORS request", { origin });
+        logger.warn("Blocked CORS request", { origin, allowedOrigins });
         callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token", "X-Request-ID"],
+    allowedHeaders: [
+      "Content-Type", 
+      "Authorization", 
+      "X-CSRF-Token", 
+      "X-Request-ID",
+      "Accept",
+      "Accept-Language",
+      "Content-Language",
+    ],
     exposedHeaders: ["X-Request-ID"],
+    maxAge: config.env === "production" ? 86400 : 300, // 24h in prod, 5min in dev
   }),
 );
 

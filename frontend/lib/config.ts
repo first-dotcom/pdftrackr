@@ -23,7 +23,7 @@ export const config = {
   env: env.NODE_ENV,
 
   api: {
-    url: env.NEXT_PUBLIC_API_URL,
+    url: '', // Use relative URLs for Docker compatibility
     baseUrl: env.NEXT_PUBLIC_API_URL,
   },
 

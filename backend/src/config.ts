@@ -15,7 +15,6 @@ const envSchema = z.object({
   REDIS_URL: z.string().default("redis://redis:6379"),
 
   // Authentication - Only Clerk needed
-  CLERK_PUBLISHABLE_KEY: z.string(),
   CLERK_SECRET_KEY: z.string(),
 
   // Storage (using S3 format - works with DigitalOcean Spaces)

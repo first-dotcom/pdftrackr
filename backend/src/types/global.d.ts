@@ -6,8 +6,7 @@ declare global {
       PORT: string;
       DATABASE_URL: string;
       REDIS_URL: string;
-      CLERK_PUBLISHABLE_KEY: string;
-      CLERK_SECRET_KEY: string;
+          CLERK_SECRET_KEY: string;
       S3_ENDPOINT?: string;
       S3_REGION?: string;
       S3_BUCKET: string;

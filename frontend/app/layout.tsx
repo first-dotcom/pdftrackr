@@ -5,6 +5,8 @@ import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
+export const viewport = "width=device-width, initial-scale=1";
+
 export const metadata = {
   title: "PDFTrackr - Secure PDF Sharing & Analytics",
   description:
@@ -12,7 +14,6 @@ export const metadata = {
   keywords: "pdf, sharing, analytics, tracking, secure, documents",
   author: "PDFTrackr",
   robots: "index, follow",
-  viewport: "width=device-width, initial-scale=1",
   openGraph: {
     title: "PDFTrackr - Secure PDF Sharing & Analytics",
     description:
