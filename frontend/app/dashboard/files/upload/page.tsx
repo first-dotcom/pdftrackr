@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
 import { Upload, FileText, X, CheckCircle, AlertCircle } from 'lucide-react';
@@ -18,10 +18,45 @@ export default function UploadPage() {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [userQuotas, setUserQuotas] = useState<{
+    storageUsed: number;
+    storageQuota: number;
+    filesCount: number;
+    filesQuota: number;
+  } | null>(null);
   const router = useRouter();
   const { getToken } = useAuth();
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
+
+  const fetchUserQuotas = async () => {
+    try {
+      const token = await getToken();
+      if (!token) return;
+
+      const response = await fetch(`${config.api.url}/api/users/profile`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          const userData = data.data.user;
+          const quotas = data.data.quotas;
+          setUserQuotas({
+            storageUsed: userData.storageUsed,
+            storageQuota: quotas.storage,
+            filesCount: userData.filesCount,
+            filesQuota: quotas.fileCount,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch user quotas:', error);
+    }
+  };
 
   const validateFile = (file: File): string | null => {
     // Check file type
@@ -33,6 +68,19 @@ export default function UploadPage() {
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
       return 'File size must be less than 10MB';
+    }
+
+    // Check user quotas if available
+    if (userQuotas) {
+      // Check storage quota
+      if (userQuotas.storageUsed + file.size > userQuotas.storageQuota) {
+        return `Upload would exceed storage quota (${formatFileSize(userQuotas.storageUsed)} / ${formatFileSize(userQuotas.storageQuota)})`;
+      }
+
+      // Check file count quota (if not unlimited)
+      if (userQuotas.filesQuota !== -1 && userQuotas.filesCount >= userQuotas.filesQuota) {
+        return `Upload would exceed file count limit (${userQuotas.filesCount} / ${userQuotas.filesQuota})`;
+      }
     }
     
     return null;
@@ -68,6 +116,11 @@ export default function UploadPage() {
       });
       setFiles(prev => [...prev, ...newFiles]);
     }
+  }, [userQuotas]); // Add userQuotas dependency
+
+  // Fetch user quotas on component mount
+  useEffect(() => {
+    fetchUserQuotas();
   }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -219,6 +272,62 @@ export default function UploadPage() {
       {/* Upload Area */}
       <div className="card">
         <div className="card-body">
+          {/* Quota Status */}
+          {userQuotas && (
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">Current Usage</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Storage</span>
+                    <span className="text-gray-900">
+                      {formatFileSize(userQuotas.storageUsed)} / {formatFileSize(userQuotas.storageQuota)}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        (userQuotas.storageUsed / userQuotas.storageQuota) * 100 > 80 
+                          ? 'bg-red-500' 
+                          : (userQuotas.storageUsed / userQuotas.storageQuota) * 100 > 60 
+                          ? 'bg-yellow-500' 
+                          : 'bg-green-500'
+                      }`}
+                      style={{ width: `${Math.min((userQuotas.storageUsed / userQuotas.storageQuota) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Files</span>
+                    <span className="text-gray-900">
+                      {userQuotas.filesCount} / {userQuotas.filesQuota === -1 ? '∞' : userQuotas.filesQuota}
+                    </span>
+                  </div>
+                  {userQuotas.filesQuota !== -1 && (
+                    <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                      <div
+                        className={`h-2 rounded-full transition-all duration-300 ${
+                          (userQuotas.filesCount / userQuotas.filesQuota) * 100 > 80 
+                            ? 'bg-red-500' 
+                            : (userQuotas.filesCount / userQuotas.filesQuota) * 100 > 60 
+                            ? 'bg-yellow-500' 
+                            : 'bg-green-500'
+                        }`}
+                        style={{ width: `${Math.min((userQuotas.filesCount / userQuotas.filesQuota) * 100, 100)}%` }}
+                      ></div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {(userQuotas.storageUsed / userQuotas.storageQuota) * 100 > 80 && (
+                <p className="text-xs text-red-600 mt-2">
+                  ⚠️ You're running low on storage space
+                </p>
+              )}
+            </div>
+          )}
+
           <div
             className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
               isDragging
