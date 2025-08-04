@@ -142,7 +142,7 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
     if (accessData?.fileUrl) {
       const link = document.createElement('a');
       link.href = accessData.fileUrl;
-      link.download = accessData.file.originalName;
+              link.download = accessData.file.title || 'document.pdf';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -207,7 +207,7 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
           <div className="space-y-4 mb-6">
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-500">Document:</span>
-              <span className="font-medium">{shareData.shareLink.file.originalName}</span>
+              <span className="font-medium">{shareData.shareLink.file.title || 'Untitled Document'}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-500">Size:</span>
@@ -313,7 +313,7 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-lg font-medium text-gray-900">{shareData.shareLink.title}</h1>
-              <p className="text-sm text-gray-500">{accessData.file.originalName}</p>
+              <p className="text-sm text-gray-500">{accessData.file.title || 'Untitled Document'}</p>
             </div>
             <div className="flex items-center space-x-3">
               {accessData.downloadEnabled && (

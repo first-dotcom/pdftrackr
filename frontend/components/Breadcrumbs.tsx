@@ -34,7 +34,7 @@ export default function Breadcrumbs({ fileName }: BreadcrumbsProps) {
 
             if (response.ok) {
               const data = await response.json();
-              setFileTitle(data.data.file.title || data.data.file.originalName);
+              setFileTitle(data.data.file.title || 'Untitled Document');
             }
           } catch (error) {
             console.error('Failed to fetch file title:', error);

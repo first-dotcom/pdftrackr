@@ -256,7 +256,7 @@ export default function DashboardPage() {
                           </div>
                           <div className="ml-3 flex-1">
                             <div className="text-sm font-medium text-gray-900 truncate">
-                              {file.originalName}
+                              {file.title || 'Untitled Document'}
                             </div>
                             <div className="text-xs text-gray-500">
                               {formatNumber(file.viewCount)} views
@@ -298,7 +298,7 @@ export default function DashboardPage() {
                               {view.viewerName || view.viewerEmail || 'Anonymous'}
                             </div>
                             <div className="text-xs text-gray-500">
-                              {view.originalName} • {formatDuration(view.totalDuration)}
+                              {formatDuration(view.totalDuration)}
                             </div>
                           </div>
                         </div>

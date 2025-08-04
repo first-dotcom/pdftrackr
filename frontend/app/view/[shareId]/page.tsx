@@ -36,8 +36,8 @@ export async function generateMetadata({ params }: SharePageProps): Promise<Meta
   }
 
   const { shareLink } = shareData;
-  const title = shareLink.title || shareLink.file.originalName;
-  const description = shareLink.description || `View ${shareLink.file.originalName} shared via PDFTrackr`;
+  const title = shareLink.title || shareLink.file.title || 'Shared Document';
+  const description = shareLink.description || `View ${shareLink.file.title || 'document'} shared via PDFTrackr`;
   
   return {
     title: `${title} - PDFTrackr`,

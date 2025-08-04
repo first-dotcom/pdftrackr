@@ -112,7 +112,7 @@ export default function FilesPage() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = file.originalName;
+        a.download = file.title || 'document.pdf';
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -143,7 +143,6 @@ export default function FilesPage() {
   };
 
   const filteredFiles = files.filter(file => 
-    file.originalName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (file.title && file.title.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
@@ -274,7 +273,7 @@ export default function FilesPage() {
                         href={`/dashboard/files/${file.id}`}
                         className="text-sm font-medium text-gray-900 hover:text-primary-600 transition-colors block truncate"
                       >
-                        {file.title || file.originalName}
+                        {file.title || 'Untitled Document'}
                       </Link>
                       <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
                         <span>{formatFileSize(file.size)}</span>

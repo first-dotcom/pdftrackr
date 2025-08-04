@@ -31,7 +31,7 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
   const { getToken } = useAuth();
 
   const [form, setForm] = useState<ShareLinkForm>({
-    title: `${file.title || file.originalName} - Shared`,
+    title: `${file.title || 'Untitled Document'} - Shared`,
     description: '',
     password: '',
     emailGatingEnabled: false,
@@ -166,7 +166,7 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
     setErrors({});
     setTouched({});
     setForm({
-      title: `${file.title || file.originalName} - Shared`,
+      title: `${file.title || 'Untitled Document'} - Shared`,
       description: '',
       password: '',
       emailGatingEnabled: false,
@@ -300,7 +300,7 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
           // Form state - create new link
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
             <div className="text-sm text-gray-600 mb-4">
-              Creating share link for: <span className="font-medium">{file.originalName}</span>
+              Creating share link for: <span className="font-medium">{file.title || 'Untitled Document'}</span>
             </div>
 
             {/* Basic Settings */}

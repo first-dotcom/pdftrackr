@@ -172,8 +172,7 @@ export default function FileDetailPage() {
                     <FileText className="h-6 w-6 text-red-600" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-medium text-gray-900">{file.title}</h2>
-                    <p className="text-sm text-gray-500">{file.originalName}</p>
+                    <h2 className="text-lg font-medium text-gray-900">{file.title || 'Untitled Document'}</h2>
                   </div>
                 </div>
                 <button
