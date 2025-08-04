@@ -237,7 +237,7 @@ export default function DashboardPage() {
         {/* Analytics Section - Only show if there's data */}
         {dashboardData && (dashboardData.recentViews?.length > 0 || dashboardData.topFiles?.length > 0) && (
           <div className="space-y-6">
-            {/* Top Performing Files - Only show top 3 */}
+            {/* Top Performing Files - Show top 5 */}
             {dashboardData.topFiles && dashboardData.topFiles.length > 0 && (
               <div className="card">
                 <div className="card-header">
@@ -248,7 +248,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="card-body">
                   <div className="space-y-3">
-                    {dashboardData.topFiles.slice(0, 3).map((file, index) => (
+                    {dashboardData.topFiles.map((file, index) => (
                       <div key={file.fileId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                         <div className="flex items-center flex-1">
                           <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
@@ -276,7 +276,7 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Recent Activity - Simplified */}
+            {/* Recent Activity - Show last 5 */}
             {dashboardData.recentViews && dashboardData.recentViews.length > 0 && (
               <div className="card">
                 <div className="card-header">
@@ -287,7 +287,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="card-body">
                   <div className="space-y-3">
-                    {dashboardData.recentViews.slice(0, 5).map((view, index) => (
+                    {dashboardData.recentViews.map((view, index) => (
                       <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div className="flex items-center flex-1">
                           <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">

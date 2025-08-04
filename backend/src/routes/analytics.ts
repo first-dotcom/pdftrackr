@@ -265,7 +265,7 @@ router.get('/dashboard', authenticate, validateQuery(z.object({
 
   const shareIds = userShareLinks.map(s => s.shareId);
 
-  // Get dashboard stats
+  // Get dashboard stats - more robust calculations
   const dashboardStats = await db.select({
     totalViews: sql<number>`COALESCE(SUM(${shareLinks.viewCount}), 0)`,
     totalUniqueViews: sql<number>`COUNT(DISTINCT ${viewSessions.sessionId})`,
@@ -273,20 +273,20 @@ router.get('/dashboard', authenticate, validateQuery(z.object({
     avgDuration: sql<number>`COALESCE(AVG(${viewSessions.totalDuration}), 0)`,
   })
     .from(shareLinks)
-    .leftJoin(viewSessions, eq(shareLinks.shareId, viewSessions.shareId))
-    .where(and(
-      inArray(shareLinks.shareId, shareIds),
+    .leftJoin(viewSessions, and(
+      eq(shareLinks.shareId, viewSessions.shareId),
       gte(viewSessions.startedAt, startDate)
-    ));
+    ))
+    .where(inArray(shareLinks.shareId, shareIds));
 
   logger.debug('Dashboard stats calculated', { 
     userId, 
     stats: dashboardStats[0] 
   });
 
-  // Get email captures count
+  // Get email captures count - more robust calculation
   const emailCapturesCount = await db.select({
-    count: sql<number>`COUNT(*)`,
+    count: sql<number>`COALESCE(COUNT(*), 0)`,
   })
     .from(emailCaptures)
     .where(and(
@@ -299,7 +299,7 @@ router.get('/dashboard', authenticate, validateQuery(z.object({
     count: emailCapturesCount[0]?.count || 0 
   });
 
-  // Get recent views
+  // Get recent views - limit to 5 most recent
   const recentViews = await db.select({
     id: viewSessions.id,
     shareId: viewSessions.shareId,
@@ -320,14 +320,14 @@ router.get('/dashboard', authenticate, validateQuery(z.object({
       gte(viewSessions.startedAt, startDate)
     ))
     .orderBy(desc(viewSessions.startedAt))
-    .limit(10);
+    .limit(5);
 
   logger.debug('Recent views retrieved', { 
     userId, 
     viewCount: recentViews.length 
   });
 
-  // Get top files by views
+  // Get top files by views - limit to 5 most viewed
   const topFiles = await db.select({
     fileId: files.id,
     title: files.title,
@@ -352,13 +352,17 @@ router.get('/dashboard', authenticate, validateQuery(z.object({
     fileCount: topFiles.length 
   });
 
+  // Ensure all calculations are robust with proper fallbacks
+  const stats = dashboardStats[0];
+  const emailCount = emailCapturesCount[0]?.count || 0;
+  
   successResponse(res, {
     totalFiles: userFiles.length,
-    totalViews: dashboardStats[0]?.totalViews || 0,
-    totalUniqueViews: dashboardStats[0]?.totalUniqueViews || 0,
-    totalDuration: dashboardStats[0]?.totalDuration || 0,
-    avgDuration: Math.round(dashboardStats[0]?.avgDuration || 0),
-    emailCaptures: emailCapturesCount[0]?.count || 0,
+    totalViews: Number(stats?.totalViews) || 0,
+    totalUniqueViews: Number(stats?.totalUniqueViews) || 0,
+    totalDuration: Number(stats?.totalDuration) || 0,
+    avgDuration: Math.round(Number(stats?.avgDuration) || 0),
+    emailCaptures: Number(emailCount),
     recentViews,
     topFiles,
     viewsByDay: [], // TODO: Implement views by day aggregation
