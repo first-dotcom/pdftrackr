@@ -1,6 +1,6 @@
 "use client";
 
-import SecurePDFViewer from "@/components/SecurePDFViewer";
+import SecurePDFViewer from "@/components/SecurePDFViewerWrapper";
 import { config } from "@/lib/config";
 import dynamic from "next/dynamic";
 import type React from "react";

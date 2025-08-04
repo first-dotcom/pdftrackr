@@ -12,6 +12,29 @@ const nextConfig = {
   images: {
     domains: ['cdn.clerk.com'],
   },
+
+  // Fix for react-pdf Canvas dependency issues
+  webpack: (config, { isServer }) => {
+    // Ignore Canvas module for client-side builds
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        canvas: false,
+        fs: false,
+        stream: false,
+        util: false,
+      };
+    }
+
+    // Fix for pdfjs-dist Canvas dependency
+    config.externals = config.externals || [];
+    config.externals.push({
+      canvas: 'canvas',
+      'pdfjs-dist/build/pdf.worker.js': 'pdfjs-dist/build/pdf.worker.js',
+    });
+
+    return config;
+  },
   async rewrites() {
     return [
       {
