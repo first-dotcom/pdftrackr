@@ -19,6 +19,7 @@ import { logger } from '../utils/logger';
 import { Request, Response } from 'express';
 import { File, UpdateFileRequest, FilesResponse, FileResponse } from '../../../shared/types';
 import { invalidateUserDashboardCache } from './analytics';
+import { CacheService } from '../utils/redis';
 
 const router = Router();
 
@@ -104,7 +105,7 @@ router.post('/upload',
       description,
       // Add security tracking
       ipAddress: (req as any).normalizedIp || req.ip,
-      userAgent: req.get('User-Agent'),
+      userAgent: req.get('User-Agent') || null,
       fileHash: (req as any).fileHash, // From PDF validation
     }).returning();
 
@@ -119,8 +120,9 @@ router.post('/upload',
 
     fileUploads.labels('success', user.plan).inc();
 
-    // Invalidate dashboard cache for this user
+    // Invalidate caches for this user
     await invalidateUserDashboardCache(user.id);
+    await CacheService.del(`user_profile:${user.id}`);
 
     successResponse(res, { file: newFile[0] }, 'File uploaded successfully');
   } catch (error) {
@@ -281,6 +283,9 @@ router.delete('/:id', authenticate, validateParams(z.object({ id: z.string().reg
         updatedAt: new Date(),
       })
       .where(eq(users.id, req.user!.id));
+
+    // Invalidate user profile cache
+    await CacheService.del(`user_profile:${req.user!.id}`);
 
     successResponse(res, null, 'File deleted successfully');
   } catch (error) {

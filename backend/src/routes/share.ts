@@ -7,7 +7,7 @@ import { createShareLinkSchema, updateShareLinkSchema, shareAccessSchema, trackP
 import { db } from '../utils/database';
 import { files, shareLinks, viewSessions, pageViews, emailCaptures } from '../models/schema';
 import { hashIPAddress, getCountryFromIP } from '../utils/privacy';
-import { eq, and, desc, lt, or } from 'drizzle-orm';
+import { eq, and, desc, lt, or, sql } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
@@ -47,6 +47,23 @@ router.post('/', authenticate, validateBody(createShareLinkSchema), asyncHandler
     throw new CustomError('File not found', 404);
   }
 
+  // Check share link quota (optimized)
+  const userPlan = req.user!.plan as keyof typeof config.quotas;
+  const quotas = config.quotas[userPlan];
+  
+  if (quotas.shareLinks !== -1) {
+    // Use COUNT query instead of fetching all records
+    const shareLinkCount = await db.select({
+      count: sql<number>`COUNT(*)`,
+    })
+      .from(shareLinks)
+      .where(eq(shareLinks.fileId, fileId));
+    
+    if ((shareLinkCount[0]?.count || 0) >= quotas.shareLinks) {
+      throw new CustomError(`Share link quota exceeded. Maximum ${quotas.shareLinks} share links allowed for ${userPlan} plan.`, 403);
+    }
+  }
+
   // Generate unique share ID
   const shareId = nanoid(12);
 
@@ -66,8 +83,9 @@ router.post('/', authenticate, validateBody(createShareLinkSchema), asyncHandler
     maxViews: maxViews || null,
   }).returning();
 
-  // Invalidate dashboard cache for this user
+  // Invalidate caches for this user
   await invalidateUserDashboardCache(req.user!.id);
+  await CacheService.del(`user_profile:${req.user!.id}`);
 
   res.json({
     success: true,
