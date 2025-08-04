@@ -1,5 +1,6 @@
 "use client";
 
+import SecurePDFViewer from "@/components/SecurePDFViewer";
 import { config } from "@/lib/config";
 import dynamic from "next/dynamic";
 import type React from "react";
@@ -61,12 +62,17 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAccessForm, setShowAccessForm] = useState(false);
+  const [showPDFViewer, setShowPDFViewer] = useState(false);
 
   // Access form state
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  // PDF viewer state
+  const [watermarkEmail, setWatermarkEmail] = useState<string>("");
+  const [watermarkTime, setWatermarkTime] = useState<string>("");
 
   useEffect(() => {
     fetchShareInfo();
@@ -128,6 +134,15 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
         const data = await response.json();
         setAccessData(data.data);
         setShowAccessForm(false);
+
+        // Set watermark info if enabled
+        if (shareData?.shareLink.watermarkEnabled) {
+          setWatermarkEmail(email || "Viewer");
+          setWatermarkTime(new Date().toISOString());
+        }
+
+        // Show PDF viewer for PDF files
+        setShowPDFViewer(true);
       } else {
         const errorData = await response.json();
         setError(errorData.message || "Access denied");
@@ -307,14 +322,36 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
   }
 
   // PDF Viewer (once access is granted)
-  if (accessData) {
+  if (accessData && showPDFViewer) {
+    return (
+      <SecurePDFViewer
+        shareId={shareId}
+        sessionId={accessData.sessionId}
+        password={password}
+        email={email}
+        watermarkEmail={shareData?.shareLink.watermarkEnabled ? watermarkEmail : undefined}
+        watermarkTime={shareData?.shareLink.watermarkEnabled ? watermarkTime : undefined}
+        downloadEnabled={accessData.downloadEnabled}
+        onError={(errorMsg) => {
+          setError(errorMsg);
+          setShowPDFViewer(false);
+        }}
+        onLoadSuccess={() => {
+          // PDF loaded successfully
+        }}
+      />
+    );
+  }
+
+  // Legacy fallback for non-PDF files or when PDF viewer fails
+  if (accessData && !showPDFViewer) {
     return (
       <div className="min-h-screen bg-gray-900">
         {/* Header */}
         <div className="bg-white border-b border-gray-200 px-4 py-3">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-lg font-medium text-gray-900">{shareData.shareLink.title}</h1>
+              <h1 className="text-lg font-medium text-gray-900">{shareData?.shareLink.title}</h1>
               <p className="text-sm text-gray-500">
                 {accessData.file.title || "Untitled Document"}
               </p>
@@ -334,41 +371,29 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
           </div>
         </div>
 
-        {/* PDF Viewer */}
+        {/* Fallback File Viewer */}
         <div className="flex-1 p-4">
           <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg">
             <div className="p-6 text-center">
               <div className="w-16 h-16 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-4">
                 <Eye className="h-8 w-8 text-blue-600" />
               </div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">View PDF Document</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">View Document</h2>
               <p className="text-gray-600 mb-6">
-                Click the button below to open the PDF in a new browser tab
+                Click the button below to download or open the document
               </p>
               <div className="flex items-center justify-center space-x-4">
-                <a
-                  href={accessData.fileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-primary btn-lg inline-flex items-center"
-                >
-                  <Eye className="h-5 w-5 mr-2" />
-                  Open PDF
-                </a>
                 {accessData.downloadEnabled && (
                   <button
                     type="button"
                     onClick={handleDownload}
-                    className="btn-outline btn-lg flex items-center"
+                    className="btn-primary btn-lg flex items-center"
                   >
                     <Download className="h-4 w-4 mr-2" />
-                    Download
+                    Download Document
                   </button>
                 )}
               </div>
-              <p className="text-xs text-gray-500 mt-4">
-                PDF will open in a new browser tab with built-in PDF viewer
-              </p>
             </div>
           </div>
         </div>

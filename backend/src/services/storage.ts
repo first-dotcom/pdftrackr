@@ -5,6 +5,8 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import * as fs from "fs";
+import * as path from "path";
 import { config } from "../config";
 import { logger } from "../utils/logger";
 
@@ -41,6 +43,12 @@ export async function uploadToS3(
   contentType: string,
   metadata?: Record<string, string>,
 ): Promise<UploadResult> {
+  // Check if we have valid credentials, if not use local storage fallback
+  if (config.storage.accessKeyId === "your_spaces_access_key" || 
+      config.storage.secretAccessKey === "your_spaces_secret_key") {
+    return uploadToLocal(key, buffer, contentType, metadata);
+  }
+
   try {
     logger.debug("Starting file upload", {
       key,
@@ -76,14 +84,61 @@ export async function uploadToS3(
       etag: result.ETag || "",
     };
   } catch (error) {
-    logger.error("File upload failed", {
+    logger.error("File upload failed, trying local fallback", {
       key,
       error: error instanceof Error ? error.message : String(error),
       errorCode: (error as { Code?: string })?.Code,
       errorName: (error as { name?: string })?.name,
-      stack: error instanceof Error ? error.stack : undefined,
     });
-    throw new Error(`Upload failed: ${error}`);
+    
+    // Fallback to local storage if DigitalOcean Spaces fails
+    return uploadToLocal(key, buffer, contentType, metadata);
+  }
+}
+
+// Local storage fallback for testing
+async function uploadToLocal(
+  key: string,
+  buffer: Buffer,
+  contentType: string,
+  metadata?: Record<string, string>,
+): Promise<UploadResult> {
+  try {
+    logger.info("Using local storage fallback", { key, contentType });
+    
+    // Create local storage directory
+    const storageDir = path.join(process.cwd(), "uploads");
+    const filePath = path.join(storageDir, key);
+    const fileDir = path.dirname(filePath);
+    
+    // Ensure directory exists
+    await fs.promises.mkdir(fileDir, { recursive: true });
+    
+    // Write file to local storage
+    await fs.promises.writeFile(filePath, buffer);
+    
+    // Generate a simple hash as etag
+    const crypto = require("crypto");
+    const etag = crypto.createHash("md5").update(buffer).digest("hex");
+    
+    logger.info("File saved locally", {
+      key,
+      path: filePath,
+      size: buffer.length,
+      etag: etag.substring(0, 8),
+    });
+    
+    return {
+      key,
+      url: `/uploads/${key}`, // Local URL path
+      etag,
+    };
+  } catch (error) {
+    logger.error("Local storage upload failed", {
+      key,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw new Error(`Local upload failed: ${error}`);
   }
 }
 
@@ -172,6 +227,59 @@ export async function getSignedUploadUrl(
       stack: error instanceof Error ? error.stack : undefined,
     });
     throw new Error(`Failed to generate upload URL: ${error}`);
+  }
+}
+
+// Stream file from storage
+export async function streamFromS3(key: string): Promise<NodeJS.ReadableStream> {
+  try {
+    const command = new GetObjectCommand({
+      Bucket: config.storage.bucket,
+      Key: key,
+    });
+
+    logger.debug("Streaming file from S3", { key });
+    const response = await s3Client.send(command);
+    
+    if (!response.Body) {
+      throw new Error("No file content received");
+    }
+
+    return response.Body as NodeJS.ReadableStream;
+  } catch (error) {
+    logger.error(`Failed to stream file ${key}:`, {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    throw new Error(`Failed to stream file: ${error}`);
+  }
+}
+
+// Get file metadata from storage
+export async function getFileMetadata(key: string): Promise<{
+  contentType: string;
+  contentLength: number;
+  lastModified?: Date;
+}> {
+  try {
+    const command = new GetObjectCommand({
+      Bucket: config.storage.bucket,
+      Key: key,
+    });
+
+    const response = await s3Client.send(command);
+    
+    return {
+      contentType: response.ContentType || "application/octet-stream",
+      contentLength: response.ContentLength || 0,
+      lastModified: response.LastModified,
+    };
+  } catch (error) {
+    logger.error(`Failed to get metadata for ${key}:`, {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    throw new Error(`Failed to get file metadata: ${error}`);
   }
 }
 

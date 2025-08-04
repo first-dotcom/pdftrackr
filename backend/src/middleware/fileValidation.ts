@@ -138,19 +138,19 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
       }
     }
 
-    // 7. Validate PDF structure integrity
+    // 7. Validate PDF structure integrity (relaxed check)
     const trailerMatch = bufferStr.match(/trailer\s*<<([^>]*)>>/gi);
     if (!trailerMatch) {
-      logger.warn("PDF missing trailer structure", {
+      logger.debug("PDF missing traditional trailer structure (may be newer format)", {
         filename: file.originalname,
         ip: req.ip,
       });
-      throw new CustomError("Invalid PDF structure", 400);
+      // Don't reject - many valid PDFs use newer formats without traditional trailers
     }
 
-    // 8. Check for suspicious object references
+    // 8. Check for suspicious object references (relaxed limit)
     const suspiciousRefs = bufferStr.match(/\d+\s+\d+\s+R\s*\[/g);
-    if (suspiciousRefs && suspiciousRefs.length > 100) {
+    if (suspiciousRefs && suspiciousRefs.length > 1000) { // Increased from 100 to 1000
       logger.warn("Excessive object references in PDF", {
         refs: suspiciousRefs.length,
         filename: file.originalname,

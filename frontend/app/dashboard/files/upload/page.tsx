@@ -1,6 +1,7 @@
 "use client";
 
 import { config } from "@/lib/config";
+import { generateCSRFToken } from "@/utils/security";
 import { useAuth } from "@clerk/nextjs";
 import { AlertCircle, CheckCircle, FileText, Upload, X } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -30,7 +31,7 @@ export default function UploadPage() {
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
-  const fetchUserQuotas = async () => {
+  const fetchUserQuotas = useCallback(async () => {
     try {
       const token = await getToken();
       if (!token) {
@@ -59,37 +60,40 @@ export default function UploadPage() {
     } catch (error) {
       console.error("Failed to fetch user quotas:", error);
     }
-  };
+  }, [getToken]);
 
-  const validateFile = (file: File): string | null => {
-    // Check file type
-    if (file.type !== "application/pdf") {
-      return "Only PDF files are allowed";
-    }
-
-    // Check file size (10MB limit)
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    if (file.size > maxSize) {
-      return "File size must be less than 10MB";
-    }
-
-    // Check user quotas if available
-    if (userQuotas) {
-      // Check storage quota
-      if (userQuotas.storageUsed + file.size > userQuotas.storageQuota) {
-        return `Upload would exceed storage quota (${formatFileSize(
-          userQuotas.storageUsed,
-        )} / ${formatFileSize(userQuotas.storageQuota)})`;
+  const validateFile = useCallback(
+    (file: File): string | null => {
+      // Check file type
+      if (file.type !== "application/pdf") {
+        return "Only PDF files are allowed";
       }
 
-      // Check file count quota (if not unlimited)
-      if (userQuotas.filesQuota !== -1 && userQuotas.filesCount >= userQuotas.filesQuota) {
-        return `Upload would exceed file count limit (${userQuotas.filesCount} / ${userQuotas.filesQuota})`;
+      // Check file size (10MB limit)
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        return "File size must be less than 10MB";
       }
-    }
 
-    return null;
-  };
+      // Check user quotas if available
+      if (userQuotas) {
+        // Check storage quota
+        if (userQuotas.storageUsed + file.size > userQuotas.storageQuota) {
+          return `Upload would exceed storage quota (${formatFileSize(
+            userQuotas.storageUsed,
+          )} / ${formatFileSize(userQuotas.storageQuota)})`;
+        }
+
+        // Check file count quota (if not unlimited)
+        if (userQuotas.filesQuota !== -1 && userQuotas.filesCount >= userQuotas.filesQuota) {
+          return `Upload would exceed file count limit (${userQuotas.filesCount} / ${userQuotas.filesQuota})`;
+        }
+      }
+
+      return null;
+    },
+    [userQuotas],
+  );
 
   const handleFileSelect = useCallback(
     (selectedFiles: FileList | File[]) => {
@@ -180,6 +184,12 @@ export default function UploadPage() {
         throw new Error("Authentication required");
       }
 
+      // Generate CSRF token
+      const csrfToken = generateCSRFToken();
+      
+      // Set CSRF token as cookie
+      document.cookie = `csrfToken=${csrfToken}; path=/; SameSite=Lax`;
+
       const formData = new FormData();
       formData.append("file", uploadFile.file);
       formData.append("title", uploadFile.file.name.replace(".pdf", ""));
@@ -188,7 +198,9 @@ export default function UploadPage() {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
+          "X-CSRF-Token": csrfToken,
         },
+        credentials: "include",
         body: formData,
       });
 

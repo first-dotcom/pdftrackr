@@ -11,10 +11,10 @@ import { pdfViews } from "../middleware/metrics";
 import { createRateLimit, normalizeIp } from "../middleware/security";
 import { validateBody } from "../middleware/validation";
 import { emailCaptures, files, pageViews, shareLinks, viewSessions } from "../models/schema";
-import { getSignedDownloadUrl } from "../services/storage";
+import { getSignedDownloadUrl, streamFromS3, getFileMetadata } from "../services/storage";
 import { db } from "../utils/database";
 import { getCountryFromIP, hashIPAddress } from "../utils/privacy";
-import { deleteCache, getSession, setSession } from "../utils/redis";
+import { deleteCache, getSession, setSession, getCache, setCache } from "../utils/redis";
 import {
   createShareLinkSchema,
   shareAccessSchema,
@@ -509,6 +509,166 @@ router.delete(
       success: true,
       message: "Share link deleted successfully",
     });
+  }),
+);
+
+// Secure PDF proxy endpoint - stream PDF with access validation
+router.get(
+  "/:shareId/view",
+  createRateLimit(5 * 60 * 1000, 50, "Too many PDF view requests"),
+  normalizeIp,
+  asyncHandler(async (req: Request, res: Response) => {
+    const { shareId } = req.params;
+    const { session } = req.query;
+    
+    // Get share link with file info
+    const shareLink = await db
+      .select({
+        id: shareLinks.id,
+        shareId: shareLinks.shareId,
+        title: shareLinks.title,  
+        password: shareLinks.password,
+        emailGatingEnabled: shareLinks.emailGatingEnabled,
+        downloadEnabled: shareLinks.downloadEnabled,
+        watermarkEnabled: shareLinks.watermarkEnabled,
+        expiresAt: shareLinks.expiresAt,
+        maxViews: shareLinks.maxViews,
+        viewCount: shareLinks.viewCount,
+        isActive: shareLinks.isActive,
+        fileId: shareLinks.fileId,
+        file: {
+          id: files.id,
+          filename: files.filename,
+          originalName: files.originalName,
+          storageKey: files.storageKey,
+          mimeType: files.mimeType,
+        },
+      })
+      .from(shareLinks)
+      .innerJoin(files, eq(shareLinks.fileId, files.id))
+      .where(eq(shareLinks.shareId, shareId))
+      .limit(1);
+
+    if (shareLink.length === 0) {
+      throw new CustomError("Share link not found", 404);
+    }
+
+    const link = shareLink[0];
+
+    // Check if link is active and not expired
+    if (!link.isActive) {
+      throw new CustomError("Share link is disabled", 403);
+    }
+
+    if (link.expiresAt && new Date() > link.expiresAt) {
+      throw new CustomError("Share link has expired", 403);
+    }
+
+    if (link.maxViews && link.viewCount >= link.maxViews) {
+      throw new CustomError("Share link view limit reached", 403);
+    }
+
+    // Validate access through session or direct authentication
+    let hasAccess = false;
+    let viewerEmail: string | null = null;
+
+    if (session) {
+      // Check if session exists and is valid
+      const sessionData = await getSession(session as string);
+      if (sessionData && typeof sessionData === 'object' && 'shareId' in sessionData) {
+        const sessionObj = sessionData as { shareId: string; viewerInfo?: { email?: string } };
+        if (sessionObj.shareId === shareId) {
+          hasAccess = true;
+          viewerEmail = sessionObj.viewerInfo?.email || null;
+        }
+      }
+    }
+
+    // If no valid session, check for password/email in query params or headers
+    if (!hasAccess) {
+      const password = req.query.password as string;
+      const email = req.query.email as string;
+      
+      // Check password if required
+      if (link.password) {
+        if (!password || !(await bcrypt.compare(password, link.password))) {
+          res.status(401).json({
+            success: false,
+            error: "Invalid password",
+          });
+          return;
+        }
+      }
+
+      // Check email gating
+      if (link.emailGatingEnabled && !email) {
+        res.status(401).json({
+          success: false, 
+          error: "Email required to access this file",
+        });
+        return;
+      }
+
+      hasAccess = true;
+      viewerEmail = email || null;
+    }
+
+    if (!hasAccess) {
+      res.status(401).json({
+        success: false,
+        error: "Access denied",
+      });
+      return;
+    }
+
+    // Ensure this is a PDF file  
+    if (link.file.mimeType !== "application/pdf") {
+      throw new CustomError("Only PDF files can be viewed", 400);
+    }
+
+    try {
+      // Get file metadata and stream
+      const [metadata, fileStream] = await Promise.all([
+        getFileMetadata(link.file.storageKey),
+        streamFromS3(link.file.storageKey)
+      ]);
+
+      // Set appropriate headers for PDF viewing
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Length', metadata.contentLength);
+      res.setHeader('Content-Disposition', 'inline; filename="' + link.file.originalName + '"');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      
+      // Security headers to prevent download/print in some browsers
+      res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      
+      // Add watermark info in custom header if enabled
+      if (link.watermarkEnabled && viewerEmail) {
+        res.setHeader('X-Watermark-Email', Buffer.from(viewerEmail).toString('base64'));
+        res.setHeader('X-Watermark-Time', new Date().toISOString());
+      }
+
+      // Stream the PDF file directly to response
+      fileStream.pipe(res);
+      
+      // Handle stream errors
+      fileStream.on('error', (error) => {
+        console.error('Stream error:', error);
+        if (!res.headersSent) {
+          res.status(500).json({
+            success: false,
+            error: "Failed to stream file",
+          });
+        }
+      });
+
+    } catch (error) {
+      console.error('PDF streaming error:', error);
+      throw new CustomError("Failed to stream PDF", 500);
+    }
   }),
 );
 
