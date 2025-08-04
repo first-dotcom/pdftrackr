@@ -17,6 +17,7 @@ interface ShareLinkModalProps {
   onClose: () => void;
   file: File;
   onSuccess?: () => void;
+  existingShareLink?: ShareLink | null; // For editing
 }
 
 interface ShareLinkForm {
@@ -30,21 +31,21 @@ interface ShareLinkForm {
   maxViews: string;
 }
 
-export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: ShareLinkModalProps) {
+export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, existingShareLink }: ShareLinkModalProps) {
   const [loading, setLoading] = useState(false);
   const [shareLink, setShareLink] = useState<ShareLink | null>(null);
   const [copied, setCopied] = useState(false);
   const { getToken } = useAuth();
 
   const [form, setForm] = useState<ShareLinkForm>({
-    title: `${file.title || "Untitled Document"} - Shared`,
-    description: "",
-    password: "",
-    emailGatingEnabled: false,
-    downloadEnabled: true,
-    watermarkEnabled: false,
-    expiresAt: "",
-    maxViews: "",
+    title: existingShareLink?.title || `${file.title || "Untitled Document"} - Shared`,
+    description: existingShareLink?.description || "",
+    password: "", // Never pre-fill passwords for security
+    emailGatingEnabled: existingShareLink?.emailGatingEnabled || false,
+    downloadEnabled: existingShareLink?.downloadEnabled !== false, // default true
+    watermarkEnabled: existingShareLink?.watermarkEnabled || false,
+    expiresAt: existingShareLink?.expiresAt ? new Date(existingShareLink.expiresAt).toISOString().slice(0, 16) : "",
+    maxViews: existingShareLink?.maxViews?.toString() || "",
   });
 
   const [errors, setErrors] = useState<Partial<ShareLinkForm>>({});
@@ -122,8 +123,13 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
         payload.maxViews = parseInt(form.maxViews.trim());
       }
 
-      const response = await fetch(`${config.api.url}/api/share`, {
-        method: "POST",
+      const isEditing = !!existingShareLink;
+      const url = isEditing 
+        ? `${config.api.url}/api/share/${existingShareLink.shareId}`
+        : `${config.api.url}/api/share`;
+      
+      const response = await fetch(url, {
+        method: isEditing ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -175,14 +181,14 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess }: Sha
     setErrors({});
     setTouched({});
     setForm({
-      title: `${file.title || "Untitled Document"} - Shared`,
-      description: "",
-      password: "",
-      emailGatingEnabled: false,
-      downloadEnabled: true,
-      watermarkEnabled: false,
-      expiresAt: "",
-      maxViews: "",
+      title: existingShareLink?.title || `${file.title || "Untitled Document"} - Shared`,
+      description: existingShareLink?.description || "",
+      password: "", // Never pre-fill passwords for security
+      emailGatingEnabled: existingShareLink?.emailGatingEnabled || false,
+      downloadEnabled: existingShareLink?.downloadEnabled !== false,
+      watermarkEnabled: existingShareLink?.watermarkEnabled || false,
+      expiresAt: existingShareLink?.expiresAt ? new Date(existingShareLink.expiresAt).toISOString().slice(0, 16) : "",
+      maxViews: existingShareLink?.maxViews?.toString() || "",
     });
   };
 
