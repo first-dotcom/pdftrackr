@@ -1,7 +1,5 @@
 "use client";
 
-import { config } from "@/lib/config";
-import { useAuth } from "@clerk/nextjs";
 import { Calendar, CheckCircle, Copy, Shield, X } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
@@ -11,6 +9,7 @@ import type {
   ShareLink,
   ShareLinkResponse,
 } from "../../shared/types";
+import { useApi } from "../hooks/useApi";
 
 interface ShareLinkModalProps {
   isOpen: boolean;
@@ -35,7 +34,7 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
   const [loading, setLoading] = useState(false);
   const [shareLink, setShareLink] = useState<ShareLink | null>(null);
   const [copied, setCopied] = useState(false);
-  const { getToken } = useAuth();
+  const api = useApi();
 
   const [form, setForm] = useState<ShareLinkForm>({
     title: existingShareLink?.title || `${file.title || "Untitled Document"} - Shared`,
@@ -100,7 +99,6 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
     setLoading(true);
 
     try {
-      const token = await getToken();
       const payload: CreateShareLinkRequest = {
         fileId: file.id,
         title: form.title.trim(),
@@ -124,26 +122,17 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
       }
 
       const isEditing = !!existingShareLink;
-      const url = isEditing 
-        ? `${config.api.url}/api/share/${existingShareLink.shareId}`
-        : `${config.api.url}/api/share`;
       
-      const response = await fetch(url, {
-        method: isEditing ? "PATCH" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      // Use the API client - it handles CSRF automatically
+      const response = isEditing
+        ? await api.shareLinks.update(existingShareLink.shareId, payload)
+        : await api.shareLinks.create(payload);
 
-      if (response.ok) {
-        const data: ShareLinkResponse = await response.json();
-        setShareLink(data.data?.shareLink || null);
+      if (response.success) {
+        setShareLink(response.data?.shareLink || null);
         onSuccess?.();
       } else {
-        const error = await response.json();
-        console.error("API Error:", error);
+        console.error("API Error:", response.error);
 
         // Handle validation errors from backend
         if (error.details) {
