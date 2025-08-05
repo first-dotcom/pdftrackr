@@ -7,6 +7,7 @@ import { ArrowLeft, Calendar, Download, Eye, FileText, Share2 } from "lucide-rea
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ShareLinkModal from "@/components/ShareLinkModal";
+import { useApi } from "@/hooks/useApi";
 
 interface FileDetail {
   id: number;
@@ -37,6 +38,7 @@ export default function FileDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { getToken } = useAuth();
+  const api = useApi();
   const fileId = params.id as string;
 
   const [file, setFile] = useState<FileDetail | null>(null);
@@ -138,18 +140,11 @@ export default function FileDetailPage() {
     }
 
     try {
-      const token = await getToken();
-      const response = await fetch(`${config.api.url}/api/share/${shareId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
+      const response = await api.shareLinks.delete(shareId);
+      if (response.success) {
         fetchShareLinks(); // Refresh share links
       } else {
-        console.error("Failed to delete share link:", response.status);
+        console.error("Failed to delete share link:", response.error);
       }
     } catch (error) {
       console.error("Failed to delete share link:", error);

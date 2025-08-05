@@ -1,7 +1,8 @@
 "use client";
 
-import SecurePDFViewer from "@/components/SecurePDFViewerWrapper";
 import { config } from "@/lib/config";
+import { useApi } from "@/hooks/useApi";
+import SecurePDFViewer from "@/components/SecurePDFViewer";
 import dynamic from "next/dynamic";
 import type React from "react";
 import { useEffect, useState } from "react";
@@ -57,12 +58,15 @@ interface SharePageClientProps {
 }
 
 export default function SharePageClient({ shareId }: SharePageClientProps) {
+  const api = useApi();
   const [shareData, setShareData] = useState<ShareLinkData | null>(null);
   const [accessData, setAccessData] = useState<AccessData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAccessForm, setShowAccessForm] = useState(false);
   const [showPDFViewer, setShowPDFViewer] = useState(false);
+
+
 
   // Access form state
   const [password, setPassword] = useState("");
@@ -75,40 +79,46 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
   const [watermarkTime, setWatermarkTime] = useState<string>("");
 
   useEffect(() => {
-    fetchShareInfo();
-  }, []);
+    const fetchShareInfo = async () => {
+      try {
+        const response = await api.get(`/api/share/${shareId}`);
 
-  const fetchShareInfo = async () => {
-    try {
-      const response = await fetch(`${config.api.url}/api/share/${shareId}`);
-
-      if (response.ok) {
-        const data = await response.json();
-        setShareData(data.data);
-
-        // If no password or email gating required, show access form
-        if (!data.data.shareLink.requiresPassword && !data.data.shareLink.emailGatingEnabled) {
+        if (response.success && response.data) {
+          setShareData(response.data as ShareLinkData);
           setShowAccessForm(true);
         } else {
-          setShowAccessForm(true);
+          setError(response.error?.toString() || "Share link not found");
         }
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || "Share link not found");
+      } catch (err) {
+        console.error("Failed to fetch share info:", err);
+        setError("Failed to load share link");
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("Failed to fetch share info:", err);
-      setError("Failed to load share link");
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    fetchShareInfo();
+  }, [api, shareId]);
 
   const handleAccess = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null); // Clear previous errors
     setSubmitting(true);
 
     try {
+      // Frontend validation
+      if (shareData?.shareLink.emailGatingEnabled && (!email || !email.trim())) {
+        setError("Email is required");
+        setSubmitting(false);
+        return;
+      }
+
+      if (shareData?.shareLink.requiresPassword && (!password || !password.trim())) {
+        setError("Password is required");
+        setSubmitting(false);
+        return;
+      }
+
       const payload: Record<string, string> = {};
 
       if (shareData?.shareLink.requiresPassword) {
@@ -116,36 +126,28 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
       }
 
       if (shareData?.shareLink.emailGatingEnabled) {
-        payload.email = email;
-        if (name) {
-          payload.name = name;
+        if (email && email.trim()) {
+          payload.email = email.trim();
+        }
+        if (name && name.trim()) {
+          payload.name = name.trim();
         }
       }
 
-      const response = await fetch(`${config.api.url}/api/share/${shareId}/access`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await api.post(`/api/share/${shareId}/access`, payload);
 
-      if (response.ok) {
-        const data = await response.json();
-        setAccessData(data.data);
+      if (response.success && response.data) {
+        setAccessData(response.data as AccessData);
         setShowAccessForm(false);
 
-        // Set watermark info if enabled
         if (shareData?.shareLink.watermarkEnabled) {
           setWatermarkEmail(email || "Viewer");
           setWatermarkTime(new Date().toISOString());
         }
 
-        // Show PDF viewer for PDF files
         setShowPDFViewer(true);
       } else {
-        const errorData = await response.json();
-        setError(errorData.message || "Access denied");
+        setError(response.error?.toString() || "Access denied");
       }
     } catch (err) {
       console.error("Failed to access share:", err);
@@ -321,7 +323,7 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
     );
   }
 
-  // PDF Viewer (once access is granted)
+  // Show PDF Viewer once access is granted
   if (accessData && showPDFViewer) {
     return (
       <SecurePDFViewer
@@ -329,6 +331,7 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
         sessionId={accessData.sessionId}
         password={password}
         email={email}
+
         watermarkEmail={shareData?.shareLink.watermarkEnabled ? watermarkEmail : undefined}
         watermarkTime={shareData?.shareLink.watermarkEnabled ? watermarkTime : undefined}
         downloadEnabled={accessData.downloadEnabled}
@@ -336,68 +339,8 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
           setError(errorMsg);
           setShowPDFViewer(false);
         }}
-        onLoadSuccess={() => {
-          // PDF loaded successfully
-        }}
+        onLoadSuccess={() => {}}
       />
-    );
-  }
-
-  // Legacy fallback for non-PDF files or when PDF viewer fails
-  if (accessData && !showPDFViewer) {
-    return (
-      <div className="min-h-screen bg-gray-900">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-lg font-medium text-gray-900">{shareData?.shareLink.title}</h1>
-              <p className="text-sm text-gray-500">
-                {accessData.file.title || "Untitled Document"}
-              </p>
-            </div>
-            <div className="flex items-center space-x-3">
-              {accessData.downloadEnabled && (
-                <button
-                  type="button"
-                  onClick={handleDownload}
-                  className="btn-outline btn-sm flex items-center"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Download
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Fallback File Viewer */}
-        <div className="flex-1 p-4">
-          <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg">
-            <div className="p-6 text-center">
-              <div className="w-16 h-16 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                <Eye className="h-8 w-8 text-blue-600" />
-              </div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">View Document</h2>
-              <p className="text-gray-600 mb-6">
-                Click the button below to download or open the document
-              </p>
-              <div className="flex items-center justify-center space-x-4">
-                {accessData.downloadEnabled && (
-                  <button
-                    type="button"
-                    onClick={handleDownload}
-                    className="btn-primary btn-lg flex items-center"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Download Document
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     );
   }
 

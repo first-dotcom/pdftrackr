@@ -9,6 +9,19 @@ const nextConfig = {
     removeConsole: process.env.NODE_ENV === 'production',
   },
   
+  // Experimental features for faster dev builds
+  experimental: {
+    optimizePackageImports: ['lucide-react', '@clerk/nextjs'],
+    turbo: {
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
+        },
+      },
+    },
+  },
+  
   images: {
     domains: ['cdn.clerk.com'],
   },

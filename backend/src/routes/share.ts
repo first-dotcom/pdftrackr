@@ -11,7 +11,7 @@ import { pdfViews } from "../middleware/metrics";
 import { createRateLimit, normalizeIp } from "../middleware/security";
 import { validateBody } from "../middleware/validation";
 import { emailCaptures, files, pageViews, shareLinks, viewSessions } from "../models/schema";
-import { getSignedDownloadUrl, streamFromS3, getFileMetadata } from "../services/storage";
+import { getSignedDownloadUrl, getSignedViewUrl, streamFromS3, getFileMetadata } from "../services/storage";
 import { db } from "../utils/database";
 import { getCountryFromIP, hashIPAddress } from "../utils/privacy";
 import { deleteCache, getSession, setSession, getCache, setCache } from "../utils/redis";
@@ -364,8 +364,8 @@ router.post(
     // Record metrics
     pdfViews.labels(link.fileId.toString(), isUnique.toString()).inc();
 
-    // Generate signed URL for PDF access
-    const signedUrl = await getSignedDownloadUrl(link.file.storageKey, 3600); // 1 hour
+    // Generate signed URL for PDF viewing (with proper headers)
+    const signedUrl = await getSignedViewUrl(link.file.storageKey, 3600, true); // 1 hour
 
     // Cache session info for analytics tracking
     await setSession(
@@ -512,6 +512,16 @@ router.delete(
   }),
 );
 
+// Handle CORS preflight for PDF view endpoint
+router.options("/:shareId/view", (req: Request, res: Response) => {
+  res.setHeader('Access-Control-Allow-Origin', req.get('Origin') || '*');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-CSRF-Token');
+  res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
+  res.status(200).end();
+});
+
 // Secure PDF proxy endpoint - stream PDF with access validation
 router.get(
   "/:shareId/view",
@@ -640,6 +650,12 @@ router.get(
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
+      
+      // CORS headers for react-pdf (CRITICAL!)
+      res.setHeader('Access-Control-Allow-Origin', req.get('Origin') || '*');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-CSRF-Token');
       
       // Security headers to prevent download/print in some browsers
       res.setHeader('X-Frame-Options', 'SAMEORIGIN');

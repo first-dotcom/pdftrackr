@@ -2,14 +2,11 @@
 
 import { config } from "@/lib/config";
 import { ChevronLeft, ChevronRight, RotateCw, ZoomIn, ZoomOut } from "lucide-react";
-import type React from "react";
 import { useCallback, useEffect, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
-
-// Set up PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+import { initializePDFWorker, isPDFWorkerReady } from "@/lib/pdf-worker";
 
 interface SecurePDFViewerProps {
   shareId: string;
@@ -23,23 +20,8 @@ interface SecurePDFViewerProps {
   onLoadSuccess?: () => void;
 }
 
-interface WatermarkOverlayProps {
-  email: string;
-  timestamp: string;
-}
-
-const WatermarkOverlay: React.FC<WatermarkOverlayProps> = ({ email, timestamp }) => (
-  <div
-    className="absolute top-4 right-4 bg-black bg-opacity-20 text-white px-3 py-1 rounded text-sm font-mono pointer-events-none z-10"
-    style={{
-      fontSize: "12px",
-      opacity: 0.7,
-      userSelect: "none",
-      WebkitUserSelect: "none",
-      MozUserSelect: "none",
-      msUserSelect: "none",
-    }}
-  >
+const WatermarkOverlay = ({ email, timestamp }: { email: string; timestamp: string }) => (
+  <div className="absolute top-4 right-4 bg-black bg-opacity-20 text-white px-3 py-1 rounded text-sm font-mono pointer-events-none z-10">
     <div>{email}</div>
     <div>{new Date(timestamp).toLocaleString()}</div>
   </div>
@@ -62,28 +44,53 @@ export default function SecurePDFViewer({
   const [rotation, setRotation] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [pdfUrl, setPdfUrl] = useState<string>("");
+  const [workerError, setWorkerError] = useState<string | null>(null);
 
-  // Construct secure PDF URL
+  // Initialize PDF worker and set URL
   useEffect(() => {
-    const params = new URLSearchParams();
-    if (sessionId) params.append("session", sessionId);
-    if (password) params.append("password", password);
-    if (email) params.append("email", email);
+    const initialize = async () => {
+      // Initialize PDF worker first
+      const workerReady = await initializePDFWorker();
+      
+      if (!workerReady) {
+        setWorkerError("PDF worker failed to initialize. PDF viewing is not available.");
+        setLoading(false);
+        return;
+      }
 
-    const url = `${config.api.url}/api/share/${shareId}/view?${params.toString()}`;
-    setPdfUrl(url);
+      if (sessionId) {
+        const params = new URLSearchParams();
+        params.append("session", sessionId);
+        if (password) params.append("password", password);
+        if (email) params.append("email", email);
+
+        const secureUrl = `${config.api.url}/api/share/${shareId}/view?${params.toString()}`;
+        setPdfUrl(secureUrl);
+        setLoading(false);
+      } else {
+        setWorkerError("No session provided for PDF access.");
+        setLoading(false);
+      }
+    };
+
+    initialize();
   }, [shareId, sessionId, password, email]);
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
-    setLoading(false);
+    
+    // Reset to page 1 if current page is out of bounds
+    if (pageNumber > numPages) {
+      setPageNumber(1);
+    }
+    
     onLoadSuccess?.();
   };
 
   const onDocumentLoadError = (error: Error) => {
     console.error("PDF load error:", error);
     setLoading(false);
-    onError?.("Failed to load PDF. Please check your access permissions.");
+    onError?.(error.message);
   };
 
   const goToPrevPage = useCallback(() => {
@@ -91,6 +98,7 @@ export default function SecurePDFViewer({
   }, []);
 
   const goToNextPage = useCallback(() => {
+    if (numPages === 0) return;
     setPageNumber((prev) => Math.min(prev + 1, numPages));
   }, [numPages]);
 
@@ -109,27 +117,13 @@ export default function SecurePDFViewer({
   // Disable browser shortcuts and right-click
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Disable common download/print shortcuts
-      if (
-        (e.ctrlKey || e.metaKey) &&
-        (e.key === "s" || e.key === "p" || e.key === "S" || e.key === "P")
-      ) {
+      if ((e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "p")) {
         e.preventDefault();
-        e.stopPropagation();
-        return false;
-      }
-
-      // Disable F12, Ctrl+Shift+I (Dev Tools)
-      if (e.key === "F12" || ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "I")) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
       }
     };
 
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
-      return false;
     };
 
     document.addEventListener("keydown", handleKeyDown);
@@ -141,47 +135,52 @@ export default function SecurePDFViewer({
     };
   }, []);
 
-  // Disable text selection and drag
-  const preventSelection = {
-    userSelect: "none" as const,
-    WebkitUserSelect: "none" as const,
-    MozUserSelect: "none" as const,
-    msUserSelect: "none" as const,
-    WebkitTouchCallout: "none" as const,
-    WebkitUserDrag: "none" as const,
-    KhtmlUserSelect: "none" as const,
-    MozUserDrag: "none" as const,
-  };
+  if (workerError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="text-center">
+          <div className="text-red-600 text-xl mb-4">⚠️ PDF Viewer Error</div>
+          <div className="text-gray-700 mb-4">{workerError}</div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            Reload Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500" />
         <div className="ml-4 text-lg">Loading PDF...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100" style={preventSelection}>
+    <div className="min-h-screen bg-gray-100">
       {/* Toolbar */}
       <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-20">
         <div className="flex items-center space-x-4">
           <button
             onClick={goToPrevPage}
-            disabled={pageNumber <= 1}
+            disabled={pageNumber <= 1 || numPages === 0}
             className="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
 
           <span className="text-sm text-gray-600">
-            Page {pageNumber} of {numPages}
+            Page {pageNumber} of {numPages || '?'}
           </span>
 
           <button
             onClick={goToNextPage}
-            disabled={pageNumber >= numPages}
+            disabled={pageNumber >= numPages || numPages === 0}
             className="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ChevronRight className="w-5 h-5" />
@@ -189,80 +188,74 @@ export default function SecurePDFViewer({
         </div>
 
         <div className="flex items-center space-x-2">
-          <button onClick={zoomOut} className="p-2 rounded hover:bg-gray-100" title="Zoom Out">
+          <button onClick={zoomOut} className="p-2 rounded hover:bg-gray-100">
             <ZoomOut className="w-5 h-5" />
           </button>
-
           <span className="text-sm text-gray-600 min-w-16 text-center">
             {Math.round(scale * 100)}%
           </span>
-
-          <button onClick={zoomIn} className="p-2 rounded hover:bg-gray-100" title="Zoom In">
+          <button onClick={zoomIn} className="p-2 rounded hover:bg-gray-100">
             <ZoomIn className="w-5 h-5" />
           </button>
-
-          <button onClick={rotate} className="p-2 rounded hover:bg-gray-100" title="Rotate">
+          <button onClick={rotate} className="p-2 rounded hover:bg-gray-100">
             <RotateCw className="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      {/* PDF Viewer Container */}
+      {/* PDF Viewer */}
       <div className="flex justify-center p-4 relative">
         {watermarkEmail && watermarkTime && (
           <WatermarkOverlay email={watermarkEmail} timestamp={watermarkTime} />
         )}
 
-        <div
-          className="shadow-lg bg-white"
-          style={preventSelection}
-          onDragStart={(e) => e.preventDefault()}
-        >
-          <Document
-            file={pdfUrl}
-            onLoadSuccess={onDocumentLoadSuccess}
-            onLoadError={onDocumentLoadError}
-            loading={
-              <div className="flex items-center justify-center p-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                <span className="ml-2">Loading PDF...</span>
-              </div>
-            }
-            error={
-              <div className="flex items-center justify-center p-8 text-red-600">
-                <span>Failed to load PDF. Please check your access permissions.</span>
-              </div>
-            }
-            options={{
-              // Disable worker console warnings
-              verbosity: 0,
-              // Disable automatic PDF.js viewer UI
-              disableAutoFetch: false,
-              disableStream: false,
-              disableRange: false,
-            }}
-          >
-            <Page
-              pageNumber={pageNumber}
-              scale={scale}
-              rotate={rotation}
-              renderAnnotationLayer={false}
-              renderTextLayer={false}
-              loading={
-                <div className="flex items-center justify-center h-96 w-full bg-gray-50">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                </div>
-              }
-              error={
-                <div className="flex items-center justify-center h-96 w-full bg-gray-50 text-red-600">
-                  <span>Error loading page {pageNumber}</span>
-                </div>
-              }
-              onLoadError={(error) => {
-                console.error(`Error loading page ${pageNumber}:`, error);
+        <div className="shadow-lg bg-white">
+          {pdfUrl ? (
+            <Document
+                file={pdfUrl}
+                onLoadSuccess={onDocumentLoadSuccess}
+                onLoadError={onDocumentLoadError}
+                loading={
+                  <div className="flex items-center justify-center p-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+                    <span className="ml-2">Loading PDF...</span>
+                  </div>
+                }
+                error={
+                  <div className="flex items-center justify-center p-8 text-red-600">
+                    <span>❌ Failed to load PDF</span>
+                  </div>
+                }
+              options={{
+                cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
+                cMapPacked: true,
+                standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/standard_fonts/`,
               }}
-            />
-          </Document>
+            >
+              {numPages > 0 && pageNumber <= numPages ? (
+                <Page
+                  pageNumber={pageNumber}
+                  scale={scale}
+                  rotate={rotation}
+                  renderTextLayer={false}
+                  renderAnnotationLayer={false}
+                  className="mx-auto shadow-lg"
+                  onRenderSuccess={() => {}}
+                  onRenderError={(error) => {
+                    console.error(`PDF page render error:`, error);
+                  }}
+                />
+              ) : (
+                <div className="flex items-center justify-center p-8 text-gray-600">
+                  <span>⏳ Loading page {pageNumber}...</span>
+                </div>
+              )}
+            </Document>
+          ) : (
+            <div className="flex items-center justify-center p-8 text-gray-600">
+              <span>❌ No PDF URL provided</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -273,38 +266,31 @@ export default function SecurePDFViewer({
         </div>
       )}
 
-      {/* CSS to hide PDF.js built-in controls */}
-      <style jsx global>{`
-        .react-pdf__Page__canvas {
-          max-width: 100% !important;
-          height: auto !important; 
-        }
-        
-        /* Disable text selection */
-        .react-pdf__Page__textContent {
-          user-select: none !important;
-          -webkit-user-select: none !important;
-          -moz-user-select: none !important;
-          -ms-user-select: none !important;
-        }
-        
-        /* Hide PDF.js annotation layer that might contain download links */
-        .react-pdf__Page__annotations {
-          display: none !important;
-        }
-        
-        /* Disable drag and drop */
-        .react-pdf__Document, .react-pdf__Page {
-          -webkit-user-drag: none !important;
-          -moz-user-drag: none !important;
-          user-drag: none !important;
-        }
-        
-        /* Disable print media styles */
-        @media print {
-          body { display: none !important; }
-        }
-      `}</style>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          .react-pdf__Page__canvas {
+            max-width: 100% !important;
+            height: auto !important; 
+          }
+          .react-pdf__Page__textContent {
+            user-select: none !important;
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+          }
+          .react-pdf__Page__annotations {
+            display: none !important;
+          }
+          .react-pdf__Document, .react-pdf__Page {
+            -webkit-user-drag: none !important;
+            -moz-user-drag: none !important;
+            user-drag: none !important;
+          }
+          @media print {
+            body { display: none !important; }
+          }
+        `
+      }} />
     </div>
   );
 }

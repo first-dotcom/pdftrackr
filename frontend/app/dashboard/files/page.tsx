@@ -8,6 +8,7 @@ import { Download, Edit, Eye, FileText, Plus, Search, Share, Share2, Trash2 } fr
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { File } from "../../../../shared/types";
+import { useApi } from "@/hooks/useApi";
 
 export default function FilesPage() {
   const [files, setFiles] = useState<File[]>([]);
@@ -19,6 +20,7 @@ export default function FilesPage() {
   // Add proper loading states for Clerk
   const { getToken, isLoaded: authLoaded } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
+  const api = useApi();
 
   // Wait for both auth and user to be loaded
   const isReady = authLoaded && userLoaded;
@@ -31,30 +33,11 @@ export default function FilesPage() {
 
   const fetchFiles = async () => {
     try {
-      const token = await getToken();
-      if (!token) {
-        console.error("No authentication token available");
-        setLoading(false);
-        return;
-      }
-
-      const response = await fetch(`${config.api.url}/api/files`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.data) {
-          setFiles(data.data.items || []);
-        } else {
-          console.error("Invalid response format:", data);
-        }
+      const response = await api.files.list();
+      if (response.success && response.data) {
+        setFiles(response.data.items || []);
       } else {
-        console.error("Failed to fetch files:", response.status, response.statusText);
-        const errorData = await response.json().catch((): null => null);
-        console.error("Error response data:", errorData);
+        console.error("Failed to fetch files:", response.error);
       }
     } catch (error) {
       console.error("Failed to fetch files:", error);
@@ -78,18 +61,11 @@ export default function FilesPage() {
     }
 
     try {
-      const token = await getToken();
-      const response = await fetch(`${config.api.url}/api/files/${fileId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
+      const response = await api.files.delete(fileId);
+      if (response.success) {
         fetchFiles();
       } else {
-        console.error("Failed to delete file:", response.status);
+        console.error("Failed to delete file:", response.error);
       }
     } catch (error) {
       console.error("Failed to delete file:", error);

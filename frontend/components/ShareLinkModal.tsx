@@ -9,7 +9,7 @@ import type {
   ShareLink,
   ShareLinkResponse,
 } from "../../shared/types";
-import { useApi } from "../hooks/useApi";
+import { useApi } from "@/hooks/useApi";
 
 interface ShareLinkModalProps {
   isOpen: boolean;
