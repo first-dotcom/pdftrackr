@@ -2,6 +2,7 @@ import { and, eq, or } from "drizzle-orm";
 import { auditLogs } from "../models/schema";
 import { db } from "../utils/database";
 import { logger } from "../utils/logger";
+import { geolocationService } from "./geolocation";
 
 export interface AuditLogData {
   event: string;
@@ -23,6 +24,11 @@ export interface AuditLogData {
 export class AuditService {
   async logEvent(data: AuditLogData) {
     try {
+      // 🌍 ENRICH WITH GEOLOCATION DATA
+      const enrichedMetadata = data.ip 
+        ? await geolocationService.enrichAuditLogWithLocation(data.ip, data.metadata || {})
+        : (data.metadata || {});
+
       const logEntry = await db
         .insert(auditLogs)
         .values({
@@ -37,7 +43,7 @@ export class AuditService {
           scanResult: data.scanResult || null,
           threats: data.threats || [],
           scanners: data.scanners || [],
-          metadata: data.metadata || {},
+          metadata: enrichedMetadata,
           timestamp: new Date(),
         })
         .returning();
@@ -147,6 +153,112 @@ export class AuditService {
     });
   }
 
+  // 📊 NEW HIGH-VALUE ANALYTICS EVENTS
+  async logPageView(data: {
+    shareId: string;
+    fileId?: string;
+    ip: string;
+    userAgent: string;
+    email?: string;
+    page: number;
+    totalPages: number;
+  }) {
+    const readingDepth = Math.round((data.page / data.totalPages) * 100);
+    
+    return this.logEvent({
+      event: "page_view",
+      shareId: data.shareId,
+      fileId: data.fileId,
+      ip: data.ip,
+      userAgent: data.userAgent,
+      email: data.email,
+      success: true,
+      metadata: {
+        page: data.page,
+        totalPages: data.totalPages,
+        readingDepth,
+        isCompletion: readingDepth >= 100,
+      },
+    });
+  }
+
+  async logSessionEnd(data: {
+    shareId: string;
+    fileId?: string;
+    ip: string;
+    userAgent: string;
+    email?: string;
+    durationSeconds: number;
+    pagesViewed: number;
+    totalPages: number;
+    maxPageReached: number;
+  }) {
+    const completionRate = Math.round((data.maxPageReached / data.totalPages) * 100);
+    const engagementScore = this.calculateEngagementScore(
+      data.durationSeconds, 
+      data.maxPageReached, 
+      data.totalPages
+    );
+
+    return this.logEvent({
+      event: "session_end",
+      shareId: data.shareId,
+      fileId: data.fileId,
+      ip: data.ip,
+      userAgent: data.userAgent,
+      email: data.email,
+      success: true,
+      metadata: {
+        durationSeconds: data.durationSeconds,
+        durationMinutes: Math.round(data.durationSeconds / 60),
+        pagesViewed: data.pagesViewed,
+        totalPages: data.totalPages,
+        maxPageReached: data.maxPageReached,
+        completionRate,
+        engagementScore,
+        readingSpeed: data.durationSeconds > 0 ? Math.round(data.pagesViewed / (data.durationSeconds / 60)) : 0, // pages per minute
+      },
+    });
+  }
+
+  async logReturnVisit(data: {
+    shareId: string;
+    fileId?: string;
+    ip: string;
+    userAgent: string;
+    email?: string;
+    totalVisits: number;
+    daysSinceFirst: number;
+  }) {
+    return this.logEvent({
+      event: "return_visit",
+      shareId: data.shareId,
+      fileId: data.fileId,
+      ip: data.ip,
+      userAgent: data.userAgent,
+      email: data.email,
+      success: true,
+      metadata: {
+        totalVisits: data.totalVisits,
+        daysSinceFirst: data.daysSinceFirst,
+        visitorType: data.totalVisits === 1 ? "new" : data.totalVisits < 5 ? "returning" : "frequent",
+      },
+    });
+  }
+
+  // 🧮 ENGAGEMENT CALCULATION
+  private calculateEngagementScore(
+    durationSeconds: number, 
+    maxPageReached: number, 
+    totalPages: number
+  ): number {
+    const completionWeight = (maxPageReached / totalPages) * 50;
+    const timeWeight = Math.min(durationSeconds / 180, 1) * 30; // 3 minutes = good engagement
+    const depthWeight = maxPageReached > 1 ? 20 : 0;
+    
+    return Math.round(completionWeight + timeWeight + depthWeight);
+  }
+
   // Analytics queries
   async getFileAnalytics(fileId: string) {
     try {
@@ -220,6 +332,288 @@ export class AuditService {
       const errorMessage = error instanceof Error ? error.message : String(error);
       logger.error(`Failed to get security summary: ${errorMessage}`);
       return null;
+    }
+  }
+
+  // 📊 HIGH-IMPACT BUSINESS ANALYTICS
+  async getDocumentEngagementStats(shareId: string) {
+    try {
+      const stats = await db.select({
+        event: auditLogs.event,
+        metadata: auditLogs.metadata,
+        timestamp: auditLogs.timestamp,
+        email: auditLogs.email,
+        ipAddress: auditLogs.ipAddress,
+      })
+      .from(auditLogs)
+      .where(eq(auditLogs.shareId, shareId))
+      .orderBy(auditLogs.timestamp);
+
+      // Extract key metrics
+      const totalViews = stats.filter(s => s.event === 'pdf_access').length;
+      const uniqueViewers = new Set(stats.map(s => s.ipAddress).filter(Boolean)).size;
+      const pageViews = stats.filter(s => s.event === 'page_view');
+      const sessions = stats.filter(s => s.event === 'session_end');
+
+      // Calculate engagement metrics
+      const avgReadingDepth = pageViews.length > 0 
+        ? Math.round(pageViews.reduce((sum, p) => {
+            const depth = (p.metadata as any)?.readingDepth;
+            return sum + (typeof depth === 'number' ? depth : 0);
+          }, 0) / pageViews.length)
+        : 0;
+
+      const avgSessionDuration = sessions.length > 0
+        ? Math.round(sessions.reduce((sum, s) => {
+            const duration = (s.metadata as any)?.durationSeconds;
+            return sum + (typeof duration === 'number' ? duration : 0);
+          }, 0) / sessions.length)
+        : 0;
+
+      const completionRate = pageViews.length > 0
+        ? Math.round((pageViews.filter(p => p.metadata?.isCompletion).length / totalViews) * 100)
+        : 0;
+
+      return {
+        shareId,
+        totalViews,
+        uniqueViewers,
+        avgReadingDepth,
+        avgSessionDuration,
+        completionRate,
+        peakReadingTime: this.calculatePeakReadingTime(stats),
+        engagementTrend: this.calculateEngagementTrend(sessions),
+        topPages: this.getTopPages(pageViews),
+        deviceBreakdown: this.getDeviceBreakdown(stats),
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error(`Failed to get document engagement stats: ${errorMessage}`);
+      return null;
+    }
+  }
+
+  async getUserEngagementProfile(email: string) {
+    try {
+      const userLogs = await db.select()
+        .from(auditLogs)
+        .where(eq(auditLogs.email, email))
+        .orderBy(auditLogs.timestamp);
+
+      const documentsViewed = new Set(userLogs.map(log => log.shareId)).size;
+      const totalViews = userLogs.filter(log => log.event === 'pdf_access').length;
+      const sessionEndLogs = userLogs.filter(log => log.event === 'session_end');
+      const avgEngagement = sessionEndLogs.length > 0
+        ? sessionEndLogs.reduce((sum, log) => {
+            const engagement = (log.metadata as any)?.engagementScore;
+            return sum + (typeof engagement === 'number' ? engagement : 0);
+          }, 0) / sessionEndLogs.length
+        : 0;
+
+      const firstVisit = userLogs[0]?.timestamp;
+      const lastVisit = userLogs[userLogs.length - 1]?.timestamp;
+
+      return {
+        email,
+        documentsViewed,
+        totalViews,
+        avgEngagement: Math.round(avgEngagement),
+        firstVisit,
+        lastVisit,
+        loyaltyScore: this.calculateLoyaltyScore(totalViews, documentsViewed, firstVisit),
+        preferredReadingTimes: this.getPreferredReadingTimes(userLogs),
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error(`Failed to get user engagement profile: ${errorMessage}`);
+      return null;
+    }
+  }
+
+  async getTopPerformingDocuments(limit = 10) {
+    try {
+      const documentStats = await db.select({
+        shareId: auditLogs.shareId,
+        event: auditLogs.event,
+        metadata: auditLogs.metadata,
+      })
+      .from(auditLogs)
+      .where(or(
+        eq(auditLogs.event, 'pdf_access'),
+        eq(auditLogs.event, 'session_end')
+      ));
+
+      // Group by shareId and calculate metrics
+      const docMetrics = documentStats.reduce((acc, log) => {
+        if (!log.shareId) return acc;
+        
+        if (!acc[log.shareId]) {
+          acc[log.shareId] = { views: 0, avgEngagement: 0, sessions: 0 };
+        }
+        
+        if (log.event === 'pdf_access') {
+          acc[log.shareId].views++;
+        }
+        
+        if (log.event === 'session_end') {
+          acc[log.shareId].sessions++;
+          const engagement = (log.metadata as any)?.engagementScore;
+          acc[log.shareId].avgEngagement += (typeof engagement === 'number' ? engagement : 0);
+        }
+        
+        return acc;
+      }, {} as Record<string, { views: number; avgEngagement: number; sessions: number }>);
+
+      // Calculate final scores and sort
+      return Object.entries(docMetrics)
+        .map(([shareId, stats]) => ({
+          shareId,
+          views: stats.views,
+          avgEngagement: stats.sessions > 0 ? Math.round(stats.avgEngagement / stats.sessions) : 0,
+          performanceScore: stats.views * 0.7 + (stats.sessions > 0 ? (stats.avgEngagement / stats.sessions) * 0.3 : 0),
+        }))
+        .sort((a, b) => b.performanceScore - a.performanceScore)
+        .slice(0, limit);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error(`Failed to get top performing documents: ${errorMessage}`);
+      return [];
+    }
+  }
+
+  // 🔧 HELPER METHODS
+  private calculatePeakReadingTime(logs: any[]): string {
+    const hours = logs.reduce((acc, log) => {
+      const hour = new Date(log.timestamp).getHours();
+      acc[hour] = (acc[hour] || 0) + 1;
+      return acc;
+    }, {} as Record<number, number>);
+
+    const peakHour = Object.entries(hours).reduce((a, b) => {
+      const hourA = parseInt(a[0]);
+      const hourB = parseInt(b[0]);
+      return (hours[hourA] || 0) > (hours[hourB] || 0) ? a : b;
+    })[0];
+    return `${peakHour}:00`;
+  }
+
+  private calculateEngagementTrend(sessions: any[]): 'increasing' | 'decreasing' | 'stable' {
+    if (sessions.length < 2) return 'stable';
+    
+    const recent = sessions.slice(-5).reduce((sum, s) => sum + (s.metadata?.engagementScore || 0), 0) / 5;
+    const older = sessions.slice(0, -5).reduce((sum, s) => sum + (s.metadata?.engagementScore || 0), 0) / Math.max(1, sessions.length - 5);
+    
+    if (recent > older * 1.1) return 'increasing';
+    if (recent < older * 0.9) return 'decreasing';
+    return 'stable';
+  }
+
+  private getTopPages(pageViews: any[]): number[] {
+    const pageCounts = pageViews.reduce((acc, view) => {
+      const page = (view.metadata as any)?.page || 1;
+      const pageNum = typeof page === 'number' ? page : 1;
+      acc[pageNum] = (acc[pageNum] || 0) + 1;
+      return acc;
+    }, {} as Record<number, number>);
+
+    return Object.entries(pageCounts)
+      .sort(([,a], [,b]) => (b as number) - (a as number))
+      .slice(0, 5)
+      .map(([page]) => parseInt(page));
+  }
+
+  private getDeviceBreakdown(logs: any[]): { mobile: number; desktop: number; tablet: number } {
+    return logs.reduce((acc, log) => {
+      const ua = log.userAgent?.toLowerCase() || '';
+      if (ua.includes('mobile')) acc.mobile++;
+      else if (ua.includes('tablet')) acc.tablet++;
+      else acc.desktop++;
+      return acc;
+    }, { mobile: 0, desktop: 0, tablet: 0 });
+  }
+
+  private calculateLoyaltyScore(totalViews: number, documentsViewed: number, firstVisit?: Date): number {
+    if (!firstVisit) return 0;
+    
+    const daysSinceFirst = Math.floor((Date.now() - firstVisit.getTime()) / (1000 * 60 * 60 * 24));
+    const frequency = totalViews / Math.max(1, daysSinceFirst);
+    const diversity = documentsViewed / Math.max(1, totalViews);
+    
+    return Math.round((frequency * 50) + (diversity * 30) + (Math.min(daysSinceFirst / 30, 1) * 20));
+  }
+
+  private getPreferredReadingTimes(logs: any[]): number[] {
+    const hours = logs.reduce((acc, log) => {
+      const hour = new Date(log.timestamp).getHours();
+      acc[hour] = (acc[hour] || 0) + 1;
+      return acc;
+    }, {} as Record<number, number>);
+
+    return Object.entries(hours)
+      .sort(([,a], [,b]) => (b as number) - (a as number))
+      .slice(0, 3)
+      .map(([hour]) => parseInt(hour));
+  }
+
+  // 🌍 GEOGRAPHIC ANALYTICS
+  async getGeographicAnalytics(shareId?: string) {
+    try {
+      let query = db.select().from(auditLogs);
+      
+      if (shareId) {
+        query = query.where(eq(auditLogs.shareId, shareId));
+      }
+      
+      const logs = await query;
+      
+      return await geolocationService.getGeographicBreakdown(logs);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error(`Failed to get geographic analytics: ${errorMessage}`);
+      return [];
+    }
+  }
+
+  async getGlobalEngagementMap() {
+    try {
+      const logs = await db.select({
+        metadata: auditLogs.metadata,
+        event: auditLogs.event,
+      })
+      .from(auditLogs)
+      .where(eq(auditLogs.event, 'pdf_access'));
+
+      const countries: Record<string, {
+        name: string;
+        views: number;
+        coordinates?: { lat: number; lon: number };
+      }> = {};
+
+      logs.forEach(log => {
+        const location = (log.metadata as any)?.location;
+        if (!location?.country) return;
+
+        const countryCode = location.countryCode || 'UNK';
+        
+        if (!countries[countryCode]) {
+          countries[countryCode] = {
+            name: location.country,
+            views: 0,
+            coordinates: (log.metadata as any)?.coordinates || undefined,
+          };
+        }
+        
+        countries[countryCode].views++;
+      });
+
+      return Object.entries(countries).map(([code, data]) => ({
+        countryCode: code,
+        ...data,
+      }));
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error(`Failed to get global engagement map: ${errorMessage}`);
+      return [];
     }
   }
 }

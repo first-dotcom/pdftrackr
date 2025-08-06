@@ -14,6 +14,7 @@ import { logger } from "./utils/logger";
 import { connectRedis } from "./utils/redis";
 
 import analyticsRoutes from "./routes/analytics";
+import analyticsTrackingRoutes from "./routes/analyticsTracking";
 // Import routes
 import authRoutes from "./routes/auth";
 import filesRoutes from "./routes/files";
@@ -211,15 +212,16 @@ app.use(metricsMiddleware);
 
 // CSRF Protection (applied selectively)
 app.use("/api", (req, res, next) => {
-  // Skip CSRF for webhooks, public endpoints, and share access
+  // Skip CSRF for webhooks, public endpoints, share access, and analytics tracking
   if (
     req.path.includes("/webhook") ||
     req.path.includes("/public") ||
     req.path.includes("/health") ||
     req.path.includes("/metrics") ||
-    req.path.includes("/share/")
+    req.path.includes("/share/") ||
+    req.path.includes("/analytics/")
   ) {
-    // Allow public share access
+    // Allow public access for tracking and sharing
     return next();
   }
   return csrfProtection(req, res, next);
@@ -238,6 +240,7 @@ app.get("/health", (_req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/files", filesRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/analytics", analyticsTrackingRoutes); // New real-time tracking endpoints
 app.use("/api/users", usersRoutes);
 app.use("/api/share", shareRoutes);
 app.use("/api/waitlist", waitlistRoutes);

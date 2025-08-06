@@ -1,6 +1,7 @@
 "use client";
 
 import { config } from "@/lib/config";
+import { apiClient } from "@/lib/api-client";
 import { ChevronLeft, ChevronRight, RotateCw, ZoomIn, ZoomOut } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
@@ -19,6 +20,16 @@ interface SecurePDFViewerProps {
   onError?: (error: string) => void;
   onLoadSuccess?: () => void;
 }
+
+// 📊 ANALYTICS TRACKING INTERFACES
+interface SessionData {
+  startTime: number;
+  pagesViewed: Set<number>;
+  maxPageReached: number;
+  totalPages: number;
+}
+
+
 
 const WatermarkOverlay = ({ email, timestamp }: { email: string; timestamp: string }) => (
   <div className="absolute top-4 right-4 bg-black bg-opacity-20 text-white px-3 py-1 rounded text-sm font-mono pointer-events-none z-10">
@@ -45,6 +56,66 @@ export default function SecurePDFViewer({
   const [loading, setLoading] = useState<boolean>(true);
   const [pdfUrl, setPdfUrl] = useState<string>("");
   const [workerError, setWorkerError] = useState<string | null>(null);
+
+  // 📊 ANALYTICS TRACKING STATE
+  const [sessionData, setSessionData] = useState<SessionData>({
+    startTime: Date.now(),
+    pagesViewed: new Set([1]),
+    maxPageReached: 1,
+    totalPages: 0,
+  });
+
+  // 📊 ANALYTICS FUNCTIONS
+  const trackPageView = async (page: number, totalPages: number) => {
+    // Update session data
+    setSessionData(prev => ({
+      ...prev,
+      pagesViewed: new Set([...prev.pagesViewed, page]),
+      maxPageReached: Math.max(prev.maxPageReached, page),
+    }));
+
+    // Send analytics to backend using custom API client
+    try {
+      await apiClient.analytics.trackPageView({
+        shareId,
+        email,
+        page,
+        totalPages,
+        sessionId,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.warn('Page view tracking failed:', error);
+    }
+  };
+
+  const trackSessionEnd = async () => {
+    const durationSeconds = Math.round((Date.now() - sessionData.startTime) / 1000);
+    
+    try {
+      await apiClient.analytics.trackSessionEnd({
+        shareId,
+        email,
+        sessionId,
+        durationSeconds,
+        pagesViewed: sessionData.pagesViewed.size,
+        totalPages: sessionData.totalPages,
+        maxPageReached: sessionData.maxPageReached,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.warn('Session end tracking failed:', error);
+    }
+  };
+
+  // Cleanup: Track session end on component unmount
+  useEffect(() => {
+    return () => {
+      if (sessionData.totalPages > 0) {
+        trackSessionEnd();
+      }
+    };
+  }, [sessionData]);
 
   // Initialize PDF worker and set URL
   useEffect(() => {
@@ -83,6 +154,15 @@ export default function SecurePDFViewer({
     if (pageNumber > numPages) {
       setPageNumber(1);
     }
+
+    // 📊 INITIALIZE SESSION ANALYTICS
+    setSessionData(prev => ({
+      ...prev,
+      totalPages: numPages,
+    }));
+
+    // Track initial page view
+    trackPageView(1, numPages);
     
     onLoadSuccess?.();
   };
@@ -94,12 +174,24 @@ export default function SecurePDFViewer({
   };
 
   const goToPrevPage = useCallback(() => {
-    setPageNumber((prev) => Math.max(prev - 1, 1));
-  }, []);
+    setPageNumber((prev) => {
+      const newPage = Math.max(prev - 1, 1);
+      if (newPage !== prev && numPages > 0) {
+        trackPageView(newPage, numPages);
+      }
+      return newPage;
+    });
+  }, [numPages]);
 
   const goToNextPage = useCallback(() => {
     if (numPages === 0) return;
-    setPageNumber((prev) => Math.min(prev + 1, numPages));
+    setPageNumber((prev) => {
+      const newPage = Math.min(prev + 1, numPages);
+      if (newPage !== prev) {
+        trackPageView(newPage, numPages);
+      }
+      return newPage;
+    });
   }, [numPages]);
 
   const zoomIn = useCallback(() => {

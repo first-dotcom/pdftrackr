@@ -198,6 +198,50 @@ class ApiClient {
   analytics = {
     file: (fileId: number) => this.get(`/api/analytics/files/${fileId}`),
     share: (shareId: string) => this.get(`/api/analytics/shares/${shareId}`),
+    
+    // 📊 NEW HIGH-VALUE ANALYTICS TRACKING
+    trackPageView: (data: {
+      shareId: string;
+      email?: string;
+      page: number;
+      totalPages: number;
+      sessionId?: string;
+      timestamp: string;
+    }) => this.post("/api/analytics/page-view", data, { skipCSRF: true, skipAuth: true }),
+    
+    trackSessionEnd: (data: {
+      shareId: string;
+      email?: string;
+      sessionId?: string;
+      durationSeconds: number;
+      pagesViewed: number;
+      totalPages: number;
+      maxPageReached: number;
+      timestamp: string;
+    }) => this.post("/api/analytics/session-end", data, { skipCSRF: true, skipAuth: true }),
+    
+    trackReturnVisit: (data: {
+      shareId: string;
+      email?: string;
+      totalVisits: number;
+      daysSinceFirst: number;
+    }) => this.post("/api/analytics/return-visit", data, { skipCSRF: true, skipAuth: true }),
+
+    // Analytics retrieval methods
+    getDocumentStats: (shareId: string) => 
+      this.get(`/api/analytics/document/${shareId}/stats`, { skipCSRF: true, skipAuth: true }),
+    
+    getUserProfile: (email: string) => 
+      this.get(`/api/analytics/user/${encodeURIComponent(email)}/profile`, { skipCSRF: true }),
+    
+    getTopDocuments: (limit = 10) => 
+      this.get(`/api/analytics/top-documents?limit=${limit}`, { skipCSRF: true }),
+    
+    getGeographicAnalytics: (shareId: string) => 
+      this.get(`/api/analytics/geography/${shareId}`, { skipCSRF: true, skipAuth: true }),
+    
+    getGlobalEngagementMap: () => 
+      this.get("/api/analytics/global-map", { skipCSRF: true, skipAuth: true }),
   };
 }
 
