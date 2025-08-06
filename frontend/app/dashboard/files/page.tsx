@@ -4,7 +4,7 @@ import ShareLinkModal from "@/components/ShareLinkModal";
 import { config } from "@/lib/config";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { formatDistanceToNow } from "date-fns";
-import { Download, Edit, Eye, FileText, Plus, Search, Share, Share2, Trash2 } from "lucide-react";
+import { Eye, FileText, Plus, Search, Share, Share2, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { File } from "../../../../shared/types";
@@ -72,34 +72,8 @@ export default function FilesPage() {
     }
   };
 
-  const handleDownloadFile = async (file: File) => {
-    try {
-      const token = await getToken();
-      const response = await fetch(`${config.api.url}/api/files/${file.id}/download`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = file.title || "document.pdf";
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      } else {
-        console.error("Failed to download file:", response.status);
-      }
-    } catch (error) {
-      console.error("Failed to download file:", error);
-    }
-  };
-
-  const handleEditFile = (_file: File) => {};
+  // Note: Download functionality removed as backend endpoint doesn't exist
+  // Note: Edit functionality removed as it wasn't implemented
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) {
@@ -284,45 +258,21 @@ export default function FilesPage() {
                         </div>
                       </div>
 
-                      {/* Actions - responsive */}
+                      {/* Essential Actions Only - Share & Delete */}
                       <div className="mt-4 sm:mt-0 sm:ml-4">
-                        {/* Mobile: horizontal scroll */}
-                        <div className="flex space-x-2 sm:space-x-1 overflow-x-auto pb-2 sm:pb-0">
+                        <div className="flex space-x-3">
                           <button
                             type="button"
                             onClick={() => handleShareClick(file)}
-                            className="flex-shrink-0 p-3 sm:p-2 text-primary-600 hover:text-primary-900 rounded-lg hover:bg-primary-50 touch-manipulation transition-colors"
+                            className="flex-shrink-0 p-3 sm:p-2 text-primary-600 hover:text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg touch-manipulation transition-colors"
                             title="Create share link"
                           >
                             <Share className="h-5 w-5 sm:h-4 sm:w-4" />
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleDownloadFile(file)}
-                            className="flex-shrink-0 p-3 sm:p-2 text-green-600 hover:text-green-900 rounded-lg hover:bg-green-50 touch-manipulation transition-colors"
-                            title="Download file"
-                          >
-                            <Download className="h-5 w-5 sm:h-4 sm:w-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleEditFile(file)}
-                            className="flex-shrink-0 p-3 sm:p-2 text-blue-600 hover:text-blue-900 rounded-lg hover:bg-blue-50 touch-manipulation transition-colors"
-                            title="Edit file"
-                          >
-                            <Edit className="h-5 w-5 sm:h-4 sm:w-4" />
-                          </button>
-                          <Link
-                            href={`/dashboard/files/${file.id}`}
-                            className="flex-shrink-0 p-3 sm:p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-50 touch-manipulation transition-colors"
-                            title="View file details"
-                          >
-                            <Eye className="h-5 w-5 sm:h-4 sm:w-4" />
-                          </Link>
-                          <button
-                            type="button"
                             onClick={() => handleDeleteFile(file.id)}
-                            className="flex-shrink-0 p-3 sm:p-2 text-red-600 hover:text-red-900 rounded-lg hover:bg-red-50 touch-manipulation transition-colors"
+                            className="flex-shrink-0 p-3 sm:p-2 text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-lg touch-manipulation transition-colors"
                             title="Delete file"
                           >
                             <Trash2 className="h-5 w-5 sm:h-4 sm:w-4" />

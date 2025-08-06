@@ -176,7 +176,8 @@ class ApiClient {
     get: (id: number) => this.get(`/api/files/${id}`),
     upload: (formData: FormData) => this.uploadFile("/api/files/upload", formData),
     delete: (id: number) => this.delete(`/api/files/${id}`),
-    download: (id: number) => this.get(`/api/files/${id}/download`),
+            // Note: Download endpoint not implemented in backend
+        // download: (id: number) => this.get(`/api/files/${id}/download`),
   };
 
   shareLinks = {

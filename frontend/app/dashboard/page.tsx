@@ -213,15 +213,34 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Storage Usage - Keep compact */}
-      <div className="mb-8">
-        <StorageUsage />
-      </div>
+      {/* Storage Usage */}
+      <StorageUsage />
 
-      {/* Comprehensive Analytics Overview */}
-      <AnalyticsOverview userId={user?.id} />
+      {/* Simplified Analytics - Only show if user has files */}
+      {dashboardData && dashboardData.totalFiles > 0 && (
+        <AnalyticsOverview userId={user?.id} />
+      )}
 
-      {/* Legacy Analytics Section - Keep for now */}
+      {/* New User Welcome - Show if no files */}
+      {dashboardData && dashboardData.totalFiles === 0 && (
+        <div className="card">
+          <div className="card-body text-center py-12">
+            <FileText className="mx-auto h-16 w-16 text-gray-400" />
+            <h3 className="mt-4 text-lg font-medium text-gray-900">Welcome to PDFTrackr!</h3>
+            <p className="mt-2 text-gray-600 max-w-sm mx-auto">
+              Upload your first PDF to start tracking views, sharing securely, and getting insights.
+            </p>
+            <div className="mt-6">
+              <Link href="/dashboard/files/upload" className="btn-primary btn-lg">
+                <Plus className="h-5 w-5 mr-2" />
+                Upload Your First PDF
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Legacy Analytics Section - Hidden/Removed */}
       <div style={{ display: 'none' }}>
         {/* Analytics Section - Only show if there's data */}
         {dashboardData &&
