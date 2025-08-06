@@ -1,11 +1,11 @@
 "use client";
 
-import { config } from "@/lib/config";
+import { useEffect, useState } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { formatDistanceToNow } from "date-fns";
-import { Calendar, Eye, FileText, MoreHorizontal } from "lucide-react";
+import { FileText, Eye, Calendar, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useApi } from "@/hooks/useApi";
 
 interface File {
   id: number;
@@ -20,15 +20,15 @@ interface File {
 }
 
 export default function RecentFiles() {
-  const [files, setFiles] = useState<File[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Add proper loading states for Clerk
   const { getToken, isLoaded: authLoaded } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
-
+  const api = useApi();
+  
   // Wait for both auth and user to be loaded
   const isReady = authLoaded && userLoaded;
+  
+  const [files, setFiles] = useState<File[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isReady && user) {
@@ -37,25 +37,16 @@ export default function RecentFiles() {
   }, [isReady, user]);
 
   const fetchFiles = async () => {
+    if (!user) return;
+
     try {
-      const token = await getToken();
-      if (!token) {
-        console.error("No authentication token available");
-        setLoading(false);
-        return;
-      }
+      setLoading(true);
+      const response = await api.files.list(5);
 
-      const response = await fetch(`${config.api.url}/api/files?limit=5`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setFiles(data.data.files);
+      if (response.success && response.data) {
+        setFiles((response.data as any).files);
       } else {
-        console.error("Failed to fetch files:", response.status, response.statusText);
+        console.error("Failed to fetch files:", response.error);
       }
     } catch (error) {
       console.error("Failed to fetch files:", error);
@@ -184,18 +175,18 @@ export default function RecentFiles() {
                         <Eye className="h-3 w-3 mr-1" />
                         {getTotalViews(file.shareLinks)} views
                       </span>
-                      <span className="flex items-center">
-                        <Calendar className="h-3 w-3 mr-1" />
-                        {formatDistanceToNow(new Date(file.createdAt), { addSuffix: true })}
-                      </span>
+                                              <span className="flex items-center">
+                          <Calendar className="h-3 w-3 mr-1" />
+                          {formatDistanceToNow(new Date(file.createdAt), { addSuffix: true })}
+                        </span>
                     </div>
                   </div>
                 </div>
-                <div className="flex-shrink-0">
-                  <Link href={`/dashboard/files/${file.id}`} className="btn-ghost btn-sm">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Link>
-                </div>
+                                  <div className="flex-shrink-0">
+                    <Link href={`/dashboard/files/${file.id}`} className="btn-ghost btn-sm">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Link>
+                  </div>
               </div>
             ))}
           </div>

@@ -1,11 +1,10 @@
 "use client";
 
-import { config } from "@/lib/config";
-import { useAuth } from "@clerk/nextjs";
-import { ChevronRight } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
+import { useApi } from "@/hooks/useApi";
 
 interface BreadcrumbsProps {
   fileName?: string;
@@ -13,7 +12,7 @@ interface BreadcrumbsProps {
 
 export default function Breadcrumbs({ fileName }: BreadcrumbsProps) {
   const pathname = usePathname();
-  const { getToken } = useAuth();
+  const api = useApi();
   const [fileTitle, setFileTitle] = useState<string | null>(null);
 
   // Fetch file title for file detail pages
@@ -23,20 +22,11 @@ export default function Breadcrumbs({ fileName }: BreadcrumbsProps) {
         const fileId = pathname.split("/").pop();
         if (fileId && fileId !== "upload") {
           try {
-            const token = await getToken();
-            if (!token) {
-              return;
-            }
+            const response = await api.files.get(parseInt(fileId));
 
-            const response = await fetch(`${config.api.url}/api/files/${fileId}`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-
-            if (response.ok) {
-              const data = await response.json();
-              setFileTitle(data.data.file.title || "Untitled Document");
+            if (response.success && response.data) {
+              const file = (response.data as any).file;
+              setFileTitle(file.title || "Untitled Document");
             }
           } catch (error) {
             console.error("Failed to fetch file title:", error);
@@ -46,7 +36,7 @@ export default function Breadcrumbs({ fileName }: BreadcrumbsProps) {
     };
 
     fetchFileTitle();
-  }, [pathname, getToken]);
+  }, [pathname, api]);
 
   const getBreadcrumbs = () => {
     const segments = pathname.split("/").filter(Boolean);

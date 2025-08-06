@@ -5,7 +5,7 @@ const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 
   // API Configuration
-  NEXT_PUBLIC_API_URL: z.string().default("http://localhost:3001"),
+  NEXT_PUBLIC_API_URL: z.string().default("http://backend:3001"),
   NEXT_PUBLIC_APP_URL: z.string().optional(),
 
   // Clerk Authentication

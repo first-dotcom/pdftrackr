@@ -1,26 +1,22 @@
 "use client";
 
-import { config } from "@/lib/config";
-import {
-  createClientRateLimit,
-  generateCSRFToken,
-  sanitizeUserInput,
-  validateEmail,
-  validatePlan,
-} from "@/utils/security";
-import { Bell, Mail, X } from "lucide-react";
-import type React from "react";
 import { useState } from "react";
+import { Bell, X } from "lucide-react";
+import { useApi } from "@/hooks/useApi";
+import { sanitizeUserInput } from "@/utils/security";
 
-// Rate limiting for waitlist submissions
-const waitlistRateLimit = createClientRateLimit(3, 60000); // 3 submissions per minute
+interface WaitlistModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
 
 export default function WaitlistModal() {
   const [email, setEmail] = useState("");
   const [plan, setPlan] = useState("pro");
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const api = useApi();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,51 +24,30 @@ export default function WaitlistModal() {
     setLoading(true);
 
     try {
-      // Client-side validation with Zod
-      const sanitizedEmail = sanitizeUserInput(email);
-      const emailValidation = validateEmail(sanitizedEmail);
+      const sanitizedEmail = sanitizeUserInput(email).toLowerCase().trim();
 
-      if (!emailValidation.valid) {
-        setError(emailValidation.error || "Please enter a valid email address");
+      if (!sanitizedEmail || !sanitizedEmail.includes("@")) {
+        setError("Please enter a valid email address.");
         setLoading(false);
         return;
       }
 
-      const planValidation = validatePlan(plan);
-      if (!planValidation.valid) {
-        setError(planValidation.error || "Please select a valid plan");
-        setLoading(false);
-        return;
-      }
-
-      // Rate limiting check
-      if (!waitlistRateLimit.canMakeRequest()) {
-        setError("Too many requests. Please wait a moment before trying again.");
-        setLoading(false);
-        return;
-      }
-
-      const response = await fetch(`${config.api.url}/api/waitlist`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": generateCSRFToken(), // Add CSRF protection
-        },
-        body: JSON.stringify({
-          email: sanitizedEmail,
-          plan: sanitizeUserInput(plan),
-          source: "modal",
-        }),
+      const response = await api.waitlist.join({
+        email: sanitizedEmail,
+        plan: sanitizeUserInput(plan),
+        source: "modal",
       });
 
-      if (response.ok) {
+      if (response.success) {
         setSubmitted(true);
         setTimeout(() => {
           closeModal();
         }, 3000);
       } else {
-        const errorData = await response.json();
-        setError(errorData.message || "Failed to join waitlist. Please try again.");
+        const errorMessage = typeof response.error === 'string' 
+          ? response.error 
+          : response.error?.message || "Failed to join waitlist. Please try again.";
+        setError(errorMessage);
       }
     } catch (error) {
       console.error("Failed to join waitlist:", error);
@@ -180,8 +155,6 @@ export default function WaitlistModal() {
           </form>
         ) : (
           <div className="text-center py-6">
-            <Mail className="h-12 w-12 text-green-500 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">You're on the list!</h3>
             <p className="text-sm text-gray-600 mb-4">
               We'll email you as soon as premium plans are available.
             </p>

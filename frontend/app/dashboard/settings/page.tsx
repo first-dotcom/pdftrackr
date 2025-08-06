@@ -4,6 +4,7 @@ import { config } from "@/lib/config";
 import { useAuth } from "@clerk/nextjs";
 import { Bell, CreditCard, Download, Shield, Trash2, User } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useApi } from "@/hooks/useApi";
 
 interface UserSettings {
   email: string;
@@ -31,6 +32,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const { getToken } = useAuth();
+  const api = useApi();
 
   useEffect(() => {
     fetchSettings();
@@ -38,22 +40,10 @@ export default function SettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      const token = await getToken();
-      if (!token) {
-        console.error("No authentication token available");
-        setLoading(false);
-        return;
-      }
+      const response = await api.users.settings();
 
-      const response = await fetch(`${config.api.url}/api/users/settings`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setSettings(data.data);
+      if (response.success && response.data) {
+        setSettings(response.data);
       } else {
         // For now, create default settings
         setSettings({
@@ -87,21 +77,9 @@ export default function SettingsPage() {
   const updateSettings = async (newSettings: Partial<UserSettings>) => {
     setSaving(true);
     try {
-      const token = await getToken();
-      if (!token) {
-        throw new Error("Authentication required");
-      }
+      const response = await api.users.updateSettings(newSettings);
 
-      const response = await fetch(`${config.api.url}/api/users/settings`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newSettings),
-      });
-
-      if (response.ok) {
+      if (response.success) {
         setSettings((prev) => (prev ? { ...prev, ...newSettings } : null));
       }
     } catch (error) {

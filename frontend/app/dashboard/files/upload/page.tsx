@@ -7,6 +7,7 @@ import { AlertCircle, CheckCircle, FileText, Upload, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useCallback, useEffect, useState } from "react";
+import { useApi } from "@/hooks/useApi";
 
 interface UploadFile {
   file: File;
@@ -17,6 +18,7 @@ interface UploadFile {
 }
 
 export default function UploadPage() {
+  const api = useApi();
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -31,24 +33,15 @@ export default function UploadPage() {
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
-  const fetchUserQuotas = useCallback(async () => {
-    try {
-      const token = await getToken();
-      if (!token) {
-        return;
-      }
+  // Fetch user quotas on component mount
+  useEffect(() => {
+    const fetchUserQuotas = async () => {
+      try {
+        const response = await api.users.profile();
 
-      const response = await fetch(`${config.api.url}/api/users/profile`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          const userData = data.data.user;
-          const quotas = data.data.quotas;
+        if (response.success && response.data) {
+          const userData = (response.data as any).user;
+          const quotas = (response.data as any).quotas;
           setUserQuotas({
             storageUsed: userData.storageUsed,
             storageQuota: quotas.storage,
@@ -56,11 +49,13 @@ export default function UploadPage() {
             filesQuota: quotas.fileCount,
           });
         }
+      } catch (error) {
+        console.error("Failed to fetch user quotas:", error);
       }
-    } catch (error) {
-      console.error("Failed to fetch user quotas:", error);
-    }
-  }, [getToken]);
+    };
+
+    fetchUserQuotas();
+  }, [api]);
 
   const validateFile = useCallback(
     (file: File): string | null => {
@@ -129,19 +124,7 @@ export default function UploadPage() {
     [generateId, validateFile],
   );
 
-  const _apiCall = async (url: string, options: RequestInit) => {
-    const response = await fetch(url, options);
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Upload failed");
-    }
-    return await response.json();
-  };
 
-  // Fetch user quotas on component mount
-  useEffect(() => {
-    fetchUserQuotas();
-  }, [fetchUserQuotas]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -194,22 +177,16 @@ export default function UploadPage() {
       formData.append("file", uploadFile.file);
       formData.append("title", uploadFile.file.name.replace(".pdf", ""));
 
-      const response = await fetch(`${config.api.url}/api/files/upload`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "X-CSRF-Token": csrfToken,
-        },
-        credentials: "include",
-        body: formData,
-      });
+      const response = await api.files.upload(formData);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Upload failed");
+      if (!response.success) {
+        const errorMessage = typeof response.error === 'string' 
+          ? response.error 
+          : response.error?.message || "Upload failed";
+        throw new Error(errorMessage);
       }
 
-      return await response.json();
+      return response;
     } catch (error) {
       throw error;
     }

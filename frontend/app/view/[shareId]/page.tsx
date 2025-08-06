@@ -1,3 +1,4 @@
+import { config } from "@/lib/config";
 import type { Metadata } from "next";
 import React from "react";
 import SharePageClient from "./SharePageClient";
@@ -9,8 +10,7 @@ interface SharePageProps {
 // Fetch share data for metadata generation
 async function fetchShareData(shareId: string) {
   try {
-    const apiUrl = "http://backend:3001";
-    const response = await fetch(`${apiUrl}/api/share/${shareId}`, {
+    const response = await fetch(`${config.api.url}/api/share/${shareId}`, {
       cache: "no-store", // Always fetch fresh data for SEO
     });
 

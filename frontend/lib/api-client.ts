@@ -75,21 +75,46 @@ class ApiClient {
         signal: options.signal,
       });
 
+      // Handle non-JSON responses (like file downloads)
+      const contentType = response.headers.get("content-type");
+      if (contentType && !contentType.includes("application/json")) {
+        if (response.ok) {
+          return {
+            success: true,
+            data: response as any, // Return the response object for non-JSON data
+          };
+        } else {
+          return {
+            success: false,
+            error: `HTTP ${response.status}: ${response.statusText}`,
+          };
+        }
+      }
+
       const data = await response.json();
 
       if (!response.ok) {
         return {
           success: false,
-          error: data.error || `HTTP ${response.status}: ${response.statusText}`,
+          error: data.error || data.message || `HTTP ${response.status}: ${response.statusText}`,
         };
       }
 
       return data;
     } catch (error) {
       console.error(`API request failed: ${method} ${endpoint}`, error);
+      
+      // Handle network errors
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        return {
+          success: false,
+          error: "Network error. Please check your connection.",
+        };
+      }
+      
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Network error",
+        error: error instanceof Error ? error.message : "An unexpected error occurred",
       };
     }
   }
@@ -156,7 +181,7 @@ class ApiClient {
       if (!response.ok) {
         return {
           success: false,
-          error: data.error || `HTTP ${response.status}: ${response.statusText}`,
+          error: data.error || data.message || `HTTP ${response.status}: ${response.statusText}`,
         };
       }
 
@@ -172,12 +197,11 @@ class ApiClient {
 
   // Typed API methods for common operations
   files = {
-    list: () => this.get("/api/files"),
+    list: (limit?: number) => this.get(`/api/files${limit ? `?limit=${limit}` : ''}`),
     get: (id: number) => this.get(`/api/files/${id}`),
     upload: (formData: FormData) => this.uploadFile("/api/files/upload", formData),
     delete: (id: number) => this.delete(`/api/files/${id}`),
-            // Note: Download endpoint not implemented in backend
-        // download: (id: number) => this.get(`/api/files/${id}/download`),
+    download: (id: number) => this.get(`/api/files/${id}/download`, { skipCSRF: true }),
   };
 
   shareLinks = {
@@ -186,9 +210,9 @@ class ApiClient {
     get: (shareId: string, options?: RequestOptions) => 
       this.get(`/api/share/${shareId}`, { skipCSRF: true, skipAuth: true, ...options }),
     update: (shareId: string, data: any) => 
-      this.patch(`/api/share/${shareId}`, data, { skipCSRF: true }), // PATCH endpoints typically skip CSRF
+      this.patch(`/api/share/${shareId}`, data, { skipCSRF: true }),
     delete: (shareId: string) => 
-      this.delete(`/api/share/${shareId}`, { skipCSRF: true }), // DELETE endpoints typically skip CSRF
+      this.delete(`/api/share/${shareId}`, { skipCSRF: true }),
     access: (shareId: string, data: any) => 
       this.post(`/api/share/${shareId}/access`, data, { skipCSRF: true, skipAuth: true }),
   };
@@ -197,11 +221,19 @@ class ApiClient {
     profile: () => this.get("/api/users/profile"),
     updatePlan: (plan: string) => this.patch("/api/users/plan", { plan }),
     stats: () => this.get("/api/users/stats"),
+    settings: () => this.get("/api/users/settings"),
+    updateSettings: (settings: any) => this.patch("/api/users/settings", settings),
+  };
+
+  waitlist = {
+    join: (data: { email: string; plan: string; source: string }) => 
+      this.post("/api/waitlist", data, { skipAuth: true }),
   };
 
   analytics = {
     file: (fileId: number) => this.get(`/api/analytics/files/${fileId}`),
     share: (shareId: string) => this.get(`/api/analytics/shares/${shareId}`),
+    dashboard: () => this.get("/api/analytics/dashboard"),
     
     // 📊 NEW HIGH-VALUE ANALYTICS TRACKING
     trackPageView: (data: {

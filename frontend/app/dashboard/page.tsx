@@ -7,6 +7,7 @@ import { useAuth, useUser } from "@clerk/nextjs";
 import { BarChart3, Clock, Eye, FileText, Mail, Plus, TrendingUp, Users } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useApi } from "@/hooks/useApi";
 
 interface DashboardData {
   totalFiles: number;
@@ -52,6 +53,7 @@ export default function DashboardPage() {
 
   const { getToken, isLoaded: authLoaded } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
+  const api = useApi();
 
   const isReady = authLoaded && userLoaded;
 
@@ -62,38 +64,23 @@ export default function DashboardPage() {
   }, [isReady, user]);
 
   const fetchDashboardData = async () => {
+    if (!user) return;
+
     try {
       setLoading(true);
-      const token = await getToken();
+      setError("");
 
-      if (!token) {
-        setError("Authentication required");
-        return;
+      const response = await api.analytics.dashboard();
+
+      if (response.success && response.data) {
+        setDashboardData(response.data as DashboardData);
+      } else {
+        const errorMessage = typeof response.error === 'string' 
+          ? response.error 
+          : response.error?.message || "Failed to fetch dashboard data";
+        setError(errorMessage);
       }
-
-      const response = await fetch(`${config.api.url}/api/analytics/dashboard`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response
-          .json()
-          .catch(() => ({ message: "Failed to fetch dashboard data" }));
-        setError(errorData.message || "Failed to fetch dashboard data");
-        return;
-      }
-
-      const data = await response.json();
-
-      if (!data.success) {
-        setError(data.error || "Failed to fetch dashboard data");
-        return;
-      }
-
-      setDashboardData(data.data);
-    } catch (_error) {
+    } catch (error) {
       setError("Failed to fetch dashboard information");
     } finally {
       setLoading(false);

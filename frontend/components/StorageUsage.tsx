@@ -1,9 +1,9 @@
 "use client";
 
-import { config } from "@/lib/config";
-import { useAuth, useUser } from "@clerk/nextjs";
-import { HardDrive, TrendingUp, Upload } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useAuth, useUser } from "@clerk/nextjs";
+import { useApi } from "@/hooks/useApi";
+import { HardDrive, TrendingUp, Upload } from "lucide-react";
 
 interface StorageInfo {
   storageUsed: number;
@@ -14,21 +14,22 @@ interface StorageInfo {
 }
 
 export default function StorageUsage() {
-  const [storage, setStorage] = useState<StorageInfo>({
-    storageUsed: 0,
-    storageQuota: 500 * 1024 * 1024, // 500MB default
-    filesCount: 0,
-    filesQuota: 25, // 25 files default
-    plan: "free",
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const { getToken, isLoaded: authLoaded } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
-
+  const api = useApi();
+  
   // Wait for both auth and user to be loaded
   const isReady = authLoaded && userLoaded;
+  
+  const [storage, setStorage] = useState<StorageInfo>({
+    storageUsed: 0,
+    storageQuota: 0,
+    filesCount: 0,
+    filesQuota: 0,
+    plan: "free",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (isReady && user) {
@@ -37,47 +38,32 @@ export default function StorageUsage() {
   }, [isReady, user]);
 
   const fetchStorageInfo = async () => {
+    if (!user) return;
+
     try {
       setLoading(true);
-      const token = await getToken();
+      setError("");
 
-      if (!token) {
-        setError("Authentication required");
-        return;
+      const response = await api.users.profile();
+
+      if (response.success && response.data) {
+        const userData = (response.data as any).user;
+        const quotas = (response.data as any).quotas;
+
+        setStorage({
+          storageUsed: userData.storageUsed,
+          storageQuota: quotas.storage,
+          filesCount: userData.filesCount,
+          filesQuota: quotas.fileCount,
+          plan: userData.plan,
+        });
+      } else {
+        const errorMessage = typeof response.error === 'string' 
+          ? response.error 
+          : response.error?.message || "Failed to fetch storage info";
+        setError(errorMessage);
       }
-
-      const response = await fetch(`${config.api.url}/api/users/profile`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response
-          .json()
-          .catch(() => ({ message: "Failed to fetch storage info" }));
-        setError(errorData.message || "Failed to fetch storage info");
-        return;
-      }
-
-      const data = await response.json();
-
-      if (!data.success) {
-        setError(data.error || "Failed to fetch storage info");
-        return;
-      }
-
-      const userData = data.data.user;
-      const quotas = data.data.quotas;
-
-      setStorage({
-        storageUsed: userData.storageUsed,
-        storageQuota: quotas.storage,
-        filesCount: userData.filesCount,
-        filesQuota: quotas.fileCount,
-        plan: userData.plan,
-      });
-    } catch (_error) {
+    } catch (error) {
       setError("Failed to fetch storage information");
     } finally {
       setLoading(false);

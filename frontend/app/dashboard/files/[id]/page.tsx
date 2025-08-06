@@ -3,7 +3,7 @@
 import { config } from "@/lib/config";
 import { useAuth } from "@clerk/nextjs";
 import { formatDistanceToNow } from "date-fns";
-import { ArrowLeft, Calendar, FileText, Share2 } from "lucide-react";
+import { ArrowLeft, Calendar, FileText, Share2, Eye, Download } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ShareLinkModal from "@/components/ShareLinkModal";
@@ -38,21 +38,10 @@ export default function FileDetailPage() {
 
   const fetchFileDetails = async () => {
     try {
-      const token = await getToken();
-      if (!token) {
-        setError("Authentication required");
-        return;
-      }
+      const response = await api.files.get(parseInt(fileId));
 
-      const response = await fetch(`${config.api.url}/api/files/${fileId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setFile(data.data.file);
+      if (response.success && response.data) {
+        setFile((response.data as any).file);
       } else {
         setError("File not found");
       }
@@ -64,20 +53,10 @@ export default function FileDetailPage() {
 
   const fetchShareLinks = async () => {
     try {
-      const token = await getToken();
-      if (!token) {
-        return;
-      }
+      const response = await api.shareLinks.list(parseInt(fileId));
 
-      const response = await fetch(`${config.api.url}/api/share/file/${fileId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setShareLinks(data.data.shareLinks);
+      if (response.success && response.data) {
+        setShareLinks((response.data as any).shareLinks);
       }
     } catch (err) {
       console.error("Failed to fetch share links:", err);
@@ -88,20 +67,12 @@ export default function FileDetailPage() {
 
   const handleToggleShareLink = async (shareId: string, isActive: boolean) => {
     try {
-      const token = await getToken();
-      const response = await fetch(`${config.api.url}/api/share/${shareId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ isActive }),
-      });
+      const response = await api.shareLinks.update(shareId, { isActive });
 
-      if (response.ok) {
+      if (response.success) {
         fetchShareLinks(); // Refresh share links
       } else {
-        console.error("Failed to toggle share link:", response.status);
+        console.error("Failed to toggle share link:", response.error);
       }
     } catch (error) {
       console.error("Failed to toggle share link:", error);
