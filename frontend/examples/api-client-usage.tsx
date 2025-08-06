@@ -57,6 +57,7 @@ export function SimpleExample() {
 
 // Example 2: With loading states
 export function WithLoadingStates() {
+  const api = useApi();
   const { data, loading, error, execute } = useApiState();
 
   const handleFetchFiles = () => {

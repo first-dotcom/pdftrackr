@@ -35,7 +35,7 @@ export default function FilesPage() {
     try {
       const response = await api.files.list();
       if (response.success && response.data) {
-        setFiles(response.data.items || []);
+        setFiles((response.data as any).items || []);
       } else {
         console.error("Failed to fetch files:", response.error);
       }

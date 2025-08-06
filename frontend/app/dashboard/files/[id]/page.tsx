@@ -8,31 +8,11 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ShareLinkModal from "@/components/ShareLinkModal";
 import { useApi } from "@/hooks/useApi";
+import DocumentAnalytics from "@/components/analytics/DocumentAnalytics";
+import GeographicAnalytics from "@/components/analytics/GeographicAnalytics";
+import { File, ShareLink } from "../../../../../shared/types";
 
-interface FileDetail {
-  id: number;
-  title: string;
-  originalName: string;
-  size: number;
-  createdAt: string;
-  viewCount: number;
-  description?: string;
-}
-
-interface ShareLink {
-  id: number;
-  shareId: string;
-  title: string;
-  viewCount: number;
-  uniqueViewCount: number;
-  isActive: boolean;
-  createdAt: string;
-  expiresAt?: string;
-  maxViews?: number;
-  emailGatingEnabled: boolean;
-  downloadEnabled: boolean;
-  watermarkEnabled: boolean;
-}
+// Use the shared interfaces instead of custom definitions
 
 export default function FileDetailPage() {
   const params = useParams();
@@ -41,10 +21,10 @@ export default function FileDetailPage() {
   const api = useApi();
   const fileId = params.id as string;
 
-  const [file, setFile] = useState<FileDetail | null>(null);
+  const [file, setFile] = useState<File | null>(null);
   const [shareLinks, setShareLinks] = useState<ShareLink[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedFile, setSelectedFile] = useState<FileDetail | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [editingShareLink, setEditingShareLink] = useState<ShareLink | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -462,6 +442,37 @@ export default function FileDetailPage() {
               )}
             </div>
           </div>
+
+          {/* Analytics Section - Show rich analytics for each share link */}
+          {shareLinks.length > 0 && (
+            <div className="space-y-8">
+              {shareLinks.map((link) => (
+                <div key={link.shareId} className="space-y-6">
+                  <div className="border-t pt-8">
+                    <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                      Analytics for "{link.title}"
+                    </h2>
+                    
+                    {/* Document Analytics */}
+                    <div className="mb-8">
+                      <DocumentAnalytics 
+                        shareId={link.shareId} 
+                        title={link.title}
+                      />
+                    </div>
+
+                    {/* Geographic Analytics */}
+                    <div className="mb-8">
+                      <GeographicAnalytics 
+                        shareId={link.shareId}
+                        title={link.title}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </>
       ) : null}
 
@@ -473,7 +484,7 @@ export default function FileDetailPage() {
             setShareModalOpen(false);
             setSelectedFile(null);
           }}
-          file={selectedFile}
+          file={selectedFile as File}
           existingShareLink={editingShareLink}
           onSuccess={() => {
             fetchShareLinks(); // Refresh share links after creating/editing

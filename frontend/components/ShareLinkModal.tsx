@@ -129,15 +129,15 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
         : await api.shareLinks.create(payload);
 
       if (response.success) {
-        setShareLink(response.data?.shareLink || null);
+        setShareLink((response.data as any)?.shareLink || null);
         onSuccess?.();
       } else {
         console.error("API Error:", response.error);
 
         // Handle validation errors from backend
-        if (error.details) {
+        if (response.error && typeof response.error === 'object' && (response.error as any).details) {
           const backendErrors: Partial<ShareLinkForm> = {};
-          for (const detail of error.details as Array<{ path?: string[]; message: string }>) {
+          for (const detail of (response.error as any).details as Array<{ path?: string[]; message: string }>) {
             const field = detail.path?.[0];
             if (field) {
               (backendErrors as any)[field as keyof ShareLinkForm] = detail.message;
@@ -145,7 +145,12 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
           }
           setErrors(backendErrors);
         } else {
-          alert(error.message || "Failed to create share link");
+          const errorMessage = typeof response.error === 'string' 
+            ? response.error 
+            : typeof response.error === 'object' && response.error?.message 
+            ? (response.error as any).message 
+            : "Failed to create share link";
+          alert(errorMessage);
         }
       }
     } catch (error) {

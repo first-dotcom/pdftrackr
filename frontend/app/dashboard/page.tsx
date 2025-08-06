@@ -1,6 +1,7 @@
 "use client";
 
 import StorageUsage from "@/components/StorageUsage";
+import AnalyticsOverview from "@/components/analytics/AnalyticsOverview";
 import { config } from "@/lib/config";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { BarChart3, Clock, Eye, FileText, Mail, Plus, TrendingUp, Users } from "lucide-react";
@@ -212,13 +213,16 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Main Content Grid - Simplified */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Storage Usage */}
-        <div>
-          <StorageUsage />
-        </div>
+      {/* Storage Usage - Keep compact */}
+      <div className="mb-8">
+        <StorageUsage />
+      </div>
 
+      {/* Comprehensive Analytics Overview */}
+      <AnalyticsOverview userId={user?.id} />
+
+      {/* Legacy Analytics Section - Keep for now */}
+      <div style={{ display: 'none' }}>
         {/* Analytics Section - Only show if there's data */}
         {dashboardData &&
           (dashboardData.recentViews?.length > 0 || dashboardData.topFiles?.length > 0) && (

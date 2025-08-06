@@ -13,6 +13,7 @@ export interface RequestOptions {
   skipCSRF?: boolean;
   skipAuth?: boolean;
   customHeaders?: Record<string, string>;
+  signal?: AbortSignal;
 }
 
 class ApiClient {
@@ -71,6 +72,7 @@ class ApiClient {
         headers,
         credentials: "include",
         body: body ? JSON.stringify(body) : undefined,
+        signal: options.signal,
       });
 
       const data = await response.json();
@@ -146,6 +148,7 @@ class ApiClient {
         headers,
         credentials: "include",
         body: formData,
+        signal: options.signal,
       });
 
       const data = await response.json();
