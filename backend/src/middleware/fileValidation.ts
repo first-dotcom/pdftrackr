@@ -1,5 +1,7 @@
 import crypto from "node:crypto";
 import type { NextFunction, Request, Response } from "express";
+import { auditService } from "../services/auditService";
+import { pdfScanner } from "../services/virusScanning";
 import { logger } from "../utils/logger";
 import { CustomError } from "./errorHandler";
 
@@ -150,7 +152,8 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
 
     // 8. Check for suspicious object references (relaxed limit)
     const suspiciousRefs = bufferStr.match(/\d+\s+\d+\s+R\s*\[/g);
-    if (suspiciousRefs && suspiciousRefs.length > 1000) { // Increased from 100 to 1000
+    if (suspiciousRefs && suspiciousRefs.length > 1000) {
+      // Increased from 100 to 1000
       logger.warn("Excessive object references in PDF", {
         refs: suspiciousRefs.length,
         filename: file.originalname,
@@ -174,11 +177,78 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
     const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
     (req as RequestWithFileHash).fileHash = hash;
 
-    logger.info("PDF validation passed", {
+    // 11. Virus scanning
+    const fileId = `temp_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    logger.info("Starting virus scan for PDF", {
       filename: file.originalname,
+      fileId,
       size: file.size,
-      hash: hash.substring(0, 16),
     });
+
+    try {
+      const scanResult = await pdfScanner.scanPDF(file.path, fileId);
+
+      // Log scan result
+      await auditService.logVirusScan({
+        fileId,
+        isClean: scanResult.isClean,
+        threats: scanResult.threats,
+        scanners: scanResult.scanners,
+        error: scanResult.error,
+      });
+
+      if (!scanResult.isClean) {
+        logger.error("Virus scan failed - file blocked", {
+          filename: file.originalname,
+          fileId,
+          threats: scanResult.threats,
+          scanners: scanResult.scanners,
+          error: scanResult.error,
+        });
+
+        throw new CustomError(
+          scanResult.error
+            ? "File could not be scanned for security threats"
+            : `Security threat detected: ${scanResult.threats.join(", ")}`,
+          400,
+        );
+      }
+
+      logger.info("PDF validation and security scan passed", {
+        filename: file.originalname,
+        fileId,
+        size: file.size,
+        hash: hash.substring(0, 16),
+        scanners: scanResult.scanners,
+        riskLevel: scanResult.riskLevel,
+      });
+    } catch (scanError) {
+      // If scanning fails, log but don't block upload in development
+      // In production, you might want to block uploads when scanner is down
+      const errorMessage = scanError instanceof Error ? scanError.message : String(scanError);
+
+      logger.error("Virus scanning failed", {
+        filename: file.originalname,
+        fileId,
+        error: errorMessage,
+      });
+
+      // Log the scan failure
+      await auditService.logVirusScan({
+        fileId,
+        isClean: false,
+        threats: [],
+        scanners: [],
+        error: errorMessage,
+      });
+
+      // For now, allow upload if ClamAV is unavailable (development friendly)
+      // In production, you might want to throw an error here
+      if (process.env.NODE_ENV === "production") {
+        throw new CustomError("Security scanning is temporarily unavailable", 503);
+      }
+      logger.warn("Allowing upload without virus scan in development mode");
+    }
 
     next();
   } catch (error) {

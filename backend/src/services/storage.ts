@@ -1,3 +1,5 @@
+import * as fs from "fs";
+import * as path from "path";
 import {
   DeleteObjectCommand,
   GetObjectCommand,
@@ -5,8 +7,6 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import * as fs from "fs";
-import * as path from "path";
 import { config } from "../config";
 import { logger } from "../utils/logger";
 
@@ -44,8 +44,10 @@ export async function uploadToS3(
   metadata?: Record<string, string>,
 ): Promise<UploadResult> {
   // Check if we have valid credentials, if not use local storage fallback
-  if (config.storage.accessKeyId === "your_spaces_access_key" || 
-      config.storage.secretAccessKey === "your_spaces_secret_key") {
+  if (
+    config.storage.accessKeyId === "your_spaces_access_key" ||
+    config.storage.secretAccessKey === "your_spaces_secret_key"
+  ) {
     return uploadToLocal(key, buffer, contentType, metadata);
   }
 
@@ -90,7 +92,7 @@ export async function uploadToS3(
       errorCode: (error as { Code?: string })?.Code,
       errorName: (error as { name?: string })?.name,
     });
-    
+
     // Fallback to local storage if DigitalOcean Spaces fails
     return uploadToLocal(key, buffer, contentType, metadata);
   }
@@ -105,29 +107,29 @@ async function uploadToLocal(
 ): Promise<UploadResult> {
   try {
     logger.info("Using local storage fallback", { key, contentType });
-    
+
     // Create local storage directory
     const storageDir = path.join(process.cwd(), "uploads");
     const filePath = path.join(storageDir, key);
     const fileDir = path.dirname(filePath);
-    
+
     // Ensure directory exists
     await fs.promises.mkdir(fileDir, { recursive: true });
-    
+
     // Write file to local storage
     await fs.promises.writeFile(filePath, buffer);
-    
+
     // Generate a simple hash as etag
     const crypto = require("crypto");
     const etag = crypto.createHash("md5").update(buffer).digest("hex");
-    
+
     logger.info("File saved locally", {
       key,
       path: filePath,
       size: buffer.length,
       etag: etag.substring(0, 8),
     });
-    
+
     return {
       key,
       url: `/uploads/${key}`, // Local URL path
@@ -240,7 +242,7 @@ export async function streamFromS3(key: string): Promise<NodeJS.ReadableStream> 
 
     logger.debug("Streaming file from S3", { key });
     const response = await s3Client.send(command);
-    
+
     if (!response.Body) {
       throw new Error("No file content received");
     }
@@ -268,7 +270,7 @@ export async function getFileMetadata(key: string): Promise<{
     });
 
     const response = await s3Client.send(command);
-    
+
     return {
       contentType: response.ContentType || "application/octet-stream",
       contentLength: response.ContentLength || 0,

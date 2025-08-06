@@ -15,6 +15,13 @@
       "when": 1754218219753,
       "tag": "0001_sweet_darkhawk",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1754412211417,
+      "tag": "0002_hesitant_menace",
+      "breakpoints": true
     }
   ]
 }

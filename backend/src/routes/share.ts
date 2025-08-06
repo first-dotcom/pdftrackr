@@ -11,10 +11,16 @@ import { pdfViews } from "../middleware/metrics";
 import { createRateLimit, normalizeIp } from "../middleware/security";
 import { validateBody } from "../middleware/validation";
 import { emailCaptures, files, pageViews, shareLinks, viewSessions } from "../models/schema";
-import { getSignedDownloadUrl, getSignedViewUrl, streamFromS3, getFileMetadata } from "../services/storage";
+import { auditService } from "../services/auditService";
+import {
+  getFileMetadata,
+  getSignedDownloadUrl,
+  getSignedViewUrl,
+  streamFromS3,
+} from "../services/storage";
 import { db } from "../utils/database";
 import { getCountryFromIP, hashIPAddress } from "../utils/privacy";
-import { deleteCache, getSession, setSession, getCache, setCache } from "../utils/redis";
+import { deleteCache, getCache, getSession, setCache, setSession } from "../utils/redis";
 import {
   createShareLinkSchema,
   shareAccessSchema,
@@ -514,11 +520,11 @@ router.delete(
 
 // Handle CORS preflight for PDF view endpoint
 router.options("/:shareId/view", (req: Request, res: Response) => {
-  res.setHeader('Access-Control-Allow-Origin', req.get('Origin') || '*');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-CSRF-Token');
-  res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
+  res.setHeader("Access-Control-Allow-Origin", req.get("Origin") || "*");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, X-CSRF-Token");
+  res.setHeader("Access-Control-Max-Age", "86400"); // 24 hours
   res.status(200).end();
 });
 
@@ -530,13 +536,13 @@ router.get(
   asyncHandler(async (req: Request, res: Response) => {
     const { shareId } = req.params;
     const { session } = req.query;
-    
+
     // Get share link with file info
     const shareLink = await db
       .select({
         id: shareLinks.id,
         shareId: shareLinks.shareId,
-        title: shareLinks.title,  
+        title: shareLinks.title,
         password: shareLinks.password,
         emailGatingEnabled: shareLinks.emailGatingEnabled,
         downloadEnabled: shareLinks.downloadEnabled,
@@ -585,7 +591,7 @@ router.get(
     if (session) {
       // Check if session exists and is valid
       const sessionData = await getSession(session as string);
-      if (sessionData && typeof sessionData === 'object' && 'shareId' in sessionData) {
+      if (sessionData && typeof sessionData === "object" && "shareId" in sessionData) {
         const sessionObj = sessionData as { shareId: string; viewerInfo?: { email?: string } };
         if (sessionObj.shareId === shareId) {
           hasAccess = true;
@@ -598,10 +604,21 @@ router.get(
     if (!hasAccess) {
       const password = req.query.password as string;
       const email = req.query.email as string;
-      
+
       // Check password if required
       if (link.password) {
         if (!password || !(await bcrypt.compare(password, link.password))) {
+          // Log failed password attempt
+          await auditService.logPDFAccess({
+            shareId: shareId,
+            fileId: link.fileId.toString(),
+            ip: req.ip,
+            userAgent: req.get("User-Agent") || "",
+            email: email || null,
+            success: false,
+            error: "Invalid password",
+          });
+
           res.status(401).json({
             success: false,
             error: "Invalid password",
@@ -612,8 +629,19 @@ router.get(
 
       // Check email gating
       if (link.emailGatingEnabled && !email) {
+        // Log failed email gating attempt
+        await auditService.logPDFAccess({
+          shareId: shareId,
+          fileId: link.fileId.toString(),
+          ip: req.ip,
+          userAgent: req.get("User-Agent") || "",
+          email: null,
+          success: false,
+          error: "Email required",
+        });
+
         res.status(401).json({
-          success: false, 
+          success: false,
           error: "Email required to access this file",
         });
         return;
@@ -624,6 +652,17 @@ router.get(
     }
 
     if (!hasAccess) {
+      // Log failed access attempt
+      await auditService.logPDFAccess({
+        shareId: shareId,
+        fileId: link.fileId.toString(),
+        ip: req.ip,
+        userAgent: req.get("User-Agent") || "",
+        email: viewerEmail,
+        success: false,
+        error: "Access denied",
+      });
+
       res.status(401).json({
         success: false,
         error: "Access denied",
@@ -631,48 +670,58 @@ router.get(
       return;
     }
 
-    // Ensure this is a PDF file  
+    // Ensure this is a PDF file
     if (link.file.mimeType !== "application/pdf") {
       throw new CustomError("Only PDF files can be viewed", 400);
     }
+
+    // Log successful access attempt
+    await auditService.logPDFAccess({
+      shareId: shareId,
+      fileId: link.fileId.toString(),
+      ip: req.ip,
+      userAgent: req.get("User-Agent") || "",
+      email: viewerEmail,
+      success: true,
+    });
 
     try {
       // Get file metadata and stream
       const [metadata, fileStream] = await Promise.all([
         getFileMetadata(link.file.storageKey),
-        streamFromS3(link.file.storageKey)
+        streamFromS3(link.file.storageKey),
       ]);
 
       // Set appropriate headers for PDF viewing
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Length', metadata.contentLength);
-      res.setHeader('Content-Disposition', 'inline; filename="' + link.file.originalName + '"');
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
-      
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Length", metadata.contentLength);
+      res.setHeader("Content-Disposition", 'inline; filename="' + link.file.originalName + '"');
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+      res.setHeader("Pragma", "no-cache");
+      res.setHeader("Expires", "0");
+
       // CORS headers for react-pdf (CRITICAL!)
-      res.setHeader('Access-Control-Allow-Origin', req.get('Origin') || '*');
-      res.setHeader('Access-Control-Allow-Credentials', 'true');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-CSRF-Token');
-      
+      res.setHeader("Access-Control-Allow-Origin", req.get("Origin") || "*");
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+      res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+      res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, X-CSRF-Token");
+
       // Security headers to prevent download/print in some browsers
-      res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-      res.setHeader('X-Content-Type-Options', 'nosniff');
-      
+      res.setHeader("X-Frame-Options", "SAMEORIGIN");
+      res.setHeader("X-Content-Type-Options", "nosniff");
+
       // Add watermark info in custom header if enabled
       if (link.watermarkEnabled && viewerEmail) {
-        res.setHeader('X-Watermark-Email', Buffer.from(viewerEmail).toString('base64'));
-        res.setHeader('X-Watermark-Time', new Date().toISOString());
+        res.setHeader("X-Watermark-Email", Buffer.from(viewerEmail).toString("base64"));
+        res.setHeader("X-Watermark-Time", new Date().toISOString());
       }
 
       // Stream the PDF file directly to response
       fileStream.pipe(res);
-      
+
       // Handle stream errors
-      fileStream.on('error', (error) => {
-        console.error('Stream error:', error);
+      fileStream.on("error", (error) => {
+        console.error("Stream error:", error);
         if (!res.headersSent) {
           res.status(500).json({
             success: false,
@@ -680,9 +729,8 @@ router.get(
           });
         }
       });
-
     } catch (error) {
-      console.error('PDF streaming error:', error);
+      console.error("PDF streaming error:", error);
       throw new CustomError("Failed to stream PDF", 500);
     }
   }),

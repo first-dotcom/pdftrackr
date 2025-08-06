@@ -56,6 +56,32 @@ services:
           cpus: '0.25'
     command: redis-server --maxmemory 48mb --maxmemory-policy allkeys-lru
 
+  # ClamAV Antivirus Scanner - ARM64 compatible
+  clamav:
+    image: clamav/clamav-debian:1.3
+    container_name: pdftrackr_clamav
+    ports:
+      - "3310:3310"
+    volumes:
+      - clamav_data:/var/lib/clamav
+    networks:
+      - pdftrackr-network
+    restart: unless-stopped
+    environment:
+      - CLAMAV_NO_FRESHCLAMD=false
+      - CLAMAV_NO_CLAMD=false
+    healthcheck:
+      test: ["CMD", "clamdscan", "--version"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      start_period: 300s  # ClamAV takes time to download virus definitions
+    deploy:
+      resources:
+        limits:
+          memory: 1G  # ClamAV needs more RAM
+          cpus: '0.5'
+
   # Backend API
   backend:
     build:
@@ -76,6 +102,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      clamav:
+        condition: service_started  # Don't wait for healthy - ClamAV takes time to start
     networks:
       - pdftrackr-network
     restart: unless-stopped
@@ -188,6 +216,7 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  clamav_data:
   prometheus_data:
   grafana_data:
 

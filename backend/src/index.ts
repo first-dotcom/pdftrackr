@@ -112,12 +112,12 @@ app.use(
     origin: (origin, callback) => {
       // Define allowed origins based on environment
       const allowedOrigins = [config.frontend.url];
-      
+
       // Add development origins only in development
       if (config.env === "development") {
         allowedOrigins.push(
           "http://localhost:3000",
-          "http://127.0.0.1:3000", 
+          "http://127.0.0.1:3000",
           "http://localhost:3001",
         );
       }
@@ -148,9 +148,9 @@ app.use(
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: [
-      "Content-Type", 
-      "Authorization", 
-      "X-CSRF-Token", 
+      "Content-Type",
+      "Authorization",
+      "X-CSRF-Token",
       "X-Request-ID",
       "Accept",
       "Accept-Language",

@@ -285,3 +285,32 @@ export const waitlist = pgTable(
     createdAtIdx: index("waitlist_created_at_idx").on(table.createdAt),
   }),
 );
+
+// Audit Logs table
+export const auditLogs = pgTable(
+  "audit_logs",
+  {
+    id: serial("id").primaryKey(),
+    event: varchar("event", { length: 50 }).notNull(),
+    fileId: varchar("file_id", { length: 255 }),
+    shareId: varchar("share_id", { length: 255 }),
+    userId: varchar("user_id", { length: 255 }),
+    ipAddress: varchar("ip_address", { length: 45 }), // IPv6 max length
+    userAgent: text("user_agent"),
+    email: varchar("email", { length: 255 }),
+    success: boolean("success"),
+    scanResult: varchar("scan_result", { length: 20 }), // clean, infected, failed
+    threats: json("threats").$type<string[]>().default([]),
+    scanners: json("scanners").$type<string[]>().default([]),
+    metadata: json("metadata").$type<Record<string, unknown>>().default({}),
+    timestamp: timestamp("timestamp").defaultNow().notNull(),
+  },
+  (table) => ({
+    eventIdx: index("audit_logs_event_idx").on(table.event),
+    fileIdIdx: index("audit_logs_file_id_idx").on(table.fileId),
+    shareIdIdx: index("audit_logs_share_id_idx").on(table.shareId),
+    timestampIdx: index("audit_logs_timestamp_idx").on(table.timestamp),
+    fileTimestampIdx: index("audit_logs_file_timestamp_idx").on(table.fileId, table.timestamp),
+    ipIdx: index("audit_logs_ip_idx").on(table.ipAddress),
+  }),
+);
