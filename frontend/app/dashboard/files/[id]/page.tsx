@@ -3,7 +3,7 @@
 import { config } from "@/lib/config";
 import { useAuth } from "@clerk/nextjs";
 import { formatDistanceToNow } from "date-fns";
-import { ArrowLeft, Calendar, Download, Eye, FileText, Share2 } from "lucide-react";
+import { ArrowLeft, Calendar, FileText, Share2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ShareLinkModal from "@/components/ShareLinkModal";
@@ -215,23 +215,6 @@ export default function FileDetailPage() {
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      // Open first active share link, or show message
-                      const activeLink = shareLinks.find(link => link.isActive);
-                      if (activeLink) {
-                        window.open(`/view/${activeLink.shareId}`, '_blank');
-                      } else {
-                        alert('No active share links found. Create a share link first to preview the PDF.');
-                      }
-                    }}
-                    className="btn-primary btn-sm flex items-center"
-                    title="Preview PDF (opens in new tab)"
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    Preview PDF
-                  </button>
                   <button
                     type="button"
                     onClick={() => router.back()}
