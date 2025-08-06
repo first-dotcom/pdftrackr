@@ -162,25 +162,26 @@ export default function FilesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header with Upload Button */}
-      <div className="flex justify-between items-center">
-        <div className="flex-1">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <input
-                type="text"
-                placeholder="Search files..."
-                className="input pl-10 w-full"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
+      {/* Header with Search and Upload - Mobile Optimized */}
+      <div className="space-y-4 sm:space-y-0 sm:flex sm:justify-between sm:items-center">
+        <div className="flex-1 sm:max-w-sm">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <input
+              type="text"
+              placeholder="Search files..."
+              className="input pl-10 w-full h-12 text-base"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
         </div>
-        <div className="ml-4">
-          <Link href="/dashboard/files/upload" className="btn-primary btn-md flex items-center">
-            <Plus className="h-4 w-4 mr-2" />
+        <div className="flex justify-end">
+          <Link 
+            href="/dashboard/files/upload" 
+            className="btn-primary btn-lg w-full sm:w-auto flex items-center justify-center touch-manipulation"
+          >
+            <Plus className="h-5 w-5 mr-2" />
             Upload PDF
           </Link>
         </div>
@@ -225,84 +226,114 @@ export default function FilesPage() {
             )}
           </div>
         ) : (
-          <div className="card-body">
-            <div className="space-y-4">
-              {filteredFiles.map((file) => (
-                <div
-                  key={file.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                      <FileText className="h-5 w-5 text-red-600" />
+          <div className="divide-y divide-gray-200">
+            {filteredFiles.map((file) => (
+              <div key={file.id} className="p-4 sm:p-6 hover:bg-gray-50 transition-colors">
+                {/* Mobile-first responsive layout */}
+                <div className="flex items-start space-x-4">
+                  {/* File icon */}
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                      <FileText className="h-6 w-6 text-red-600" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <Link
-                        href={`/dashboard/files/${file.id}`}
-                        className="text-sm font-medium text-gray-900 hover:text-primary-600 transition-colors block truncate"
-                      >
-                        {file.title || "Untitled Document"}
-                      </Link>
-                      <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
-                        <span>{formatFileSize(file.size)}</span>
-                        <span className="flex items-center">
-                          <Eye className="h-3 w-3 mr-1" />
-                          {file.viewCount || 0} views
-                        </span>
-                        <span className="flex items-center">
-                          <Share2 className="h-3 w-3 mr-1" />
-                          {getActiveShareLinks(file.shareLinks)} links
-                        </span>
-                        <span>
-                          {formatDistanceToNow(new Date(file.createdAt), { addSuffix: true })}
-                        </span>
+                  </div>
+
+                  {/* File details */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex-1 min-w-0">
+                        <Link
+                          href={`/dashboard/files/${file.id}`}
+                          className="text-base font-medium text-gray-900 hover:text-primary-600 transition-colors block truncate touch-manipulation"
+                        >
+                          {file.title || "Untitled Document"}
+                        </Link>
+                        
+                        {/* Mobile: stacked info */}
+                        <div className="mt-2 flex flex-col space-y-1 text-sm text-gray-500 sm:hidden">
+                          <div>{formatFileSize(file.size)}</div>
+                          <div className="flex items-center space-x-4">
+                            <span className="flex items-center">
+                              <Eye className="h-4 w-4 mr-1" />
+                              {file.viewCount || 0} views
+                            </span>
+                            <span className="flex items-center">
+                              <Share2 className="h-4 w-4 mr-1" />
+                              {getActiveShareLinks(file.shareLinks)} links
+                            </span>
+                          </div>
+                          <div>
+                            {formatDistanceToNow(new Date(file.createdAt), { addSuffix: true })}
+                          </div>
+                        </div>
+
+                        {/* Desktop: horizontal info */}
+                        <div className="hidden sm:flex sm:items-center sm:space-x-6 sm:mt-2 text-sm text-gray-500">
+                          <span>{formatFileSize(file.size)}</span>
+                          <span className="flex items-center">
+                            <Eye className="h-4 w-4 mr-1" />
+                            {file.viewCount || 0} views
+                          </span>
+                          <span className="flex items-center">
+                            <Share2 className="h-4 w-4 mr-1" />
+                            {getActiveShareLinks(file.shareLinks)} links
+                          </span>
+                          <span>
+                            {formatDistanceToNow(new Date(file.createdAt), { addSuffix: true })}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Actions - responsive */}
+                      <div className="mt-4 sm:mt-0 sm:ml-4">
+                        {/* Mobile: horizontal scroll */}
+                        <div className="flex space-x-2 sm:space-x-1 overflow-x-auto pb-2 sm:pb-0">
+                          <button
+                            type="button"
+                            onClick={() => handleShareClick(file)}
+                            className="flex-shrink-0 p-3 sm:p-2 text-primary-600 hover:text-primary-900 rounded-lg hover:bg-primary-50 touch-manipulation transition-colors"
+                            title="Create share link"
+                          >
+                            <Share className="h-5 w-5 sm:h-4 sm:w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadFile(file)}
+                            className="flex-shrink-0 p-3 sm:p-2 text-green-600 hover:text-green-900 rounded-lg hover:bg-green-50 touch-manipulation transition-colors"
+                            title="Download file"
+                          >
+                            <Download className="h-5 w-5 sm:h-4 sm:w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleEditFile(file)}
+                            className="flex-shrink-0 p-3 sm:p-2 text-blue-600 hover:text-blue-900 rounded-lg hover:bg-blue-50 touch-manipulation transition-colors"
+                            title="Edit file"
+                          >
+                            <Edit className="h-5 w-5 sm:h-4 sm:w-4" />
+                          </button>
+                          <Link
+                            href={`/dashboard/files/${file.id}`}
+                            className="flex-shrink-0 p-3 sm:p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-50 touch-manipulation transition-colors"
+                            title="View file details"
+                          >
+                            <Eye className="h-5 w-5 sm:h-4 sm:w-4" />
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteFile(file.id)}
+                            className="flex-shrink-0 p-3 sm:p-2 text-red-600 hover:text-red-900 rounded-lg hover:bg-red-50 touch-manipulation transition-colors"
+                            title="Delete file"
+                          >
+                            <Trash2 className="h-5 w-5 sm:h-4 sm:w-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      type="button"
-                      onClick={() => handleShareClick(file)}
-                      className="text-primary-600 hover:text-primary-900 p-2 rounded hover:bg-primary-50"
-                      title="Create share link"
-                    >
-                      <Share className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDownloadFile(file)}
-                      className="text-green-600 hover:text-green-900 p-2 rounded hover:bg-green-50"
-                      title="Download file"
-                    >
-                      <Download className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleEditFile(file)}
-                      className="text-blue-600 hover:text-blue-900 p-2 rounded hover:bg-blue-50"
-                      title="Edit file"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </button>
-                    <Link
-                      href={`/dashboard/files/${file.id}`}
-                      className="text-gray-600 hover:text-gray-900 p-2 rounded hover:bg-gray-50"
-                      title="View file details"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteFile(file.id)}
-                      className="text-red-600 hover:text-red-900 p-2 rounded hover:bg-red-50"
-                      title="Delete file"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
