@@ -18,7 +18,8 @@
     "lint": "biome check .",
     "lint:fix": "biome check --apply .",
     "format": "biome format --write .",
-    "format:check": "biome format ."
+    "format:check": "biome format .",
+    "depcheck": "depcheck"
   },
   "keywords": [
     "pdf",
