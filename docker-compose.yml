@@ -132,10 +132,8 @@ services:
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     volumes:
-      # Development volumes (only mount in development)
-      - ./frontend:/app:cached
+      # Production mode - no development volumes
       - /app/node_modules
-      - /app/.next
     networks:
       - pdftrackr-network
     restart: unless-stopped
@@ -150,7 +148,7 @@ services:
         limits:
           memory: 1G
           cpus: '1.0'
-    command: ${FRONTEND_COMMAND:-pnpm run dev}
+    command: ${FRONTEND_COMMAND:-pnpm run start}
 
   # Prometheus
   prometheus:

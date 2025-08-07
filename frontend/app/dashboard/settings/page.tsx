@@ -43,7 +43,7 @@ export default function SettingsPage() {
       const response = await api.users.settings();
 
       if (response.success && response.data) {
-        setSettings(response.data);
+        setSettings(response.data as UserSettings);
       } else {
         // For now, create default settings
         setSettings({

@@ -1,20 +1,18 @@
 "use client";
 
-import { Calendar, CheckCircle, Copy, Shield, X } from "lucide-react";
-import type React from "react";
-import { useState } from "react";
-import type {
-  CreateShareLinkRequest,
-  File,
-  ShareLink,
-  ShareLinkResponse,
-} from "../../shared/types";
+import { useState, useEffect } from "react";
+import { X, CheckCircle, Copy, Shield, Calendar } from "lucide-react";
 import { useApi } from "@/hooks/useApi";
+import { 
+  ShareLink, 
+  CreateShareLinkRequest,
+  File as FileType
+} from "@/types";
 
 interface ShareLinkModalProps {
   isOpen: boolean;
   onClose: () => void;
-  file: File;
+  file: FileType;
   onSuccess?: () => void;
   existingShareLink?: ShareLink | null; // For editing
 }

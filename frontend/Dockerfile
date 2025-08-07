@@ -30,9 +30,14 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=base /tsconfig.base.json ../tsconfig.base.json
 COPY frontend/ .
 RUN chown -R nextjs:nodejs /app
+
+# Build the application for production mode
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN pnpm run build
+
 USER nextjs
 EXPOSE 3000
-CMD ["pnpm", "run", "dev"]
+CMD ["pnpm", "run", "start"]
 
 # =============================================================================
 # Builder stage

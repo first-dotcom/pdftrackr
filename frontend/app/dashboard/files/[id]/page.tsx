@@ -10,7 +10,7 @@ import ShareLinkModal from "@/components/ShareLinkModal";
 import { useApi } from "@/hooks/useApi";
 import DocumentAnalytics from "@/components/analytics/DocumentAnalytics";
 import GeographicAnalytics from "@/components/analytics/GeographicAnalytics";
-import { File, ShareLink } from "../../../../../shared/types";
+import { File as FileType, ShareLink } from "@/types";
 
 // Use the shared interfaces instead of custom definitions
 
@@ -21,10 +21,10 @@ export default function FileDetailPage() {
   const api = useApi();
   const fileId = params.id as string;
 
-  const [file, setFile] = useState<File | null>(null);
+  const [file, setFile] = useState<FileType | null>(null);
   const [shareLinks, setShareLinks] = useState<ShareLink[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<FileType | null>(null);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [editingShareLink, setEditingShareLink] = useState<ShareLink | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -438,7 +438,7 @@ export default function FileDetailPage() {
             setShareModalOpen(false);
             setSelectedFile(null);
           }}
-          file={selectedFile as File}
+          file={selectedFile as FileType}
           existingShareLink={editingShareLink}
           onSuccess={() => {
             fetchShareLinks(); // Refresh share links after creating/editing

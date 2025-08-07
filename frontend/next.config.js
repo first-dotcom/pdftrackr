@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable standalone build for Docker production
-  output: process.env.NODE_ENV === 'production' ? 'standalone' : undefined,
+  // Only use standalone for actual production builds, not development with production env
+  output: process.env.NODE_ENV === 'production' && process.env.NEXT_STANDALONE === 'true' ? 'standalone' : undefined,
   
   // Development optimizations
   swcMinify: true,
