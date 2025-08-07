@@ -33,12 +33,12 @@ export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderPr
 
     // For main dashboard, show simple title
     if (pathname === "/dashboard") {
-      return "Dashboard";
+      return null; // Remove dashboard title - redundant
     }
 
     // For files list, show contextual description
     if (pathname === "/dashboard/files") {
-      return "Files";
+      return null; // Remove files title - sidebar shows this
     }
 
     // Default: no title

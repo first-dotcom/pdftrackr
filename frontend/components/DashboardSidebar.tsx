@@ -74,11 +74,14 @@ export default function DashboardSidebar({ isMobileOpen = false, onMobileClose }
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 min-h-[4rem]">
-          {!isCollapsed && (
-            <Link href="/dashboard" className="text-xl font-bold text-gray-900 truncate">
-              PDFTrackr
-            </Link>
-          )}
+          {/* PDFTrackr Logo - Only show on mobile to avoid redundancy with header */}
+          <div className="lg:hidden">
+            {!isCollapsed && (
+              <Link href="/dashboard" className="text-xl font-bold text-gray-900 truncate">
+                PDFTrackr
+              </Link>
+            )}
+          </div>
           
           {/* Mobile close button */}
           <button
@@ -139,11 +142,7 @@ export default function DashboardSidebar({ isMobileOpen = false, onMobileClose }
 
         {/* Footer spacer */}
         <div className="p-4 border-t border-gray-200 text-xs text-gray-500">
-          {!isCollapsed && (
-            <div className="text-center">
-              Made with ❤️ by PDFTrackr
-            </div>
-          )}
+          {/* Removed footer text for cleaner desktop experience */}
         </div>
       </div>
     </>

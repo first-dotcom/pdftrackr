@@ -47,7 +47,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <main className="flex-1 w-full lg:w-auto">
           {/* Content wrapper with proper mobile spacing */}
           <div className="px-4 py-6 sm:px-6 lg:px-8">
-            <div className="mb-6">
+            {/* Breadcrumbs - Only show on mobile for cleaner desktop */}
+            <div className="mb-6 lg:hidden">
               <Breadcrumbs />
             </div>
             {children}
@@ -55,7 +56,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </main>
       </div>
       
-      <FloatingUploadButton />
+      {/* Removed floating upload button - redundant with header button */}
       <WaitlistModal />
     </div>
   );
