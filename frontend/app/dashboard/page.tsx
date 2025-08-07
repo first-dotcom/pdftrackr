@@ -169,30 +169,30 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header with Upload Button */}
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 sm:space-y-6">
+      {/* Header with Upload Button - Mobile Responsive */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
         <div className="flex-1">{/* Welcome message is handled by header */}</div>
-        <div className="ml-4">
-          <Link href="/dashboard/files/upload" className="btn-primary btn-md flex items-center">
+        <div className="sm:ml-4">
+          <Link href="/dashboard/files/upload" className="btn-primary btn-md flex items-center justify-center w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
             Upload PDF
           </Link>
         </div>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Key Metrics - Mobile Responsive */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
         {statCards.map((stat) => (
           <div key={stat.name} className="card">
-            <div className="card-body">
+            <div className="card-body p-3 sm:p-4">
               <div className="flex items-center">
-                <div className={`flex-shrink-0 ${stat.color} p-2 rounded-md`}>
-                  <stat.icon className="h-5 w-5 text-white" />
+                <div className={`flex-shrink-0 ${stat.color} p-1.5 sm:p-2 rounded-md`}>
+                  <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                 </div>
-                <div className="ml-4 flex-1">
-                  <p className="text-sm font-medium text-gray-600">{stat.name}</p>
-                  <p className="text-2xl font-semibold text-gray-900">{formatNumber(stat.value)}</p>
+                <div className="ml-2 sm:ml-4 flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">{stat.name}</p>
+                  <p className="text-lg sm:text-2xl font-semibold text-gray-900">{formatNumber(stat.value)}</p>
                 </div>
               </div>
             </div>
@@ -203,132 +203,110 @@ export default function DashboardPage() {
       {/* Storage Usage */}
       <StorageUsage />
 
-      {/* Simplified Analytics - Only show if user has files */}
-      {dashboardData && dashboardData.totalFiles > 0 && (
-        <AnalyticsOverview userId={user?.id} />
+      {/* Recent Activity - Mobile Responsive */}
+      {dashboardData && dashboardData.recentViews && dashboardData.recentViews.length > 0 && (
+        <div className="card">
+          <div className="card-header">
+            <h3 className="text-base sm:text-lg font-medium text-gray-900 flex items-center">
+              <Clock className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              Recent Views
+            </h3>
+          </div>
+          <div className="card-body p-3 sm:p-4">
+            <div className="space-y-2 sm:space-y-3">
+              {dashboardData.recentViews.slice(0, 5).map((view) => (
+                <div
+                  key={view.id}
+                  className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg"
+                >
+                  <div className="flex items-center flex-1 min-w-0">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Eye className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
+                    </div>
+                    <div className="ml-2 sm:ml-3 flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-900 truncate">
+                        {view.viewerName || view.viewerEmail || "Anonymous"}
+                      </div>
+                      <div className="text-xs text-gray-500 truncate">
+                        {formatDuration(view.totalDuration)} • {view.city || view.country || "Unknown location"}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-500 flex-shrink-0 ml-2">
+                    {new Date(view.startedAt).toLocaleDateString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
 
-      {/* New User Welcome - Show if no files */}
+      {/* Top Files - Mobile Responsive */}
+      {dashboardData && dashboardData.topFiles && dashboardData.topFiles.length > 0 && (
+        <div className="card">
+          <div className="card-header">
+            <h3 className="text-base sm:text-lg font-medium text-gray-900 flex items-center">
+              <TrendingUp className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              Top Files
+            </h3>
+          </div>
+          <div className="card-body p-3 sm:p-4">
+            <div className="space-y-2 sm:space-y-3">
+              {dashboardData.topFiles.slice(0, 5).map((file, index) => (
+                <div
+                  key={file.fileId}
+                  className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex items-center flex-1 min-w-0">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs sm:text-sm font-bold text-green-600">#{index + 1}</span>
+                    </div>
+                    <div className="ml-2 sm:ml-3 flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-900 truncate">
+                        {file.title || "Untitled Document"}
+                      </div>
+                      <div className="text-xs text-gray-500 truncate">
+                        {formatNumber(file.viewCount)} views • {formatNumber(file.uniqueViewCount)} unique
+                      </div>
+                    </div>
+                  </div>
+                  <Link
+                    href={`/dashboard/files/${file.fileId}`}
+                    className="text-primary-600 hover:text-primary-800 text-xs sm:text-sm font-medium flex-shrink-0 ml-2"
+                  >
+                    View
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Empty State - Mobile Responsive */}
       {dashboardData && dashboardData.totalFiles === 0 && (
         <div className="card">
-          <div className="card-body text-center py-12">
-            <FileText className="mx-auto h-16 w-16 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">Welcome to PDFTrackr!</h3>
-            <p className="mt-2 text-gray-600 max-w-sm mx-auto">
-              Upload your first PDF to start tracking views, sharing securely, and getting insights.
+          <div className="card-body text-center py-8 sm:py-12">
+            <FileText className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-400" />
+            <h3 className="mt-4 text-base sm:text-lg font-medium text-gray-900">No files yet</h3>
+            <p className="mt-2 text-sm sm:text-base text-gray-600 max-w-sm mx-auto">
+              Upload your first PDF to start tracking views and sharing securely.
             </p>
-            <div className="mt-6">
-              <Link href="/dashboard/files/upload" className="btn-primary btn-lg">
-                <Plus className="h-5 w-5 mr-2" />
-                Upload Your First PDF
+            <div className="mt-4 sm:mt-6">
+              <Link href="/dashboard/files/upload" className="btn-primary btn-lg flex items-center justify-center w-full sm:w-auto">
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                Upload PDF
               </Link>
             </div>
           </div>
         </div>
       )}
 
-      {/* Legacy Analytics Section - Hidden/Removed */}
-      <div style={{ display: 'none' }}>
-        {/* Analytics Section - Only show if there's data */}
-        {dashboardData &&
-          (dashboardData.recentViews?.length > 0 || dashboardData.topFiles?.length > 0) && (
-            <div className="space-y-6">
-              {/* Top Performing Files - Show top 5 */}
-              {dashboardData.topFiles && dashboardData.topFiles.length > 0 && (
-                <div className="card">
-                  <div className="card-header">
-                    <h3 className="text-lg font-medium text-gray-900 flex items-center">
-                      <TrendingUp className="mr-2 h-5 w-5" />
-                      Top Files
-                    </h3>
-                  </div>
-                  <div className="card-body">
-                    <div className="space-y-3">
-                      {dashboardData.topFiles.map((file, index) => (
-                        <div
-                          key={file.fileId}
-                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                        >
-                          <div className="flex items-center flex-1">
-                            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                              <span className="text-sm font-bold text-green-600">#{index + 1}</span>
-                            </div>
-                            <div className="ml-3 flex-1">
-                              <div className="text-sm font-medium text-gray-900 truncate">
-                                {file.title || "Untitled Document"}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                {formatNumber(file.viewCount)} views
-                              </div>
-                            </div>
-                          </div>
-                          <Link
-                            href={`/dashboard/files/${file.fileId}`}
-                            className="text-primary-600 hover:text-primary-800 text-sm font-medium"
-                          >
-                            View
-                          </Link>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Recent Activity - Show last 5 */}
-              {dashboardData.recentViews && dashboardData.recentViews.length > 0 && (
-                <div className="card">
-                  <div className="card-header">
-                    <h3 className="text-lg font-medium text-gray-900 flex items-center">
-                      <Clock className="mr-2 h-5 w-5" />
-                      Recent Activity
-                    </h3>
-                  </div>
-                  <div className="card-body">
-                    <div className="space-y-3">
-                      {dashboardData.recentViews.map((view) => (
-                        <div
-                          key={view.id}
-                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                        >
-                          <div className="flex items-center flex-1">
-                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                              <Eye className="h-4 w-4 text-blue-600" />
-                            </div>
-                            <div className="ml-3 flex-1">
-                              <div className="text-sm font-medium text-gray-900">
-                                {view.viewerName || view.viewerEmail || "Anonymous"}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                {formatDuration(view.totalDuration)}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {new Date(view.startedAt).toLocaleDateString()}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-        {/* Empty State - Show when no data */}
-        {dashboardData && !dashboardData.recentViews?.length && !dashboardData.topFiles?.length && (
-          <div className="card">
-            <div className="card-body text-center py-12">
-              <BarChart3 className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No activity yet</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Upload and share files to see analytics here
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Analytics Overview - Show if user has files */}
+      {dashboardData && dashboardData.totalFiles > 0 && (
+        <AnalyticsOverview userId={user?.id} />
+      )}
     </div>
   );
 }

@@ -3,7 +3,8 @@
 import { UserButton } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
+import { Menu, FileText } from "lucide-react";
+import Link from "next/link";
 
 interface DashboardHeaderProps {
   onMobileMenuClick?: () => void;
@@ -30,14 +31,14 @@ export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderPr
       return "Account Settings";
     }
 
-    // For main dashboard, show greeting
+    // For main dashboard, show simple title
     if (pathname === "/dashboard") {
-      return `Welcome back, ${user?.firstName || "User"}!`;
+      return "Dashboard";
     }
 
     // For files list, show contextual description
     if (pathname === "/dashboard/files") {
-      return "Manage your PDF files and share links";
+      return "Files";
     }
 
     // Default: no title
@@ -48,35 +49,42 @@ export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderPr
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
-      <div className="px-4 py-4 sm:px-6 lg:px-8">
+      <div className="px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
             {/* Mobile menu button */}
             <button
               type="button"
               onClick={onMobileMenuClick}
-              className="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md touch-manipulation"
+              className="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md touch-manipulation flex-shrink-0"
               aria-label="Open menu"
             >
-              <Menu className="h-6 w-6" />
+              <Menu className="h-5 w-5" />
             </button>
 
-            {/* Context title */}
+            {/* PDFTrackr Logo - Responsive */}
+            <Link href="/dashboard" className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
+              <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-primary-600" />
+              <span className="text-lg sm:text-xl font-bold text-gray-900 hidden sm:block">PDFTrackr</span>
+              <span className="text-lg font-bold text-gray-900 sm:hidden">PDF</span>
+            </Link>
+
+            {/* Context title - Responsive */}
             {contextualTitle && (
-              <div className="flex-1 min-w-0">
-                <h1 className="text-lg font-semibold text-gray-900 truncate sm:text-xl">
+              <div className="flex-1 min-w-0 ml-2 sm:ml-4">
+                <h1 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
                   {contextualTitle}
                 </h1>
               </div>
             )}
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
             <UserButton 
               afterSignOutUrl="/" 
               appearance={{
                 elements: {
-                  avatarBox: "w-8 h-8 rounded-full",
+                  avatarBox: "w-7 h-7 sm:w-8 sm:h-8 rounded-full",
                   userButtonTrigger: "focus:shadow-none",
                 },
               }}
