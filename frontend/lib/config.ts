@@ -5,7 +5,7 @@ const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 
   // API Configuration
-  NEXT_PUBLIC_API_URL: z.string().default("http://backend:3001"),
+  NEXT_PUBLIC_API_URL: z.string().default("http://localhost:3001"),
   NEXT_PUBLIC_APP_URL: z.string().optional(),
 
   // Clerk Authentication
@@ -19,12 +19,24 @@ const envSchema = z.object({
 // Parse and validate environment variables - FAIL FAST on invalid config
 const env = envSchema.parse(process.env);
 
+// Determine the correct API URL based on context
+const getApiUrl = () => {
+  // If we're in the browser (client-side), use localhost
+  if (typeof window !== "undefined") {
+    return "http://localhost:3001";
+  }
+  
+  // If we're server-side (SSR, API routes), use the environment variable
+  // which should be set to 'backend' in Docker
+  return env.NEXT_PUBLIC_API_URL;
+};
+
 export const config = {
   env: env.NODE_ENV,
 
   api: {
-    url: env.NEXT_PUBLIC_API_URL, // Docker containers use env vars
-    baseUrl: env.NEXT_PUBLIC_API_URL,
+    url: getApiUrl(),
+    baseUrl: getApiUrl(),
   },
 
   app: {

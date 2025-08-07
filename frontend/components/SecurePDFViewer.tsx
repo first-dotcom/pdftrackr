@@ -3,11 +3,13 @@
 import { config } from "@/lib/config";
 import { apiClient } from "@/lib/api-client";
 import { ChevronLeft, ChevronRight, RotateCw, ZoomIn, ZoomOut } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
-import { initializePDFWorker, isPDFWorkerReady } from "@/lib/pdf-worker";
+
+// Set up PDF.js worker (same as test page)
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 interface SecurePDFViewerProps {
   shareId: string;
@@ -65,6 +67,8 @@ export default function SecurePDFViewer({
     totalPages: 0,
   });
 
+
+
   // 📊 ANALYTICS FUNCTIONS
   const trackPageView = async (page: number, totalPages: number) => {
     // Update session data
@@ -117,38 +121,49 @@ export default function SecurePDFViewer({
     };
   }, [sessionData]);
 
-  // Initialize PDF worker and set URL
+  // Initialize PDF URL
   useEffect(() => {
-    const initialize = async () => {
-      // Initialize PDF worker first
-      const workerReady = await initializePDFWorker();
+    if (sessionId) {
+      const params = new URLSearchParams();
+      params.append("session", sessionId);
+      if (password) params.append("password", password);
+      if (email) params.append("email", email);
+
+      const secureUrl = `${config.api.url}/api/share/${shareId}/view?${params.toString()}`;
       
-      if (!workerReady) {
-        setWorkerError("PDF worker failed to initialize. PDF viewing is not available.");
-        setLoading(false);
-        return;
-      }
-
-      if (sessionId) {
-        const params = new URLSearchParams();
-        params.append("session", sessionId);
-        if (password) params.append("password", password);
-        if (email) params.append("email", email);
-
-        const secureUrl = `${config.api.url}/api/share/${shareId}/view?${params.toString()}`;
-        setPdfUrl(secureUrl);
-        setLoading(false);
-      } else {
-        setWorkerError("No session provided for PDF access.");
-        setLoading(false);
-      }
-    };
-
-    initialize();
+      // Fetch the PDF URL from the backend
+      fetch(secureUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.success && data.data?.pdfUrl) {
+            setPdfUrl(data.data.pdfUrl);
+          } else {
+            throw new Error(data.error || "Failed to get PDF URL");
+          }
+        })
+        .catch(error => {
+          console.error("Failed to get PDF URL:", error);
+          setWorkerError(error.message || "Failed to load PDF");
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else {
+      setWorkerError("No session provided for PDF access.");
+      setLoading(false);
+    }
   }, [shareId, sessionId, password, email]);
+
+
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
+    setLoading(false);
     
     // Reset to page 1 if current page is out of bounds
     if (pageNumber > numPages) {
@@ -166,6 +181,8 @@ export default function SecurePDFViewer({
     
     onLoadSuccess?.();
   };
+
+
 
   const onDocumentLoadError = (error: Error) => {
     console.error("PDF load error:", error);
@@ -318,11 +335,6 @@ export default function SecurePDFViewer({
                     <span>❌ Failed to load PDF</span>
                   </div>
                 }
-              options={{
-                cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
-                cMapPacked: true,
-                standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/standard_fonts/`,
-              }}
             >
               {numPages > 0 && pageNumber <= numPages ? (
                 <Page

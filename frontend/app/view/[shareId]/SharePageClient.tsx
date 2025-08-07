@@ -98,7 +98,7 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
     };
 
     fetchShareInfo();
-  }, [api, shareId]);
+  }, [shareId]); // Removed api from dependencies since it's stable
 
   const handleAccess = async (e: React.FormEvent) => {
     e.preventDefault();

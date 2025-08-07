@@ -686,52 +686,24 @@ router.get(
     });
 
     try {
-      // Get file metadata and stream
-      const [metadata, fileStream] = await Promise.all([
-        getFileMetadata(link.file.storageKey),
-        streamFromS3(link.file.storageKey),
-      ]);
+      // Generate a signed URL for the PDF instead of streaming
+      const signedUrl = await getSignedViewUrl(link.file.storageKey, 3600, link.downloadEnabled);
+      
+      console.log("Generated signed URL for PDF viewing");
 
-      // Set appropriate headers for PDF viewing
-      res.setHeader("Content-Type", "application/pdf");
-      res.setHeader("Content-Length", metadata.contentLength);
-      res.setHeader("Content-Disposition", 'inline; filename="' + link.file.originalName + '"');
-      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-      res.setHeader("Pragma", "no-cache");
-      res.setHeader("Expires", "0");
-
-      // CORS headers for react-pdf (CRITICAL!)
-      res.setHeader("Access-Control-Allow-Origin", req.get("Origin") || "*");
-      res.setHeader("Access-Control-Allow-Credentials", "true");
-      res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-      res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, X-CSRF-Token");
-
-      // Security headers to prevent download/print in some browsers
-      res.setHeader("X-Frame-Options", "SAMEORIGIN");
-      res.setHeader("X-Content-Type-Options", "nosniff");
-
-      // Add watermark info in custom header if enabled
-      if (link.watermarkEnabled && viewerEmail) {
-        res.setHeader("X-Watermark-Email", Buffer.from(viewerEmail).toString("base64"));
-        res.setHeader("X-Watermark-Time", new Date().toISOString());
-      }
-
-      // Stream the PDF file directly to response
-      fileStream.pipe(res);
-
-      // Handle stream errors
-      fileStream.on("error", (error) => {
-        console.error("Stream error:", error);
-        if (!res.headersSent) {
-          res.status(500).json({
-            success: false,
-            error: "Failed to stream file",
-          });
+      // Return the signed URL instead of streaming
+      res.json({
+        success: true,
+        data: {
+          pdfUrl: signedUrl,
+          filename: link.file.originalName,
+          contentType: "application/pdf",
+          contentLength: 0, // We don't know the exact size from signed URL
         }
       });
     } catch (error) {
-      console.error("PDF streaming error:", error);
-      throw new CustomError("Failed to stream PDF", 500);
+      console.error("PDF URL generation error:", error);
+      throw new CustomError("Failed to generate PDF URL", 500);
     }
   }),
 );
