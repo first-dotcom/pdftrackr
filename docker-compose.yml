@@ -1,4 +1,36 @@
+version: '3.8'
+
 services:
+  # Nginx Reverse Proxy (Production only)
+  nginx:
+    image: nginx:alpine
+    container_name: pdftrackr_nginx
+    ports:
+      - "80:80"
+      - "8080:8080"  # Monitoring endpoints
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - nginx_logs:/var/log/nginx
+    networks:
+      - pdftrackr-network
+    restart: unless-stopped
+    depends_on:
+      - frontend
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
+    profiles:
+      - production
+
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
@@ -20,17 +52,17 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-          cpus: '0.5'
     command: >
       postgres 
       -c shared_buffers=64MB
       -c effective_cache_size=128MB
       -c maintenance_work_mem=16MB
       -c max_connections=50
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
 
   # Redis Cache
   redis:
@@ -49,14 +81,14 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
+    command: redis-server --maxmemory 48mb --maxmemory-policy allkeys-lru
     deploy:
       resources:
         limits:
           memory: 64M
           cpus: '0.25'
-    command: redis-server --maxmemory 48mb --maxmemory-policy allkeys-lru
 
-  # ClamAV Antivirus Scanner - ARM64 compatible
+  # ClamAV Antivirus Scanner
   clamav:
     image: clamav/clamav-debian:1.3
     container_name: pdftrackr_clamav
@@ -75,11 +107,11 @@ services:
       interval: 60s
       timeout: 30s
       retries: 3
-      start_period: 300s  # ClamAV takes time to download virus definitions
+      start_period: 300s
     deploy:
       resources:
         limits:
-          memory: 1G  # ClamAV needs more RAM
+          memory: 1G
           cpus: '0.5'
 
   # Backend API
@@ -87,14 +119,13 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-      target: development
+      target: ${BUILD_TARGET:-development}
     container_name: pdftrackr_backend
     env_file:
       - .env
     ports:
       - "${BACKEND_PORT:-3001}:3001"
     volumes:
-      # Development volumes (only mount in development)
       - ./backend:/app:cached
       - /app/node_modules
     depends_on:
@@ -103,7 +134,7 @@ services:
       redis:
         condition: service_healthy
       clamav:
-        condition: service_started  # Don't wait for healthy - ClamAV takes time to start
+        condition: service_started
     networks:
       - pdftrackr-network
     restart: unless-stopped
@@ -113,26 +144,25 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+    command: ${BACKEND_COMMAND:-pnpm run dev}
     deploy:
       resources:
         limits:
           memory: 512M
-          cpus: '1.0'
-    command: ${BACKEND_COMMAND:-pnpm run dev}
+          cpus: '0.75'
 
   # Frontend
   frontend:
     build:
       context: .
       dockerfile: frontend/Dockerfile
-      target: development
+      target: ${BUILD_TARGET:-development}
     container_name: pdftrackr_frontend
     env_file:
       - .env
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     volumes:
-      # Production mode - no development volumes
       - /app/node_modules
     networks:
       - pdftrackr-network
@@ -143,14 +173,14 @@ services:
       timeout: 15s
       retries: 5
       start_period: 60s
+    command: ${FRONTEND_COMMAND:-pnpm run start}
     deploy:
       resources:
         limits:
-          memory: 1G
-          cpus: '1.0'
-    command: ${FRONTEND_COMMAND:-pnpm run start}
+          memory: 512M
+          cpus: '0.5'
 
-  # Prometheus
+  # Prometheus (Optional - Monitoring)
   prometheus:
     image: prom/prometheus:latest
     container_name: pdftrackr_prometheus
@@ -181,8 +211,10 @@ services:
         limits:
           memory: 128M
           cpus: '0.25'
+    profiles:
+      - monitoring
 
-  # Grafana
+  # Grafana (Optional - Monitoring)
   grafana:
     image: grafana/grafana:latest
     container_name: pdftrackr_grafana
@@ -210,6 +242,8 @@ services:
         limits:
           memory: 128M
           cpus: '0.25'
+    profiles:
+      - monitoring
 
 volumes:
   postgres_data:
@@ -217,6 +251,7 @@ volumes:
   clamav_data:
   prometheus_data:
   grafana_data:
+  nginx_logs:
 
 networks:
   pdftrackr-network:
