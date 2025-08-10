@@ -118,7 +118,7 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-6">
         {statItems.map((item) => (
           <div key={item.label} className="card">
             <div className="card-body p-4">

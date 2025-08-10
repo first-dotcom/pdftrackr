@@ -103,7 +103,7 @@ export default function SimpleStats({ userId }: SimpleStatsProps) {
         <p className="mt-1 text-gray-600">Your document sharing statistics</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-6">
         {statItems.map((item) => (
           <div key={item.label} className="card">
             <div className="card-body p-6">
