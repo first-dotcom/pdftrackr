@@ -39,7 +39,7 @@ FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY tsconfig.base.json ../tsconfig.base.json
 COPY backend/ .
-RUN pnpm run build && pnpm prune --production
+RUN pnpm run build && pnpm prune --prod --config.confirmModulesPurge=false
 
 # =============================================================================
 # Production stage

@@ -26,11 +26,11 @@ export const logger = winston.createLogger({
   ],
 });
 
-// Add console transport in development
-if (config.env !== "production") {
-  logger.add(
-    new winston.transports.Console({
-      format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
-    }),
-  );
-}
+// Add console transport for Docker logs visibility
+logger.add(
+  new winston.transports.Console({
+    format: config.env === "production" 
+      ? winston.format.combine(winston.format.timestamp(), winston.format.json())
+      : winston.format.combine(winston.format.colorize(), winston.format.simple()),
+  }),
+);

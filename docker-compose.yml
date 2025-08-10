@@ -117,15 +117,13 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-      target: ${BUILD_TARGET:-development}
+      target: ${NODE_ENV}
     container_name: pdftrackr_backend
     env_file:
       - .env
     ports:
       - "${BACKEND_PORT:-3001}:3001"
-    volumes:
-      - ./backend:/app:cached
-      - /app/node_modules
+    # No volume mounts for production - use built files in container
     depends_on:
       postgres:
         condition: service_healthy
@@ -142,7 +140,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    command: ${BACKEND_COMMAND:-pnpm run dev}
+    command: ${BACKEND_COMMAND:-npm start}
     deploy:
       resources:
         limits:
@@ -154,14 +152,13 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
-      target: ${BUILD_TARGET:-development}
+      target: ${NODE_ENV}
     container_name: pdftrackr_frontend
     env_file:
       - .env
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
-    volumes:
-      - /app/node_modules
+    # No volume mounts for production
     networks:
       - pdftrackr-network
     restart: unless-stopped
@@ -171,7 +168,7 @@ services:
       timeout: 15s
       retries: 5
       start_period: 60s
-    command: ${FRONTEND_COMMAND:-pnpm run start}
+    command: ${FRONTEND_COMMAND:-npm start}
     deploy:
       resources:
         limits:
