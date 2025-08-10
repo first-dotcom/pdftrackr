@@ -3,6 +3,7 @@
 import Breadcrumbs from "@/components/Breadcrumbs";
 import DashboardHeader from "@/components/DashboardHeader";
 import DashboardSidebar from "@/components/DashboardSidebar";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import FloatingUploadButton from "@/components/FloatingUploadButton";
 import WaitlistModal from "@/components/WaitlistModal";
 import { useAuth } from "@clerk/nextjs";
@@ -58,7 +59,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="mb-6 lg:hidden">
               <Breadcrumbs />
             </div>
-            {children}
+            <ErrorBoundary title="Dashboard content failed to load">
+              {children}
+            </ErrorBoundary>
                 </div>
                 
                 {/* Right sidebar for large screens - could be used for ads, quick actions, etc */}

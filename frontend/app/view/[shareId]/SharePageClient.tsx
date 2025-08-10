@@ -2,7 +2,11 @@
 
 import { config } from "@/lib/config";
 import { useApi } from "@/hooks/useApi";
-import SecurePDFViewer from "@/components/SecurePDFViewer";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import { lazy, Suspense } from "react";
+
+// Lazy load PDF viewer for better performance
+const SecurePDFViewer = lazy(() => import("@/components/SecurePDFViewer"));
 import dynamic from "next/dynamic";
 import type React from "react";
 import { useEffect, useState } from "react";
@@ -326,21 +330,32 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
   // Show PDF Viewer once access is granted
   if (accessData && showPDFViewer) {
     return (
-      <SecurePDFViewer
-        shareId={shareId}
-        sessionId={accessData.sessionId}
-        password={password}
-        email={email}
+      <ErrorBoundary title="PDF viewer failed to load">
+        <Suspense fallback={
+          <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading PDF viewer...</p>
+            </div>
+          </div>
+        }>
+          <SecurePDFViewer
+          shareId={shareId}
+          sessionId={accessData.sessionId}
+          password={password}
+          email={email}
 
-        watermarkEmail={shareData?.shareLink.watermarkEnabled ? watermarkEmail : undefined}
-        watermarkTime={shareData?.shareLink.watermarkEnabled ? watermarkTime : undefined}
-        downloadEnabled={accessData.downloadEnabled}
-        onError={(errorMsg) => {
-          setError(errorMsg);
-          setShowPDFViewer(false);
-        }}
-        onLoadSuccess={() => {}}
-      />
+          watermarkEmail={shareData?.shareLink.watermarkEnabled ? watermarkEmail : undefined}
+          watermarkTime={shareData?.shareLink.watermarkEnabled ? watermarkTime : undefined}
+          downloadEnabled={accessData.downloadEnabled}
+          onError={(errorMsg) => {
+            setError(errorMsg);
+            setShowPDFViewer(false);
+          }}
+          onLoadSuccess={() => {          }}
+          />
+        </Suspense>
+      </ErrorBoundary>
     );
   }
 

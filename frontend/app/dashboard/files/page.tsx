@@ -1,6 +1,7 @@
 "use client";
 
 import ShareLinkModal from "@/components/ShareLinkModal";
+import SkeletonLoader from "@/components/SkeletonLoader";
 import { config } from "@/lib/config";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { formatDistanceToNow } from "date-fns";
@@ -97,24 +98,7 @@ export default function FilesPage() {
   if (!isReady) {
     return (
       <div className="space-y-6">
-        <div className="card">
-          <div className="card-body">
-            <div className="space-y-4">
-              {[...Array(5)].map((_, i) => (
-                <div key={`skeleton-${i}`} className="animate-pulse">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-gray-200 rounded" />
-                    <div className="flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-1/3 mb-2" />
-                      <div className="h-3 bg-gray-200 rounded w-1/4" />
-                    </div>
-                    <div className="w-20 h-4 bg-gray-200 rounded" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <SkeletonLoader type="list" count={5} />
       </div>
     );
   }

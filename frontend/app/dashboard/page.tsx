@@ -7,6 +7,7 @@ import { useAuth, useUser } from "@clerk/nextjs";
 import { BarChart3, Clock, Eye, FileText, Mail, Plus, TrendingUp, Users } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import SkeletonLoader from "@/components/SkeletonLoader";
 import { useApi } from "@/hooks/useApi";
 
 interface DashboardData {
@@ -134,21 +135,7 @@ export default function DashboardPage() {
   if (!isReady) {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <div key={`skeleton-${i}`} className="card animate-pulse">
-              <div className="card-body">
-                <div className="flex items-center">
-                  <div className="w-8 h-8 bg-gray-200 rounded" />
-                  <div className="ml-4 flex-1">
-                    <div className="h-4 bg-gray-200 rounded w-20 mb-2" />
-                    <div className="h-6 bg-gray-200 rounded w-16" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <SkeletonLoader type="stats" count={4} />
       </div>
     );
   }
