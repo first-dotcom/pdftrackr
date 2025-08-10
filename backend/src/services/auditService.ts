@@ -1,5 +1,5 @@
-import { and, eq, or } from "drizzle-orm";
-import { auditLogs } from "../models/schema";
+import { and, desc, eq, or } from "drizzle-orm";
+import { auditLogs, viewSessions, pageViews } from "../models/schema";
 import { db } from "../utils/database";
 import { logger } from "../utils/logger";
 import { geolocationService } from "./geolocation";
@@ -335,56 +335,58 @@ export class AuditService {
     }
   }
 
-  // 📊 HIGH-IMPACT BUSINESS ANALYTICS
+  // 📊 HIGH-IMPACT BUSINESS ANALYTICS - Fixed to use viewSessions for consistency
   async getDocumentEngagementStats(shareId: string) {
     try {
-      const stats = await db.select({
-        event: auditLogs.event,
-        metadata: auditLogs.metadata,
-        timestamp: auditLogs.timestamp,
-        email: auditLogs.email,
-        ipAddress: auditLogs.ipAddress,
-      })
-      .from(auditLogs)
-      .where(eq(auditLogs.shareId, shareId))
-      .orderBy(auditLogs.timestamp);
+      // Use viewSessions for consistent analytics calculation (same as dashboard)
+      const sessions = await db
+        .select({
+          id: viewSessions.id,
+          sessionId: viewSessions.sessionId,
+          totalDuration: viewSessions.totalDuration,
+          isUnique: viewSessions.isUnique,
+          startedAt: viewSessions.startedAt,
+        })
+        .from(viewSessions)
+        .where(eq(viewSessions.shareId, shareId))
+        .orderBy(desc(viewSessions.startedAt));
 
-      // Extract key metrics
-      const totalViews = stats.filter(s => s.event === 'pdf_access').length;
-      const uniqueViewers = new Set(stats.map(s => s.ipAddress).filter(Boolean)).size;
-      const pageViews = stats.filter(s => s.event === 'page_view');
-      const sessions = stats.filter(s => s.event === 'session_end');
+      // Get page views for completion rate calculation
+      const pageViewsData = await db
+        .select({
+          sessionId: pageViews.sessionId,
+          pageNumber: pageViews.pageNumber,
+          duration: pageViews.duration,
+        })
+        .from(pageViews)
+        .innerJoin(viewSessions, eq(pageViews.sessionId, viewSessions.sessionId))
+        .where(eq(viewSessions.shareId, shareId));
 
-      // Calculate engagement metrics
-      const avgReadingDepth = pageViews.length > 0 
-        ? Math.round(pageViews.reduce((sum, p) => {
-            const depth = (p.metadata as any)?.readingDepth;
-            return sum + (typeof depth === 'number' ? depth : 0);
-          }, 0) / pageViews.length)
-        : 0;
-
+      // Calculate metrics using same logic as dashboard
+      const totalViews = sessions.length;
+      const uniqueViewers = sessions.filter(s => s.isUnique).length;
+      
       const avgSessionDuration = sessions.length > 0
-        ? Math.round(sessions.reduce((sum, s) => {
-            const duration = (s.metadata as any)?.durationSeconds;
-            return sum + (typeof duration === 'number' ? duration : 0);
-          }, 0) / sessions.length)
+        ? Math.round(sessions.reduce((sum, s) => sum + (s.totalDuration || 0), 0) / sessions.length)
         : 0;
 
-      const completionRate = pageViews.length > 0
-        ? Math.round((pageViews.filter(p => p.metadata?.isCompletion).length / totalViews) * 100)
+      // Calculate completion rate based on page views
+      const sessionPageCounts = new Map<string, number>();
+      pageViewsData.forEach((pv: any) => {
+        sessionPageCounts.set(pv.sessionId, Math.max(sessionPageCounts.get(pv.sessionId) || 0, pv.pageNumber));
+      });
+
+      const completionRate = sessions.length > 0
+        ? Math.round((Array.from(sessionPageCounts.values()).filter(maxPage => maxPage >= 3).length / sessions.length) * 100)
         : 0;
 
       return {
         shareId,
         totalViews,
         uniqueViewers,
-        avgReadingDepth,
+        avgReadingDepth: 0, // Deprecated - not used in UI
         avgSessionDuration,
         completionRate,
-        peakReadingTime: this.calculatePeakReadingTime(stats),
-        engagementTrend: this.calculateEngagementTrend(sessions),
-        topPages: this.getTopPages(pageViews),
-        deviceBreakdown: this.getDeviceBreakdown(stats),
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);

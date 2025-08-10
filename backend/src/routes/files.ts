@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, gt, gte, inArray, isNull, or, sql } from "drizzle-orm";
 import { Router } from "express";
 import type { Request, Response } from "express";
 
@@ -21,7 +21,7 @@ import {
 import { fileUploads, storageQuotaRejections } from "../middleware/metrics";
 import { normalizeIp, validateFileUpload } from "../middleware/security";
 import { validateBody, validateParams, validateQuery } from "../middleware/validation";
-import { files, shareLinks, users } from "../models/schema";
+import { files, shareLinks, users, viewSessions } from "../models/schema";
 import { deleteFromS3, uploadToS3 } from "../services/storage";
 import { db } from "../utils/database";
 import { logger } from "../utils/logger";
@@ -203,31 +203,52 @@ router.get(
         securityFlags: files.securityFlags,
         createdAt: files.createdAt,
         updatedAt: files.updatedAt,
-        viewCount: sql<number>`COALESCE(SUM(${shareLinks.viewCount}), 0)`,
+        // Use actual view sessions count to match dashboard calculation
+        viewCount: sql<number>`COUNT(${viewSessions.id})`,
         shareLinksCount: sql<number>`COUNT(${shareLinks.id})`,
       })
       .from(files)
-      .leftJoin(shareLinks, eq(files.id, shareLinks.fileId))
+      .leftJoin(
+        shareLinks,
+        and(
+          eq(files.id, shareLinks.fileId),
+          eq(shareLinks.isActive, true), // Only active share links
+          or(
+            isNull(shareLinks.expiresAt),
+            gt(shareLinks.expiresAt, new Date()), // Not expired
+          ),
+        ),
+      )
+      .leftJoin(viewSessions, eq(shareLinks.shareId, viewSessions.shareId))
       .where(eq(files.userId, req.user?.id))
       .groupBy(files.id)
       .orderBy(desc(files.createdAt))
       .limit(limit)
       .offset(offset);
 
-    // Fetch share links for each file
-    const filesWithShareLinks = await Promise.all(
-      userFiles.map(async (file) => {
-        const fileShareLinks = await db
-          .select()
-          .from(shareLinks)
-          .where(eq(shareLinks.fileId, file.id));
+    // Efficiently fetch all share links for these files in one query
+    const fileIds = userFiles.map(f => f.id);
+    const allShareLinks = fileIds.length > 0 ? await db
+      .select()
+      .from(shareLinks)
+      .where(inArray(shareLinks.fileId, fileIds))
+      : [];
 
-        return {
-          ...file,
-          shareLinks: fileShareLinks,
-        };
-      }),
-    );
+    // Group share links by file ID
+    const shareLinksMap = new Map<number, any[]>();
+    allShareLinks.forEach(link => {
+      const fileId = link.fileId;
+      if (!shareLinksMap.has(fileId)) {
+        shareLinksMap.set(fileId, []);
+      }
+      shareLinksMap.get(fileId)!.push(link);
+    });
+
+    // Attach share links to files
+    const filesWithShareLinks = userFiles.map(file => ({
+      ...file,
+      shareLinks: shareLinksMap.get(file.id) || [],
+    }));
 
     // Get total count for pagination
     const totalCount = await db
