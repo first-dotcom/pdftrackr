@@ -430,56 +430,7 @@ export class AuditService {
     }
   }
 
-  async getTopPerformingDocuments(limit = 10) {
-    try {
-      const documentStats = await db.select({
-        shareId: auditLogs.shareId,
-        event: auditLogs.event,
-        metadata: auditLogs.metadata,
-      })
-      .from(auditLogs)
-      .where(or(
-        eq(auditLogs.event, 'pdf_access'),
-        eq(auditLogs.event, 'session_end')
-      ));
-
-      // Group by shareId and calculate metrics
-      const docMetrics = documentStats.reduce((acc, log) => {
-        if (!log.shareId) return acc;
-        
-        if (!acc[log.shareId]) {
-          acc[log.shareId] = { views: 0, avgEngagement: 0, sessions: 0 };
-        }
-        
-        if (log.event === 'pdf_access') {
-          acc[log.shareId].views++;
-        }
-        
-        if (log.event === 'session_end') {
-          acc[log.shareId].sessions++;
-          const engagement = (log.metadata as any)?.engagementScore;
-          acc[log.shareId].avgEngagement += (typeof engagement === 'number' ? engagement : 0);
-        }
-        
-        return acc;
-      }, {} as Record<string, { views: number; avgEngagement: number; sessions: number }>);
-
-      // Calculate final scores and sort
-      return Object.entries(docMetrics)
-        .map(([shareId, stats]) => ({
-          shareId,
-          views: stats.views,
-          avgEngagement: stats.sessions > 0 ? Math.round(stats.avgEngagement / stats.sessions) : 0,
-          performanceScore: stats.views * 0.7 + (stats.sessions > 0 ? (stats.avgEngagement / stats.sessions) * 0.3 : 0),
-        }))
-        .sort((a, b) => b.performanceScore - a.performanceScore)
-        .slice(0, limit);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      logger.error(`Failed to get top performing documents: ${errorMessage}`);
-      return [];
-    }
-  }
+  // Removed complex getTopPerformingDocuments method
 
   // 🔧 HELPER METHODS
   private calculatePeakReadingTime(logs: any[]): string {
@@ -555,67 +506,7 @@ export class AuditService {
       .map(([hour]) => parseInt(hour));
   }
 
-  // 🌍 GEOGRAPHIC ANALYTICS
-  async getGeographicAnalytics(shareId?: string) {
-    try {
-      let query = db.select().from(auditLogs);
-      
-      if (shareId) {
-        query = query.where(eq(auditLogs.shareId, shareId));
-      }
-      
-      const logs = await query;
-      
-      return await geolocationService.getGeographicBreakdown(logs);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      logger.error(`Failed to get geographic analytics: ${errorMessage}`);
-      return [];
-    }
-  }
-
-  async getGlobalEngagementMap() {
-    try {
-      const logs = await db.select({
-        metadata: auditLogs.metadata,
-        event: auditLogs.event,
-      })
-      .from(auditLogs)
-      .where(eq(auditLogs.event, 'pdf_access'));
-
-      const countries: Record<string, {
-        name: string;
-        views: number;
-        coordinates?: { lat: number; lon: number };
-      }> = {};
-
-      logs.forEach(log => {
-        const location = (log.metadata as any)?.location;
-        if (!location?.country) return;
-
-        const countryCode = location.countryCode || 'UNK';
-        
-        if (!countries[countryCode]) {
-          countries[countryCode] = {
-            name: location.country,
-            views: 0,
-            coordinates: (log.metadata as any)?.coordinates || undefined,
-          };
-        }
-        
-        countries[countryCode].views++;
-      });
-
-      return Object.entries(countries).map(([code, data]) => ({
-        countryCode: code,
-        ...data,
-      }));
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      logger.error(`Failed to get global engagement map: ${errorMessage}`);
-      return [];
-    }
-  }
+  // Removed complex geographic analytics methods
 }
 
 export const auditService = new AuditService();

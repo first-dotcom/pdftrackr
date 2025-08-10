@@ -24,8 +24,11 @@ const envSchema = z.object({
   S3_ACCESS_KEY: z.string().default(""),
   S3_SECRET_KEY: z.string().default(""),
 
-  // Frontend
-  FRONTEND_URL: z.string().default("http://localhost:3000"),
+  // App URL - single source of truth
+  APP_URL: z.string().default("http://localhost:3000"),
+  
+  // Security
+  IP_HASH_SALT: z.string().default("pdftrackr-salt-2024"),
 });
 
 // Parse and validate environment variables
@@ -53,8 +56,11 @@ export const config = {
     secretAccessKey: env.S3_SECRET_KEY || "",
     enabled: !!(env.S3_ACCESS_KEY && env.S3_SECRET_KEY), // Only enable if credentials are provided
   },
-  frontend: {
-    url: env.FRONTEND_URL,
+  app: {
+    url: env.APP_URL,
+  },
+  security: {
+    ipHashSalt: env.IP_HASH_SALT,
   },
   quotas: {
     free: {

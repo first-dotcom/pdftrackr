@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { config } from "../config";
 
 /**
  * GDPR-compliant utilities for handling personal data
@@ -9,7 +10,7 @@ import crypto from "node:crypto";
  * This ensures we can't reverse-engineer the original IP
  */
 export function hashIPAddress(ipAddress: string): string {
-  const salt = process.env.IP_HASH_SALT || "pdftrackr-salt-2024";
+  const salt = config.security.ipHashSalt;
   return crypto
     .createHash("sha256")
     .update(ipAddress + salt)

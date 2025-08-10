@@ -263,21 +263,9 @@ class ApiClient {
       daysSinceFirst: number;
     }) => this.post("/api/analytics/return-visit", data, { skipCSRF: true, skipAuth: true }),
 
-    // Analytics retrieval methods
+    // Simple analytics retrieval methods
     getDocumentStats: (shareId: string) => 
       this.get(`/api/analytics/document/${shareId}/stats`, { skipCSRF: true, skipAuth: true }),
-    
-    getUserProfile: (email: string) => 
-      this.get(`/api/analytics/user/${encodeURIComponent(email)}/profile`, { skipCSRF: true }),
-    
-    getTopDocuments: (limit = 10) => 
-      this.get(`/api/analytics/top-documents?limit=${limit}`, { skipCSRF: true }),
-    
-    getGeographicAnalytics: (shareId: string) => 
-      this.get(`/api/analytics/geography/${shareId}`, { skipCSRF: true, skipAuth: true }),
-    
-    getGlobalEngagementMap: () => 
-      this.get("/api/analytics/global-map", { skipCSRF: true, skipAuth: true }),
   };
 }
 

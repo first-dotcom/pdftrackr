@@ -115,7 +115,7 @@ router.post(
       success: true,
       data: {
         shareLink: newShareLink[0],
-        url: `${config.frontend.url}/view/${shareId}`,
+        url: `${config.app.url}/view/${shareId}`,
       },
     });
   }),

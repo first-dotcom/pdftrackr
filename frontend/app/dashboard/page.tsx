@@ -1,7 +1,7 @@
 "use client";
 
 import StorageUsage from "@/components/StorageUsage";
-import AnalyticsOverview from "@/components/analytics/AnalyticsOverview";
+import SimpleStats from "@/components/SimpleStats";
 import { config } from "@/lib/config";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { BarChart3, Clock, Eye, FileText, Mail, Plus, TrendingUp, Users } from "lucide-react";
@@ -303,9 +303,9 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Analytics Overview - Show if user has files */}
+      {/* Simple Stats - Show if user has files */}
       {dashboardData && dashboardData.totalFiles > 0 && (
-        <AnalyticsOverview userId={user?.id} />
+        <SimpleStats userId={user?.id} />
       )}
     </div>
   );

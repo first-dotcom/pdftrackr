@@ -8,8 +8,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ShareLinkModal from "@/components/ShareLinkModal";
 import { useApi } from "@/hooks/useApi";
-import DocumentAnalytics from "@/components/analytics/DocumentAnalytics";
-import GeographicAnalytics from "@/components/analytics/GeographicAnalytics";
+import SimpleFileStats from "@/components/SimpleFileStats";
 import { File as FileType, ShareLink } from "@/types";
 
 // Use the shared interfaces instead of custom definitions
@@ -397,32 +396,15 @@ export default function FileDetailPage() {
             </div>
           </div>
 
-          {/* Analytics Section - Show rich analytics for each share link */}
+          {/* Simple Analytics Section - Show for each share link */}
           {shareLinks.length > 0 && (
             <div className="space-y-8">
               {shareLinks.map((link) => (
-                <div key={link.shareId} className="space-y-6">
-                  <div className="border-t pt-8">
-                    <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                      Analytics for "{link.title}"
-                    </h2>
-                    
-                    {/* Document Analytics */}
-                    <div className="mb-8">
-                      <DocumentAnalytics 
-                        shareId={link.shareId} 
-                        title={link.title}
-                      />
-                    </div>
-
-                    {/* Geographic Analytics */}
-                    <div className="mb-8">
-                      <GeographicAnalytics 
-                        shareId={link.shareId}
-                        title={link.title}
-                      />
-                    </div>
-                  </div>
+                <div key={link.shareId} className="border-t pt-8">
+                  <SimpleFileStats 
+                    shareId={link.shareId} 
+                    title={link.title}
+                  />
                 </div>
               ))}
             </div>

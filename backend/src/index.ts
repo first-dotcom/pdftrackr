@@ -112,7 +112,7 @@ app.use(
   cors({
     origin: (origin, callback) => {
       // Define allowed origins based on environment
-      const allowedOrigins = [config.frontend.url];
+      const allowedOrigins = [config.app.url];
 
       // Add development origins only in development
       if (config.env === "development") {

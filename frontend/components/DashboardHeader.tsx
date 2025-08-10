@@ -3,18 +3,24 @@
 import { UserButton } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
-import { Menu, FileText } from "lucide-react";
+import { Menu, FileText, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
+import { clsx } from "clsx";
 
 interface DashboardHeaderProps {
   onMobileMenuClick?: () => void;
 }
 
+const navigation = [
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Files", href: "/dashboard/files", icon: FileText },
+];
+
 export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderProps) {
   const pathname = usePathname();
   const { user } = useUser();
 
-  // Get contextual title based on current path
+  // Get contextual title based on current path (for mobile)
   const getContextualTitle = () => {
     // For file detail pages, we'll let breadcrumbs handle the title
     if (pathname.startsWith("/dashboard/files/") && pathname !== "/dashboard/files/upload") {
@@ -31,17 +37,7 @@ export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderPr
       return "Account Settings";
     }
 
-    // For main dashboard, show simple title
-    if (pathname === "/dashboard") {
-      return null; // Remove dashboard title - redundant
-    }
-
-    // For files list, show contextual description
-    if (pathname === "/dashboard/files") {
-      return null; // Remove files title - sidebar shows this
-    }
-
-    // Default: no title
+    // Default: no title on desktop (navigation tabs handle this)
     return null;
   };
 
@@ -69,9 +65,33 @@ export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderPr
               <span className="text-lg font-bold text-gray-900 sm:hidden">PDF</span>
             </Link>
 
-            {/* Context title - Responsive */}
+            {/* Desktop Navigation Tabs */}
+            <nav className="hidden lg:flex space-x-8 ml-8">
+              {navigation.map((item) => {
+                const isActive = pathname === item.href || 
+                  (item.href === "/dashboard/files" && pathname.startsWith("/dashboard/files"));
+                
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={clsx(
+                      "flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                      isActive
+                        ? "text-primary-600 bg-primary-50 border-primary-200"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <span>{item.name}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Context title - Mobile only */}
             {contextualTitle && (
-              <div className="flex-1 min-w-0 ml-2 sm:ml-4">
+              <div className="flex-1 min-w-0 ml-2 sm:ml-4 lg:hidden">
                 <h1 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
                   {contextualTitle}
                 </h1>

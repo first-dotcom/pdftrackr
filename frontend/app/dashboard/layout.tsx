@@ -39,13 +39,16 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <DashboardHeader onMobileMenuClick={handleMobileSidebarOpen} />
       
       <div className="flex">
-        <DashboardSidebar 
-          isMobileOpen={isMobileSidebarOpen} 
-          onMobileClose={handleMobileSidebarClose} 
-        />
+        {/* Mobile-only sidebar */}
+        <div className="lg:hidden">
+          <DashboardSidebar 
+            isMobileOpen={isMobileSidebarOpen} 
+            onMobileClose={handleMobileSidebarClose} 
+          />
+        </div>
         
-        <main className="flex-1 w-full lg:w-auto">
-          {/* Content wrapper with proper mobile spacing */}
+        <main className="flex-1 w-full">
+          {/* Content wrapper with proper spacing */}
           <div className="px-4 py-6 sm:px-6 lg:px-8">
             {/* Breadcrumbs - Only show on mobile for cleaner desktop */}
             <div className="mb-6 lg:hidden">
