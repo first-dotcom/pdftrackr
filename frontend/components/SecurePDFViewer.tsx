@@ -71,6 +71,14 @@ export default function SecurePDFViewer({
 
   // 📊 ANALYTICS FUNCTIONS
   const trackPageView = async (page: number, totalPages: number) => {
+    // Check consent before tracking
+    if (typeof window !== 'undefined') {
+      const consent = localStorage.getItem('analytics-consent');
+      if (consent !== 'accepted') {
+        return; // Don't track without consent
+      }
+    }
+
     // Update session data
     setSessionData(prev => ({
       ...prev,

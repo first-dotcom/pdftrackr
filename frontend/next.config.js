@@ -77,6 +77,10 @@ const nextConfig = {
             key: 'X-XSS-Protection',
             value: '1; mode=block',
           },
+          {
+            key: 'Content-Security-Policy',
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.clerk.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; img-src 'self' data: cdn.clerk.com; connect-src 'self' api.clerk.dev clerk.pdftrackr.com; frame-src 'none';",
+          },
         ],
       },
     ];

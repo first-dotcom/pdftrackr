@@ -14,13 +14,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${baseUrl}/sign-up`,
       lastModified: new Date(),
       changeFrequency: "monthly",
-      priority: 0.8,
+      priority: 0.9,
     },
     {
       url: `${baseUrl}/sign-in`,
       lastModified: new Date(),
       changeFrequency: "monthly",
-      priority: 0.7,
+      priority: 0.6,
     },
+    // Only include actual existing pages
+    // Note: /features, /pricing, /security are sections on homepage, not separate pages
   ];
 }
