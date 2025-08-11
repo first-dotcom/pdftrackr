@@ -79,7 +79,7 @@ const nextConfig = {
           },
                   {
           key: 'Content-Security-Policy',
-          value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.clerk.com *.clerk.accounts.dev *.clerk.dev cdn.jsdelivr.net unpkg.com cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; img-src 'self' data: cdn.clerk.com *.clerk.accounts.dev img.clerk.com https://*.digitaloceanspaces.com; connect-src 'self' api.clerk.dev *.clerk.accounts.dev localhost:3001 https://mozilla.github.io https://*.digitaloceanspaces.com; frame-src 'none'; worker-src 'self' blob: https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com;",
+          value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.clerk.com *.clerk.accounts.dev *.clerk.dev cdn.jsdelivr.net unpkg.com cdnjs.cloudflare.com clerk.pdftrackr.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; img-src 'self' data: cdn.clerk.com *.clerk.accounts.dev img.clerk.com https://*.digitaloceanspaces.com; connect-src 'self' api.clerk.dev *.clerk.accounts.dev clerk.pdftrackr.com localhost:3001 https://mozilla.github.io https://*.digitaloceanspaces.com; frame-src 'none'; worker-src 'self' blob: https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com;",
         },
         ],
       },
