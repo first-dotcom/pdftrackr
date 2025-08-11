@@ -1,68 +1,76 @@
 import {
-  Activity,
-  BarChart3,
-  Clock,
-  Download,
-  Eye,
-  FileText,
   Lock,
-  Mail,
-  Shield,
+  BarChart3,
+  Briefcase,
+  CheckCircle,
 } from "lucide-react";
 
-const features = [
+const featureGroups = [
   {
-    icon: Shield,
+    icon: Lock,
     title: "Secure Sharing",
-    description:
-      "Generate secure share links with password protection, expiration dates, and download controls.",
+    features: [
+      {
+        title: "Password Protection",
+        description: "Add passwords to keep documents secure",
+      },
+      {
+        title: "Email Gating",
+        description: "Capture viewer emails before they access",
+      },
+      {
+        title: "Link Expiration",
+        description: "Set time limits on document access",
+      },
+      {
+        title: "Download Control",
+        description: "Choose if viewers can download or only view",
+      },
+    ],
   },
   {
     icon: BarChart3,
-    title: "Basic Analytics",
-    description:
-      "Track views, unique visitors, time spent, and collect viewer emails with simple analytics.",
+    title: "Real Analytics",
+    features: [
+      {
+        title: "View Tracking",
+        description: "See total views and unique visitors",
+      },
+      {
+        title: "Page Analytics",
+        description: "Know which pages get the most attention",
+      },
+      {
+        title: "Geographic Insights",
+        description: "Discover where your readers are located",
+      },
+      {
+        title: "Device & Browser",
+        description: "Understand how documents are accessed",
+      },
+    ],
   },
   {
-    icon: Eye,
-    title: "View Tracking",
-    description:
-      "Monitor who views your PDFs, when they view them, and how long they spend reading.",
-  },
-  {
-    icon: Mail,
-    title: "Email Capture",
-    description:
-      "Collect viewer email addresses to build your contact list and follow up with leads.",
-  },
-  {
-    icon: Download,
-    title: "Download Control",
-    description: "Choose whether viewers can download your PDFs or only view them in the browser.",
-  },
-  {
-    icon: Clock,
-    title: "Link Expiration",
-    description:
-      "Set time-based expiration for your shared links to keep your documents secure.",
-  },
-  {
-    icon: FileText,
-    title: "PDF Only",
-    description:
-      "Currently supports PDF files only. More file types coming soon.",
-  },
-  {
-    icon: Lock,
-    title: "Password Protection",
-    description:
-      "Add password protection to your shared links for extra security.",
-  },
-  {
-    icon: Activity,
-    title: "Simple Dashboard",
-    description:
-      "Easy-to-use dashboard to manage your files, view analytics, and track performance.",
+    icon: Briefcase,
+    title: "Professional Tools",
+    features: [
+      {
+        title: "Watermarking",
+        description: "Add watermarks to viewed documents",
+      },
+      {
+        title: "Link Management",
+        description: "Update or revoke access anytime",
+      },
+      {
+        title: "Virus Scanning",
+        description: "Every upload scanned for security",
+      },
+      {
+        title: "30-Day History",
+        description: "Access detailed analytics for 30 days",
+      },
+    ],
   },
 ];
 
@@ -75,57 +83,42 @@ export default function Features() {
             Features
           </h2>
           <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-            Simple features for effective PDF sharing
+            Everything You Need to Share & Track PDFs
           </p>
           <p className="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
-            Focused on the essentials: secure sharing, basic analytics, and easy management.
+            Professional tools that help you understand how your documents are being used
           </p>
         </div>
 
-        <div className="mt-10">
-          <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((feature) => (
-              <div key={feature.title} className="relative">
-                <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-primary-500 text-white">
-                  <feature.icon className="h-6 w-6" aria-hidden="true" />
+        <div className="mt-16 space-y-16">
+          {featureGroups.map((group) => (
+            <div key={group.title} className="relative">
+              {/* Group Header */}
+              <div className="text-center mb-12">
+                <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-primary-100 text-primary-600 mb-4">
+                  <group.icon className="h-8 w-8" aria-hidden="true" />
                 </div>
-                <div className="ml-16">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900">{feature.title}</h3>
-                  <p className="mt-2 text-base text-gray-500">{feature.description}</p>
-                </div>
+                <h3 className="text-2xl font-bold text-gray-900">{group.title}</h3>
               </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Coming Soon Section */}
-        <div className="mt-16 lg:text-center">
-          <h3 className="text-2xl font-bold text-gray-900 mb-4">
-            Coming Soon
-          </h3>
-          <p className="text-lg text-gray-600 mb-8">
-            We're working on paid plans with more resources:
-          </p>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="text-center">
-              <div className="bg-gray-100 rounded-lg p-4 mb-3">
-                <span className="text-sm font-medium text-gray-600">More Storage</span>
+              {/* Features Grid */}
+              <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-2">
+                {group.features.map((feature) => (
+                  <div key={feature.title} className="relative">
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0">
+                        <CheckCircle className="h-6 w-6 text-green-500" aria-hidden="true" />
+                      </div>
+                      <div className="ml-4">
+                        <h4 className="text-lg font-medium text-gray-900">{feature.title}</h4>
+                        <p className="mt-2 text-base text-gray-500">{feature.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <p className="text-sm text-gray-500">5GB, 25GB, and unlimited storage options</p>
             </div>
-            <div className="text-center">
-              <div className="bg-gray-100 rounded-lg p-4 mb-3">
-                <span className="text-sm font-medium text-gray-600">More Files</span>
-              </div>
-              <p className="text-sm text-gray-500">200+ files and unlimited share links</p>
-            </div>
-            <div className="text-center">
-              <div className="bg-gray-100 rounded-lg p-4 mb-3">
-                <span className="text-sm font-medium text-gray-600">Larger Files</span>
-              </div>
-              <p className="text-sm text-gray-500">50MB and 100MB file size limits</p>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>
