@@ -21,9 +21,10 @@ const env = envSchema.parse(process.env);
 
 // Determine the correct API URL based on context
 const getApiUrl = () => {
-  // If we're in the browser (client-side), use localhost
+  // If we're in the browser (client-side), use relative URLs
+  // This will use Next.js rewrites to proxy to backend
   if (typeof window !== "undefined") {
-    return "http://localhost:3001";
+    return "/api";
   }
   
   // If we're server-side (SSR, API routes), use the environment variable
