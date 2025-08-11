@@ -12,7 +12,7 @@ const router: Router = Router();
 
 const waitlistSchema = z.object({
   email: z.string().email().max(255),
-  plan: z.enum(["pro", "team", "either"]),
+  plan: z.enum(["pro", "business", "either"]),
   source: z.string().max(100).optional(),
 });
 

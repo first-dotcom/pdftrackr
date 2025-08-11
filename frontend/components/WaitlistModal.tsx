@@ -130,8 +130,8 @@ export default function WaitlistModal() {
                 onChange={(e) => setPlan(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               >
-                <option value="pro">Pro Plan ($9/month)</option>
-                <option value="team">Team Plan ($29/month)</option>
+                <option value="pro">Pro Plan ($19/month)</option>
+                <option value="business">Business Plan ($49/month)</option>
                 <option value="either">Either plan</option>
               </select>
             </div>

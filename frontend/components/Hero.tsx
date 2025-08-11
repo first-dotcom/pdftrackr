@@ -1,5 +1,6 @@
 import { ArrowRight, Gift, CreditCard, Shield } from "lucide-react";
 import Link from "next/link";
+import WaitlistModal from "./WaitlistModal";
 
 export default function Hero() {
   return (
@@ -15,6 +16,16 @@ export default function Hero() {
 
               <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
                 Password-protect your documents, capture emails, track page-by-page engagement, and control downloads. 500MB free storage, no credit card required.
+              </p>
+
+              <p className="mt-2 text-sm text-gray-400 sm:max-w-xl sm:mx-auto lg:mx-0">
+                Need more than 500MB?{" "}
+                <button
+                  onClick={() => document.getElementById("waitlist-modal")?.classList.remove("hidden")}
+                  className="text-primary-600 hover:text-primary-700 underline"
+                >
+                  Join the waitlist for Pro plans launching Q1 2025
+                </button>
               </p>
 
               <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
@@ -87,6 +98,7 @@ export default function Hero() {
           </div>
         </div>
       </div>
+      <WaitlistModal />
     </section>
   );
 }
