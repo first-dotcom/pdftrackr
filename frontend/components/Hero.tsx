@@ -1,4 +1,4 @@
-import { ArrowRight, BarChart3, Share2, Shield } from "lucide-react";
+import { ArrowRight, Gift, CreditCard, Shield } from "lucide-react";
 import Link from "next/link";
 
 export default function Hero() {
@@ -9,13 +9,12 @@ export default function Hero() {
           <main className="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
             <div className="sm:text-center lg:text-left">
               <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-                <span className="block">Simple PDF</span>
-                <span className="block text-primary-600">Sharing & Analytics</span>
+                <span className="block">Track Every PDF View</span>
+                <span className="block text-primary-600">- Know Who's Reading</span>
               </h1>
 
               <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                Upload PDFs, create secure share links, and track basic analytics. 
-                Perfect for freelancers, job seekers, and small teams who need simple document sharing.
+                Password-protect your documents, capture emails, track page-by-page engagement, and control downloads. 500MB free storage, no credit card required.
               </p>
 
               <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
@@ -24,7 +23,7 @@ export default function Hero() {
                     href="/sign-up"
                     className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 md:py-4 md:text-lg md:px-10"
                   >
-                    Start Free
+                    Start Free - No Card Required
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </div>
@@ -45,24 +44,45 @@ export default function Hero() {
 
       <div className="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2">
         <div className="h-56 w-full bg-gradient-to-br from-primary-50 to-primary-100 sm:h-72 md:h-96 lg:w-full lg:h-full flex items-center justify-center">
-          <div className="grid grid-cols-2 gap-4 p-8">
-            <div className="bg-white p-4 rounded-lg shadow-sm flex items-center space-x-2">
-              <Shield className="h-6 w-6 text-primary-600" />
-              <span className="text-sm font-medium">Secure Links</span>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow-sm flex items-center space-x-2">
-              <BarChart3 className="h-6 w-6 text-primary-600" />
-              <span className="text-sm font-medium">Basic Analytics</span>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow-sm flex items-center space-x-2">
-              <Share2 className="h-6 w-6 text-primary-600" />
-              <span className="text-sm font-medium">Easy Sharing</span>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow-sm flex items-center space-x-2">
-              <div className="h-6 w-6 bg-primary-600 rounded flex items-center justify-center">
-                <span className="text-white text-xs font-bold">PDF</span>
+          <div className="flex flex-col items-center space-y-6 p-8">
+            {/* Analytics Dashboard Preview */}
+            <div className="bg-white p-6 rounded-lg shadow-sm w-full max-w-md animate-pulse">
+              <div className="bg-gray-50 p-4 rounded">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="font-semibold text-gray-700">Recent Views</span>
+                  <span className="text-sm text-gray-500">Last 7 days</span>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">proposal-2024.pdf</span>
+                    <span className="text-sm font-medium text-green-600">12 views</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">contract-draft.pdf</span>
+                    <span className="text-sm font-medium text-green-600">8 views</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">presentation.pdf</span>
+                    <span className="text-sm font-medium text-green-600">24 views</span>
+                  </div>
+                </div>
               </div>
-              <span className="text-sm font-medium">PDF Only</span>
+            </div>
+            
+            {/* Badges */}
+            <div className="flex flex-wrap gap-2 justify-center">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                <Gift className="w-4 h-4 mr-1" />
+                500MB FREE
+              </span>
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                <CreditCard className="w-4 h-4 mr-1" />
+                No Credit Card
+              </span>
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                <Shield className="w-4 h-4 mr-1" />
+                GDPR Compliant
+              </span>
             </div>
           </div>
         </div>
