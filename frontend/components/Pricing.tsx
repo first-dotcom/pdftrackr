@@ -6,67 +6,66 @@ import WaitlistModal from "./WaitlistModal";
 
 const plans = [
   {
-    name: "Free",
+    name: "Free Forever",
     price: "$0",
-    description: "Perfect for getting started with PDF sharing",
+    description: "Everything you need to get started",
     features: [
-      "500 MB storage",
-      "25 files maximum",
-      "25 share links",
-      "10 MB max file size",
+      "500MB storage space",
+      "Up to 25 PDF files",
+      "25 share links per file",
+      "10MB max file size",
       "Password protection",
-      "Basic analytics",
-      "Email capture",
-      "Link expiration",
+      "Email gating",
+      "Full analytics for 30 days",
+      "Watermarking",
       "Download control",
-      "Simple dashboard",
+      "Virus scanning",
     ],
-    cta: "Get Started",
+    cta: "Get Started Free",
     href: "/sign-up",
     featured: true,
     available: true,
+    badge: "START HERE",
+    badgeColor: "bg-green-100 text-green-800",
   },
   {
     name: "Pro",
     price: "$19",
     description: "For professionals who need more resources",
     features: [
-      "5 GB storage",
-      "200 files maximum",
+      "Everything in Free, plus:",
+      "5GB storage",
+      "200 files",
       "Unlimited share links",
-      "50 MB max file size",
-      "Basic analytics",
-      "Password protection",
-      "Email capture",
-      "Link expiration",
-      "Download control",
-      "Simple dashboard",
-    ],
-    cta: "Join Waitlist",
-    href: "#waitlist",
-    featured: false,
-    available: false,
-  },
-  {
-    name: "Business",
-    price: "$49",
-    description: "For teams and growing businesses",
-    features: [
-      "25 GB storage",
-      "Unlimited files & links",
-      "100 MB max file size",
-      "Basic analytics",
-      "Password protection",
-      "Email capture",
-      "Link expiration",
-      "Download control",
-      "Simple dashboard",
+      "50MB max file size",
       "Priority support",
     ],
     cta: "Join Waitlist",
     href: "#waitlist",
     featured: false,
     available: false,
+    badge: "Coming Q1 2025",
+    badgeColor: "bg-gray-100 text-gray-800",
+  },
+  {
+    name: "Business",
+    price: "$49",
+    description: "For teams and growing businesses",
+    features: [
+      "Everything in Pro, plus:",
+      "25GB storage",
+      "Unlimited files",
+      "100MB max file size",
+      "Team collaboration",
+      "Custom branding",
+      "API access",
+    ],
+    cta: "Join Waitlist",
+    href: "#waitlist",
+    featured: false,
+    available: false,
+    badge: "Coming Q1 2025",
+    badgeColor: "bg-gray-100 text-gray-800",
   },
 ];
 
@@ -76,10 +75,10 @@ export default function Pricing() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="sm:text-center">
           <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-            Simple, transparent pricing
+            Start Free, Upgrade When You Need More
           </h2>
           <p className="mt-4 text-xl text-gray-600">
-            Start with our free plan. Premium plans launching in Q1 2025!
+            No credit card required. Your first 500MB is completely free.
           </p>
         </div>
 
@@ -91,20 +90,10 @@ export default function Pricing() {
                 plan.featured ? "border-primary-200 shadow-lg ring-1 ring-primary-200" : ""
               } ${!plan.available ? "opacity-75" : ""}`}
             >
-              {!plan.available && (
-                <div className="absolute top-4 right-4 bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded-full">
-                  Coming Soon
-                </div>
-              )}
-              {plan.available && (
-                <div className="absolute top-4 right-4 bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
-                  Available Now
-                </div>
-              )}
+              <div className={`absolute top-4 right-4 ${plan.badgeColor} text-xs font-medium px-2 py-1 rounded-full`}>
+                {plan.badge}
+              </div>
               <div className="p-6">
-                {plan.featured && (
-                  <p className="text-sm font-medium text-primary-600 mb-2">Most Popular</p>
-                )}
                 <h3 className="text-lg leading-6 font-medium text-gray-900">{plan.name}</h3>
                 <p className="mt-4 text-sm text-gray-500">{plan.description}</p>
                 <p className="mt-8">
@@ -133,9 +122,6 @@ export default function Pricing() {
                     >
                       {plan.cta}
                     </button>
-                    <p className="text-xs text-gray-400 mt-2 text-center">
-                      Payment processing coming Q1 2025
-                    </p>
                   </div>
                 )}
               </div>
@@ -156,18 +142,11 @@ export default function Pricing() {
           ))}
         </div>
 
-        {/* Honest Note */}
+        {/* Additional Note */}
         <div className="mt-12 text-center">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-2xl mx-auto">
-            <h3 className="text-lg font-medium text-blue-900 mb-2">
-              🚀 We're building in public
-            </h3>
-            <p className="text-blue-700 text-sm">
-              Currently, only the Free plan is fully functional. We're working on paid plans 
-              that offer more storage, more files, and larger file sizes. Same great features, 
-              just more resources! Join our waitlist to be notified when premium plans launch.
-            </p>
-          </div>
+          <p className="text-sm text-gray-500">
+            All plans include secure hosting, GDPR compliance, and automatic backups
+          </p>
         </div>
       </div>
       <WaitlistModal />
