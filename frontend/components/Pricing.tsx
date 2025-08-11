@@ -8,39 +8,43 @@ const plans = [
   {
     name: "Free",
     price: "$0",
-    description: "Perfect for personal use and testing",
+    description: "Perfect for getting started with PDF sharing",
     features: [
       "500 MB storage",
       "25 files maximum",
       "25 share links",
       "10 MB max file size",
       "Password protection",
-      "30-day analytics retention",
-      "Email support",
+      "Basic analytics",
+      "Email capture",
+      "Link expiration",
+      "Download control",
+      "Simple dashboard",
     ],
     cta: "Get Started",
     href: "/sign-up",
-    featured: false,
+    featured: true,
     available: true,
   },
   {
     name: "Pro",
     price: "$19",
-    description: "Ideal for professionals and content creators",
+    description: "For professionals who need more resources",
     features: [
       "5 GB storage",
       "200 files maximum",
       "Unlimited share links",
       "50 MB max file size",
-      "Custom branding",
-      "Remove PDFTrackr branding",
-      "Advanced analytics",
-      "1-year analytics retention",
-      "Priority support",
+      "Basic analytics",
+      "Password protection",
+      "Email capture",
+      "Link expiration",
+      "Download control",
+      "Simple dashboard",
     ],
-    cta: "Coming Soon",
+    cta: "Join Waitlist",
     href: "#waitlist",
-    featured: true,
+    featured: false,
     available: false,
   },
   {
@@ -51,15 +55,15 @@ const plans = [
       "25 GB storage",
       "Unlimited files & links",
       "100 MB max file size",
-      "5 team members",
-      "Email verification required",
-      "Screenshot protection",
-      "Custom domain",
-      "Webhooks & API access",
-      "2-year analytics retention",
-      "24h priority support",
+      "Basic analytics",
+      "Password protection",
+      "Email capture",
+      "Link expiration",
+      "Download control",
+      "Simple dashboard",
+      "Priority support",
     ],
-    cta: "Coming Soon",
+    cta: "Join Waitlist",
     href: "#waitlist",
     featured: false,
     available: false,
@@ -75,7 +79,7 @@ export default function Pricing() {
             Simple, transparent pricing
           </h2>
           <p className="mt-4 text-xl text-gray-600">
-            Start with our free plan. Premium plans with advanced features launching soon!
+            Start with our free plan. Premium plans launching in Q1 2025!
           </p>
         </div>
 
@@ -90,6 +94,11 @@ export default function Pricing() {
               {!plan.available && (
                 <div className="absolute top-4 right-4 bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded-full">
                   Coming Soon
+                </div>
+              )}
+              {plan.available && (
+                <div className="absolute top-4 right-4 bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
+                  Available Now
                 </div>
               )}
               <div className="p-6">
@@ -122,10 +131,10 @@ export default function Pricing() {
                       }
                       className="block w-full py-2 px-4 border border-gray-300 rounded-md text-sm font-medium text-center bg-gray-100 text-gray-500 cursor-pointer hover:bg-gray-200 transition-colors"
                     >
-                      {plan.cta} - Join Waitlist
+                      {plan.cta}
                     </button>
                     <p className="text-xs text-gray-400 mt-2 text-center">
-                      Payment processing integration coming soon
+                      Payment processing coming Q1 2025
                     </p>
                   </div>
                 )}
@@ -145,6 +154,20 @@ export default function Pricing() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Honest Note */}
+        <div className="mt-12 text-center">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-2xl mx-auto">
+            <h3 className="text-lg font-medium text-blue-900 mb-2">
+              🚀 We're building in public
+            </h3>
+            <p className="text-blue-700 text-sm">
+              Currently, only the Free plan is fully functional. We're working on paid plans 
+              that offer more storage, more files, and larger file sizes. Same great features, 
+              just more resources! Join our waitlist to be notified when premium plans launch.
+            </p>
+          </div>
         </div>
       </div>
       <WaitlistModal />

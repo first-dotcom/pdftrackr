@@ -15,25 +15,25 @@ const features = [
     icon: Shield,
     title: "Secure Sharing",
     description:
-      "Generate secure smart links with customizable access controls, expiration dates, and download restrictions.",
+      "Generate secure share links with password protection, expiration dates, and download controls.",
   },
   {
     icon: BarChart3,
-    title: "Advanced Analytics",
+    title: "Basic Analytics",
     description:
-      "Track viewer behavior, time spent per page, scroll depth, and referrer data with detailed insights.",
+      "Track views, unique visitors, time spent, and collect viewer emails with simple analytics.",
   },
   {
     icon: Eye,
     title: "View Tracking",
     description:
-      "Monitor who views your PDFs, when they view them, and how long they spend on each page.",
+      "Monitor who views your PDFs, when they view them, and how long they spend reading.",
   },
   {
     icon: Mail,
-    title: "Email Gating",
+    title: "Email Capture",
     description:
-      "Require email addresses to access your documents and build your lead generation pipeline.",
+      "Collect viewer email addresses to build your contact list and follow up with leads.",
   },
   {
     icon: Download,
@@ -44,25 +44,25 @@ const features = [
     icon: Clock,
     title: "Link Expiration",
     description:
-      "Set time-based or view-count-based expiration for your shared links for enhanced security.",
+      "Set time-based expiration for your shared links to keep your documents secure.",
   },
   {
     icon: FileText,
-    title: "Auto Watermarking",
+    title: "PDF Only",
     description:
-      "Automatically add watermarks with viewer information to protect your intellectual property.",
+      "Currently supports PDF files only. More file types coming soon.",
   },
   {
     icon: Lock,
-    title: "Privacy Controls",
+    title: "Password Protection",
     description:
-      "Full control over who can access your documents with granular permission settings.",
+      "Add password protection to your shared links for extra security.",
   },
   {
     icon: Activity,
-    title: "Real-time Monitoring",
+    title: "Simple Dashboard",
     description:
-      "Get instant notifications and real-time analytics on document engagement and viewer activity.",
+      "Easy-to-use dashboard to manage your files, view analytics, and track performance.",
   },
 ];
 
@@ -75,10 +75,10 @@ export default function Features() {
             Features
           </h2>
           <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-            Everything you need for secure PDF sharing
+            Simple features for effective PDF sharing
           </p>
           <p className="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
-            Professional-grade features designed for modern document sharing and analytics needs.
+            Focused on the essentials: secure sharing, basic analytics, and easy management.
           </p>
         </div>
 
@@ -95,6 +95,36 @@ export default function Features() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Coming Soon Section */}
+        <div className="mt-16 lg:text-center">
+          <h3 className="text-2xl font-bold text-gray-900 mb-4">
+            Coming Soon
+          </h3>
+          <p className="text-lg text-gray-600 mb-8">
+            We're working on paid plans with more resources:
+          </p>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="text-center">
+              <div className="bg-gray-100 rounded-lg p-4 mb-3">
+                <span className="text-sm font-medium text-gray-600">More Storage</span>
+              </div>
+              <p className="text-sm text-gray-500">5GB, 25GB, and unlimited storage options</p>
+            </div>
+            <div className="text-center">
+              <div className="bg-gray-100 rounded-lg p-4 mb-3">
+                <span className="text-sm font-medium text-gray-600">More Files</span>
+              </div>
+              <p className="text-sm text-gray-500">200+ files and unlimited share links</p>
+            </div>
+            <div className="text-center">
+              <div className="bg-gray-100 rounded-lg p-4 mb-3">
+                <span className="text-sm font-medium text-gray-600">Larger Files</span>
+              </div>
+              <p className="text-sm text-gray-500">50MB and 100MB file size limits</p>
+            </div>
           </div>
         </div>
       </div>
