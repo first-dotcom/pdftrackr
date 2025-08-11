@@ -2,7 +2,9 @@ import Features from "@/components/Features";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
+import HowItWorks from "@/components/HowItWorks";
 import Pricing from "@/components/Pricing";
+import UseCases from "@/components/UseCases";
 import { currentUser } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 
@@ -15,6 +17,8 @@ export default async function HomePage() {
       <main>
         <Hero />
         <Features />
+        <HowItWorks />
+        <UseCases />
         <Pricing />
         
         {/* SEO-friendly CTA for authenticated users */}
