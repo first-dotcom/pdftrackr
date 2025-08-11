@@ -26,8 +26,6 @@ services:
         limits:
           memory: 128M
           cpus: '0.25'
-    profiles:
-      - production
 
   # PostgreSQL Database
   postgres:
