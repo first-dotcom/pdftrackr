@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Only use standalone for actual production builds, not development with production env
-  output: process.env.NODE_ENV === 'production' && process.env.NEXT_STANDALONE === 'true' ? 'standalone' : undefined,
+  // Disable standalone for now to fix build issues
+  // output: process.env.NODE_ENV === 'production' && process.env.NEXT_STANDALONE === 'true' ? 'standalone' : undefined,
   
   // Development optimizations
   swcMinify: true,
