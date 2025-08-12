@@ -9,6 +9,7 @@ import { logger } from "../utils/logger";
 import { deleteCache, getCache, setCache } from "../utils/redis";
 import { successResponse } from "../utils/response";
 import { invalidateUserDashboardCache } from "./analytics";
+import { userPlanSchema } from "../utils/validation";
 
 const router: Router = Router();
 
@@ -128,7 +129,9 @@ router.patch(
     const { plan } = req.body;
     const _currentPlan = req.user?.plan;
 
-    if (!["free", "pro", "business"].includes(plan)) {
+    try {
+      userPlanSchema.parse(plan);
+    } catch {
       res.status(400).json({
         success: false,
         error: { message: "Invalid plan" },

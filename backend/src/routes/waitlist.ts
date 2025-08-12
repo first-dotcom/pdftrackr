@@ -7,12 +7,13 @@ import { validateBody } from "../middleware/validation";
 import { waitlist } from "../models/schema";
 import { db } from "../utils/database";
 import { logger } from "../utils/logger";
+import { waitlistPlanSchema } from "../utils/validation";
 
 const router: Router = Router();
 
 const waitlistSchema = z.object({
   email: z.string().email().max(255),
-  plan: z.enum(["pro", "business", "either"]),
+  plan: waitlistPlanSchema,
   source: z.string().max(100).optional(),
 });
 

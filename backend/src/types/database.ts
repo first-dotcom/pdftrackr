@@ -30,8 +30,8 @@ export type NewEmailCapture = typeof emailCaptures.$inferInsert;
 export type AnalyticsSummary = typeof analyticsSummary.$inferSelect;
 export type NewAnalyticsSummary = typeof analyticsSummary.$inferInsert;
 
-// User plans
-export type UserPlan = "free" | "pro" | "team";
+// User plans - now imported from shared types
+export type { UserPlan } from "@/shared/types";
 
 // File with relations
 export type FileWithUser = File & {

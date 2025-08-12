@@ -4,10 +4,11 @@
  */
 
 import { z } from "zod";
+import { waitlistPlanSchema } from "./validation";
 
 // Zod schemas for robust validation
 export const emailSchema = z.string().email().max(254);
-export const planSchema = z.enum(["pro", "team", "either"]);
+export const planSchema = waitlistPlanSchema;
 export const userInputSchema = z.string().max(1000).trim();
 export const filenameSchema = z
   .string()

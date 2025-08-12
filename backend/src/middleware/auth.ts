@@ -7,6 +7,7 @@ import { db } from "../utils/database";
 import { logger } from "../utils/logger";
 import { getCache, setCache } from "../utils/redis";
 import { CustomError } from "./errorHandler";
+import { UserPlan, planHierarchy } from "@/shared/types";
 
 // Extend Express Request type to include user
 declare global {
@@ -14,18 +15,18 @@ declare global {
     interface Request {
       userId?: string;
       user?:
-        | {
-            id: number;
-            clerkId: string;
-            email: string;
-            firstName: string | null;
-            lastName: string | null;
-            plan: string;
-            storageUsed: number;
-            filesCount: number;
-            createdAt: Date;
-            updatedAt: Date;
-          }
+                  | {
+              id: number;
+              clerkId: string;
+              email: string;
+              firstName: string | null;
+              lastName: string | null;
+              plan: UserPlan;
+              storageUsed: number;
+              filesCount: number;
+              createdAt: Date;
+              updatedAt: Date;
+            }
         | undefined;
     }
   }
@@ -98,7 +99,10 @@ export const authenticate = async (req: Request, _res: Response, next: NextFunct
           .returning();
 
         if (newUser.length > 0) {
-          req.user = newUser[0];
+          req.user = {
+            ...newUser[0],
+            plan: newUser[0].plan as UserPlan,
+          };
           logger.info("New user created", { email, userId: payload.sub });
         } else {
           throw new CustomError("Failed to create user account", 500);
@@ -114,7 +118,10 @@ export const authenticate = async (req: Request, _res: Response, next: NextFunct
     } else {
       const user = userRecord[0];
       if (user) {
-        req.user = user;
+        req.user = {
+          ...user,
+          plan: user.plan as UserPlan,
+        };
       } else {
         throw new CustomError("User not found", 404);
       }
@@ -153,7 +160,10 @@ export const optionalAuth = async (req: Request, _res: Response, next: NextFunct
         if (userRecord.length > 0) {
           const user = userRecord[0];
           if (user) {
-            req.user = user;
+            req.user = {
+              ...user,
+              plan: user.plan as UserPlan,
+            };
           }
         }
       }
@@ -168,14 +178,13 @@ export const optionalAuth = async (req: Request, _res: Response, next: NextFunct
 };
 
 // Check if user has a specific plan
-export const requirePlan = (requiredPlan: "free" | "pro" | "business") => {
+export const requirePlan = (requiredPlan: UserPlan) => {
   return (req: Request, _res: Response, next: NextFunction) => {
     if (!req.user) {
       return next(new CustomError("Authentication required", 401));
     }
 
-    const planHierarchy = { free: 0, pro: 1, business: 2 };
-    const userPlanLevel = planHierarchy[req.user.plan as keyof typeof planHierarchy];
+    const userPlanLevel = planHierarchy[req.user.plan];
     const requiredPlanLevel = planHierarchy[requiredPlan];
 
     if (userPlanLevel < requiredPlanLevel) {

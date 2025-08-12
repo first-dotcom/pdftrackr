@@ -4,7 +4,7 @@
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
-  error?: string;
+  error?: string | { message: string; details?: any };
   message?: string;
 }
 
@@ -76,7 +76,7 @@ export interface User {
   firstName: string | null;
   lastName: string | null;
   avatarUrl: string | null;
-  plan: string;
+  plan: "free" | "pro" | "business";
   storageUsed: number;
   filesCount: number;
   createdAt: string;
@@ -133,7 +133,20 @@ export interface StorageInfo {
   filesCount: number;
   storageQuota: number;
   filesQuota: number;
-  plan: string;
+  plan: "free" | "pro" | "business";
+}
+
+// Waitlist Types
+export interface WaitlistEntry {
+  id: number;
+  email: string;
+  plan: "pro" | "business" | "either";
+  source: string | null;
+  ipAddress: string | null;
+  userAgent: string | null;
+  referer: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // API Endpoint Response Types

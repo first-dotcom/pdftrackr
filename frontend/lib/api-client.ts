@@ -2,12 +2,7 @@
 
 import { config } from "./config";
 import { generateCSRFToken } from "../utils/security";
-
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: string | { message: string; details?: any };
-}
+import type { ApiResponse } from "@/shared/types";
 
 export interface RequestOptions {
   skipCSRF?: boolean;

@@ -1,5 +1,6 @@
 import type { Request } from "express";
 import { z } from "zod";
+import type { UserPlan, WaitlistPlan } from "@/shared/types";
 
 // Common validation schemas
 export const emailSchema = z.string().email().max(255);
@@ -152,3 +153,17 @@ export function getQueryParams(req: Request) {
 export const idParamSchema = z.object({
   id: z.string().regex(/^\d+$/).transform(Number),
 });
+
+// Plan Validation Schemas
+export const userPlanSchema = z.enum(["free", "pro", "business"]) satisfies z.ZodType<UserPlan>;
+export const waitlistPlanSchema = z.enum(["pro", "business", "either"]) satisfies z.ZodType<WaitlistPlan>;
+
+// Helper function for plan validation
+export const validatePlan = (plan: string): { valid: boolean; error?: string } => {
+  try {
+    userPlanSchema.parse(plan);
+    return { valid: true };
+  } catch {
+    return { valid: false, error: "Invalid plan selection" };
+  }
+};
