@@ -28,6 +28,7 @@ RUN pnpm install --frozen-lockfile
 FROM base AS development
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=base /tsconfig.base.json ../tsconfig.base.json
+COPY shared/ ../shared/
 COPY frontend/ .
 RUN chown -R nextjs:nodejs /app
 
@@ -45,6 +46,7 @@ CMD ["pnpm", "run", "start"]
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=base /tsconfig.base.json ../tsconfig.base.json
+COPY shared/ ../shared/
 COPY frontend/ .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production

@@ -7,7 +7,7 @@ import {
   ShareLink, 
   CreateShareLinkRequest,
   File as FileType
-} from "@/types";
+} from "@/shared/types";
 
 interface ShareLinkModalProps {
   isOpen: boolean;

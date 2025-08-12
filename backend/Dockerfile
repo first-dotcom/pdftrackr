@@ -26,6 +26,7 @@ RUN pnpm install --frozen-lockfile
 # =============================================================================
 FROM base AS development
 COPY --from=deps /app/node_modules ./node_modules
+COPY shared/ ../shared/
 COPY backend/ .
 RUN mkdir -p logs && chown pdftrackr:nodejs logs
 USER pdftrackr
@@ -38,6 +39,7 @@ CMD ["pnpm", "run", "dev"]
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY tsconfig.base.json ../tsconfig.base.json
+COPY shared/ ../shared/
 COPY backend/ .
 RUN pnpm run build && pnpm prune --prod --config.confirmModulesPurge=false
 

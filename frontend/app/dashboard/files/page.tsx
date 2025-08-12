@@ -8,7 +8,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Eye, FileText, Plus, Search, Share, Share2, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import type { File } from "@/types";
+import type { File } from "@/shared/types";
 import { useApi } from "@/hooks/useApi";
 
 export default function FilesPage() {

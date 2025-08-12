@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import ShareLinkModal from "@/components/ShareLinkModal";
 import { useApi } from "@/hooks/useApi";
 import SimpleFileStats from "@/components/SimpleFileStats";
-import { File as FileType, ShareLink } from "@/types";
+import { File as FileType, ShareLink } from "@/shared/types";
 
 // Use the shared interfaces instead of custom definitions
 

@@ -1,5 +1,5 @@
 import type { Response } from "express";
-import type { ApiResponse, PaginatedResponse } from "../types/api";
+import type { ApiResponse, PaginatedResponse } from "@/shared/types";
 
 export const successResponse = <T>(res: Response, data: T, message?: string): void => {
   const response: ApiResponse<T> = {
