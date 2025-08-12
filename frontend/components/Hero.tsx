@@ -1,3 +1,5 @@
+"use client";
+
 import { ArrowRight, Gift, CreditCard, Shield } from "lucide-react";
 import Link from "next/link";
 import WaitlistModal from "./WaitlistModal";
