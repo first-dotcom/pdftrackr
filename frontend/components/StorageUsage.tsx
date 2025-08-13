@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useApi } from "@/hooks/useApi";
-import { HardDrive, TrendingUp, Upload } from "lucide-react";
+import { HardDrive, TrendingUp, FileText, AlertCircle } from "lucide-react";
 
 interface StorageInfo {
   storageUsed: number;
@@ -91,12 +91,12 @@ export default function StorageUsage() {
 
   const getProgressBarColor = (percentage: number) => {
     if (percentage >= 90) {
-      return "bg-red-500";
+      return "bg-gradient-to-r from-red-500 to-red-600";
     }
     if (percentage >= 75) {
-      return "bg-yellow-500";
+      return "bg-gradient-to-r from-yellow-500 to-yellow-600";
     }
-    return "bg-green-500";
+    return "bg-gradient-to-r from-primary-500 to-primary-600";
   };
 
   // Show loading state while Clerk is initializing
@@ -104,14 +104,14 @@ export default function StorageUsage() {
     return (
       <div className="card">
         <div className="card-header">
-          <h3 className="text-lg font-medium text-gray-900">Storage Usage</h3>
+          <h3 className="text-base sm:text-lg font-medium text-gray-900">Storage Usage</h3>
         </div>
-        <div className="card-body">
+        <div className="card-body p-4 sm:p-6">
           <div className="animate-pulse space-y-4">
             <div className="h-4 bg-gray-200 rounded w-full" />
-            <div className="h-2 bg-gray-200 rounded w-full" />
+            <div className="h-2.5 bg-gray-200 rounded w-full" />
             <div className="h-4 bg-gray-200 rounded w-3/4" />
-            <div className="h-2 bg-gray-200 rounded w-full" />
+            <div className="h-2.5 bg-gray-200 rounded w-full" />
           </div>
         </div>
       </div>
@@ -123,12 +123,12 @@ export default function StorageUsage() {
     return (
       <div className="card">
         <div className="card-header">
-          <h3 className="text-lg font-medium text-gray-900">Storage Usage</h3>
+          <h3 className="text-base sm:text-lg font-medium text-gray-900">Storage Usage</h3>
         </div>
-        <div className="card-body">
-          <div className="text-center py-8">
-            <HardDrive className="mx-auto h-8 w-8 text-gray-400" />
-            <p className="mt-2 text-sm text-gray-500">Please sign in to view your storage usage.</p>
+        <div className="card-body p-4 sm:p-6">
+          <div className="text-center py-8 sm:py-12">
+            <HardDrive className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-400" />
+            <p className="mt-4 text-sm sm:text-base text-gray-500">Please sign in to view your storage usage.</p>
           </div>
         </div>
       </div>
@@ -139,14 +139,14 @@ export default function StorageUsage() {
     return (
       <div className="card">
         <div className="card-header">
-          <h3 className="text-lg font-medium text-gray-900">Storage Usage</h3>
+          <h3 className="text-base sm:text-lg font-medium text-gray-900">Storage Usage</h3>
         </div>
-        <div className="card-body">
+        <div className="card-body p-4 sm:p-6">
           <div className="animate-pulse space-y-4">
             <div className="h-4 bg-gray-200 rounded w-full" />
-            <div className="h-2 bg-gray-200 rounded w-full" />
+            <div className="h-2.5 bg-gray-200 rounded w-full" />
             <div className="h-4 bg-gray-200 rounded w-3/4" />
-            <div className="h-2 bg-gray-200 rounded w-full" />
+            <div className="h-2.5 bg-gray-200 rounded w-full" />
           </div>
         </div>
       </div>
@@ -157,13 +157,13 @@ export default function StorageUsage() {
     return (
       <div className="card">
         <div className="card-header">
-          <h3 className="text-lg font-medium text-gray-900">Storage Usage</h3>
+          <h3 className="text-base sm:text-lg font-medium text-gray-900">Storage Usage</h3>
         </div>
-        <div className="card-body">
-          <div className="text-center py-8">
-            <HardDrive className="mx-auto h-8 w-8 text-red-400" />
-            <p className="mt-2 text-sm text-red-600">{error}</p>
-            <button type="button" onClick={fetchStorageInfo} className="mt-4 btn-outline btn-sm">
+        <div className="card-body p-4 sm:p-6">
+          <div className="text-center py-8 sm:py-12">
+            <HardDrive className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-red-400" />
+            <p className="mt-4 text-sm sm:text-base text-red-600">{error}</p>
+            <button type="button" onClick={fetchStorageInfo} className="mt-4 btn-outline btn-md">
               Retry
             </button>
           </div>
@@ -175,90 +175,138 @@ export default function StorageUsage() {
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="text-lg font-medium text-gray-900">Storage Usage</h3>
+        <h3 className="text-base sm:text-lg font-medium text-gray-900">Storage Usage</h3>
       </div>
-      <div className="card-body space-y-6">
-        {/* Storage Usage */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
+      <div className="card-body p-4 sm:p-6 space-y-6">
+        {/* Storage Usage - Modern Design */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <HardDrive className="h-4 w-4 text-gray-400 mr-2" />
-              <span className="text-sm font-medium text-gray-700">Storage</span>
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg flex items-center justify-center border border-blue-200">
+                <HardDrive className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="ml-3">
+                <h4 className="text-sm sm:text-base font-medium text-gray-900">Storage</h4>
+                <p className="text-xs sm:text-sm text-gray-500">Used vs. Available</p>
+              </div>
             </div>
-            <span className="text-sm text-gray-500">
-              {formatBytes(storage.storageUsed)} / {formatBytes(storage.storageQuota)}
-            </span>
+            <div className="text-right">
+              <p className="text-sm sm:text-base font-semibold text-gray-900">
+                {formatBytes(storage.storageUsed)}
+              </p>
+              <p className="text-xs sm:text-sm text-gray-500">
+                of {formatBytes(storage.storageQuota)}
+              </p>
+            </div>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
             <div
-              className={`h-2 rounded-full transition-all duration-300 ${getProgressBarColor(
+              className={`h-3 rounded-full transition-all duration-500 ease-out shadow-sm ${getProgressBarColor(
                 storagePercentage,
               )}`}
               style={{ width: `${Math.min(storagePercentage, 100)}%` }}
             />
           </div>
-          <p className="text-xs text-gray-500 mt-1">{storagePercentage.toFixed(1)}% used</p>
+          <div className="flex items-center justify-between">
+            <p className="text-xs sm:text-sm text-gray-500">
+              {storagePercentage.toFixed(1)}% used
+            </p>
+            <p className="text-xs sm:text-sm text-gray-500">
+              {formatBytes(storage.storageQuota - storage.storageUsed)} remaining
+            </p>
+          </div>
         </div>
 
-        {/* File Count */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
+        {/* File Count - Modern Design */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <Upload className="h-4 w-4 text-gray-400 mr-2" />
-              <span className="text-sm font-medium text-gray-700">Files</span>
+              <div className="w-10 h-10 bg-gradient-to-br from-green-50 to-green-100 rounded-lg flex items-center justify-center border border-green-200">
+                <FileText className="h-5 w-5 text-green-600" />
+              </div>
+              <div className="ml-3">
+                <h4 className="text-sm sm:text-base font-medium text-gray-900">Files</h4>
+                <p className="text-xs sm:text-sm text-gray-500">Uploaded documents</p>
+              </div>
             </div>
-            <span className="text-sm text-gray-500">
-              {storage.filesCount} / {storage.filesQuota === -1 ? "∞" : storage.filesQuota}
-            </span>
+            <div className="text-right">
+              <p className="text-sm sm:text-base font-semibold text-gray-900">
+                {storage.filesCount}
+              </p>
+              <p className="text-xs sm:text-sm text-gray-500">
+                of {storage.filesQuota === -1 ? "∞" : storage.filesQuota}
+              </p>
+            </div>
           </div>
           {storage.filesQuota !== -1 && (
             <>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                 <div
-                  className={`h-2 rounded-full transition-all duration-300 ${getProgressBarColor(
+                  className={`h-3 rounded-full transition-all duration-500 ease-out shadow-sm ${getProgressBarColor(
                     filesPercentage,
                   )}`}
                   style={{ width: `${Math.min(filesPercentage, 100)}%` }}
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1">{filesPercentage.toFixed(1)}% used</p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs sm:text-sm text-gray-500">
+                  {filesPercentage.toFixed(1)}% used
+                </p>
+                <p className="text-xs sm:text-sm text-gray-500">
+                  {storage.filesQuota - storage.filesCount} remaining
+                </p>
+              </div>
             </>
           )}
         </div>
 
-        {/* Plan Info */}
-        <div className="border-t border-gray-200 pt-4">
-          <div className="flex items-center justify-between">
+        {/* Plan Info - Modern Badge Design */}
+        <div className="border-t border-gray-200 pt-6">
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-sm font-medium text-gray-900 capitalize">{storage.plan} Plan</p>
-              <p className="text-xs text-gray-500">Current subscription</p>
+              <h4 className="text-sm sm:text-base font-medium text-gray-900 capitalize">
+                {storage.plan} Plan
+              </h4>
+              <p className="text-xs sm:text-sm text-gray-500">Current subscription</p>
             </div>
-            <TrendingUp className="h-5 w-5 text-green-500" />
+            <div className="w-10 h-10 bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg flex items-center justify-center border border-primary-200">
+              <TrendingUp className="h-5 w-5 text-primary-600" />
+            </div>
           </div>
 
           {storage.plan === "free" && (
-            <div className="mt-4">
+            <div className="space-y-3">
               <button
                 type="button"
                 onClick={() =>
                   document.getElementById("waitlist-modal")?.classList.remove("hidden")
                 }
-                className="w-full btn-primary btn-sm text-center"
+                className="w-full btn-primary btn-md flex items-center justify-center"
               >
-                Coming Soon - Join Waitlist
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Join Waitlist for Pro Plans
               </button>
-              <p className="text-xs text-gray-500 mt-1 text-center">Premium plans launching soon</p>
+              <p className="text-xs sm:text-sm text-gray-500 text-center">
+                Premium plans launching Q1 2025
+              </p>
             </div>
           )}
         </div>
 
-        {/* Warning for high usage */}
+        {/* Warning for high usage - Modern Alert */}
         {storagePercentage > 80 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
-            <p className="text-sm text-yellow-800">
-              You're running low on storage space. Consider upgrading your plan or removing unused
-              files.
-            </p>
+          <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-4">
+            <div className="flex items-start">
+              <AlertCircle className="h-5 w-5 text-yellow-600 mr-3 mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="text-sm font-medium text-yellow-800 mb-1">
+                  Storage Space Low
+                </h4>
+                <p className="text-sm text-yellow-700">
+                  You're running low on storage space. Consider upgrading your plan or removing unused files.
+                </p>
+              </div>
+            </div>
           </div>
         )}
       </div>
