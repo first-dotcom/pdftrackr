@@ -2,11 +2,11 @@
   "name": "pdftrackr-backend",
   "version": "1.0.0",
   "description": "PDFTrackr backend API server",
-  "main": "dist/index.js",
+  "main": "dist/app/src/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
+    "build": "tsc && tsc-alias",
+    "start": "node dist/app/src/index.js",
     "test": "jest",
     "lint": "biome check .",
     "lint:fix": "biome check --apply .",
@@ -14,9 +14,9 @@
     "format:check": "biome format .",
     "db:generate": "drizzle-kit generate:pg",
     "db:migrate": "tsx src/scripts/migrate.ts",
-    "db:migrate:prod": "node dist/scripts/migrate.js",
+    "db:migrate:prod": "node dist/app/src/scripts/migrate.js",
     "db:seed": "tsx src/scripts/seed.ts",
-    "db:seed:prod": "node dist/scripts/seed.js",
+    "db:seed:prod": "node dist/app/src/scripts/seed.js",
     "db:studio": "drizzle-kit studio",
     "db:push": "drizzle-kit push:pg",
     "depcheck": "depcheck"
@@ -26,7 +26,6 @@
     "@aws-sdk/s3-request-presigner": "^3.400.0",
     "@clerk/express": "^1.7.15",
     "@clerk/nextjs": "^4.31.8",
-
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
@@ -59,6 +58,8 @@
     "@types/uuid": "^9.0.7",
     "drizzle-kit": "^0.19.13",
     "jest": "^29.7.0",
+    "tsc-alias": "^1.8.16",
+    "tsconfig-paths": "^4.2.0",
     "tsx": "^4.1.4",
     "typescript": "^5.2.2"
   }

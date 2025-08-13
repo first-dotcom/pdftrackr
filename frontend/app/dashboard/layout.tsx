@@ -59,7 +59,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="mb-6 lg:hidden">
               <Breadcrumbs />
             </div>
-            <ErrorBoundary title="Dashboard content failed to load">
+            <ErrorBoundary>
               {children}
             </ErrorBoundary>
                 </div>

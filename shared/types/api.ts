@@ -196,8 +196,8 @@ export interface ShareAccessRequest {
 
 // Pagination Types
 export interface PaginationQuery {
-  page?: number;
-  limit?: number;
+  page?: string;
+  limit?: string;
 }
 
 // Analytics Query Types

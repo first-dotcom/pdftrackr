@@ -23,6 +23,7 @@ export const validateBody = (schema: z.ZodSchema) => {
 export const validateQuery = (schema: z.ZodSchema) => {
   return (req: Request, _res: Response, next: NextFunction) => {
     try {
+      console.log("Query:", req.query);
       req.query = schema.parse(req.query);
       next();
     } catch (error) {

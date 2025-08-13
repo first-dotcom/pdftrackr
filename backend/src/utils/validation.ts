@@ -1,6 +1,6 @@
 import type { Request } from "express";
 import { z } from "zod";
-import type { UserPlan, WaitlistPlan } from "@/shared/types";
+import type { UserPlan, WaitlistPlan } from "../../../shared/types";
 
 // Common validation schemas
 export const emailSchema = z.string().email().max(255);
@@ -64,8 +64,18 @@ export const updateProfileSchema = z.object({
 
 // Pagination validation
 export const paginationSchema = z.object({
-  page: z.number().int().min(1).max(1000).optional().default(1),
-  limit: z.number().int().min(1).max(100).optional().default(10),
+  page: z.string().optional().refine((val) => {
+    const num = parseInt(val || "1", 10);
+    if (isNaN(num) || num < 1 || num > 1000) {
+      throw new Error("Page must be a number between 1 and 1000");
+    }
+  }).default("1"),
+  limit: z.string().optional().refine((val) => {
+    const num = parseInt(val || "10", 10);
+    if (isNaN(num) || num < 1 || num > 100) {
+      throw new Error("Limit must be a number between 1 and 100");
+    }
+  }).default("10"),
 });
 
 // IP address validation

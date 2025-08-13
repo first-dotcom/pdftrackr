@@ -41,7 +41,7 @@ export default function RecentFiles() {
 
     try {
       setLoading(true);
-      const response = await api.files.list(5);
+      const response = await api.files.list({ limit: 5 });
 
       if (response.success && response.data) {
         setFiles((response.data as any).files);

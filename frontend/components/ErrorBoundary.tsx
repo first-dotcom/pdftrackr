@@ -1,18 +1,18 @@
 "use client";
 
-import React, { Component, ReactNode } from "react";
+import { Component, type ReactNode } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
-  title?: string;
-  showRetry?: boolean;
+  onError?: (error: Error, errorInfo: any) => void;
 }
 
 interface State {
   hasError: boolean;
   error?: Error;
+  errorInfo?: any;
 }
 
 export default class ErrorBoundary extends Component<Props, State> {
@@ -25,55 +25,73 @@ export default class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+  override componentDidCatch(error: Error, errorInfo: any) {
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
+    this.setState({ error, errorInfo });
+    this.props.onError?.(error, errorInfo);
   }
 
   handleRetry = () => {
-    this.setState({ hasError: false, error: undefined });
+    this.setState({ hasError: false, error: undefined, errorInfo: undefined });
   };
 
   override render() {
     if (this.state.hasError) {
-      // Use custom fallback if provided
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
-      // Default error UI
       return (
-        <div className="min-h-[200px] flex items-center justify-center p-6">
-          <div className="text-center max-w-md">
-            <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
-              <AlertTriangle className="h-8 w-8 text-red-600" />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-4">
+              <AlertTriangle className="h-6 w-6 text-red-600" aria-hidden="true" />
             </div>
             
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {this.props.title || "Something went wrong"}
-            </h3>
-            
-            <p className="text-gray-600 mb-4">
-              We encountered an unexpected error. Please try refreshing the page.
-            </p>
-            
-            {this.props.showRetry !== false && (
-              <button 
-                onClick={this.handleRetry}
-                className="btn-primary btn-sm flex items-center space-x-2 mx-auto"
-              >
-                <RefreshCw className="h-4 w-4" />
-                <span>Try Again</span>
-              </button>
-            )}
-            
-            {process.env.NODE_ENV === 'development' && this.state.error && (
-              <details className="mt-4 text-left">
-                <summary className="text-sm text-gray-500 cursor-pointer">Error Details</summary>
-                <pre className="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded overflow-auto">
-                  {this.state.error.stack}
-                </pre>
-              </details>
-            )}
+            <div className="text-center">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Something went wrong
+              </h3>
+              <p className="text-sm text-gray-500 mb-6">
+                We encountered an unexpected error. Please try refreshing the page.
+              </p>
+              
+              <div className="space-y-3">
+                <button
+                  onClick={this.handleRetry}
+                  className="w-full btn-primary btn-md flex items-center justify-center"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" aria-hidden="true" />
+                  Try Again
+                </button>
+                
+                <button
+                  onClick={() => window.location.reload()}
+                  className="w-full btn-outline btn-md"
+                >
+                  Refresh Page
+                </button>
+              </div>
+              
+              {process.env.NODE_ENV === 'development' && this.state.error && (
+                <details className="mt-6 text-left">
+                  <summary className="text-sm font-medium text-gray-700 cursor-pointer">
+                    Error Details (Development)
+                  </summary>
+                  <div className="mt-2 p-3 bg-gray-100 rounded text-xs font-mono text-gray-800 overflow-auto">
+                    <div className="mb-2">
+                      <strong>Error:</strong> {this.state.error.message}
+                    </div>
+                    {this.state.error.stack && (
+                      <div>
+                        <strong>Stack:</strong>
+                        <pre className="whitespace-pre-wrap">{this.state.error.stack}</pre>
+                      </div>
+                    )}
+                  </div>
+                </details>
+              )}
+            </div>
           </div>
         </div>
       );
@@ -83,41 +101,4 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-// Specialized error boundaries for different use cases
-export function DataErrorBoundary({ children }: { children: ReactNode }) {
-  return (
-    <ErrorBoundary 
-      title="Unable to load data"
-      fallback={
-        <div className="card">
-          <div className="card-body text-center py-12">
-            <AlertTriangle className="mx-auto h-12 w-12 text-orange-500 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Data loading failed</h3>
-            <p className="text-gray-600">Some data couldn't be loaded, but you can still use other features.</p>
-          </div>
-        </div>
-      }
-    >
-      {children}
-    </ErrorBoundary>
-  );
-}
 
-export function ComponentErrorBoundary({ children }: { children: ReactNode }) {
-  return (
-    <ErrorBoundary 
-      title="Component error"
-      showRetry={true}
-      fallback={
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-center">
-            <AlertTriangle className="h-5 w-5 text-yellow-600 mr-2" />
-            <span className="text-yellow-800 text-sm">This section couldn't load properly</span>
-          </div>
-        </div>
-      }
-    >
-      {children}
-    </ErrorBoundary>
-  );
-}

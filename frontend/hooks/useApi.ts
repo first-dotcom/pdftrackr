@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { apiClient } from "../lib/api-client";
 
 /**
@@ -11,12 +11,13 @@ import { apiClient } from "../lib/api-client";
 export function useApi() {
   const { getToken } = useAuth();
 
-  // Initialize the API client with Clerk auth
+  // Initialize the API client with Clerk auth - only when getToken changes
   useEffect(() => {
     apiClient.setAuthProvider(getToken);
   }, [getToken]);
 
-  return apiClient;
+  // Return stable reference to prevent unnecessary re-renders
+  return useMemo(() => apiClient, []);
 }
 
 /**
@@ -108,6 +109,12 @@ export function useApiState<T = any>() {
     }
   }, []);
 
-  return { ...state, execute, reset, api };
+  // Return stable references to prevent unnecessary re-renders
+  return useMemo(() => ({ 
+    ...state, 
+    execute, 
+    reset, 
+    api 
+  }), [state, execute, reset, api]);
 }
 

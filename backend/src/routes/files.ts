@@ -173,10 +173,16 @@ router.post(
 router.get(
   "/",
   authenticate,
-  validateQuery(paginationSchema),
   asyncHandler(async (req: Request, res: Response) => {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
+    logger.info("Query:", req.query);
+    const result = paginationSchema.safeParse(req.query);
+    if (!result.success) {  
+      return errorResponse(res, "Invalid query parameters", 400);
+    }
+
+    const { page: pageString, limit: limitString } = result.data;
+    const page = parseInt(pageString, 10);
+    const limit = parseInt(limitString, 10);
     const offset = (page - 1) * limit;
 
     // Get files with calculated view counts and share links

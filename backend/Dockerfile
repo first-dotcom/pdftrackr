@@ -51,10 +51,12 @@ COPY --from=builder --chown=pdftrackr:nodejs /app/dist ./dist
 COPY --from=builder --chown=pdftrackr:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=pdftrackr:nodejs /app/package*.json ./
 COPY --from=builder --chown=pdftrackr:nodejs /app/drizzle ./drizzle
+COPY --from=builder --chown=pdftrackr:nodejs /app/../shared ../shared
+COPY --from=builder --chown=pdftrackr:nodejs /app/tsconfig.json ./tsconfig.json
 RUN mkdir -p logs && chown pdftrackr:nodejs logs
 USER pdftrackr
 EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD curl -f http://localhost:3001/health || exit 1
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "dist/index.js"]
+CMD ["node", "dist/app/src/index.js"]

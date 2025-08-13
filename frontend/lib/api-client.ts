@@ -192,7 +192,13 @@ class ApiClient {
 
   // Typed API methods for common operations
   files = {
-    list: (limit?: number) => this.get(`/api/files${limit ? `?limit=${limit}` : ''}`),
+    list: (params?: { page?: number; limit?: number }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      const query = searchParams.toString();
+      return this.get(`/api/files${query ? `?${query}` : ''}`);
+    },
     get: (id: number) => this.get(`/api/files/${id}`),
     upload: (formData: FormData) => this.uploadFile("/api/files/upload", formData),
     delete: (id: number) => this.delete(`/api/files/${id}`),

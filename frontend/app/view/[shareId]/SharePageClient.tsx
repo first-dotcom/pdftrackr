@@ -330,7 +330,7 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
   // Show PDF Viewer once access is granted
   if (accessData && showPDFViewer) {
     return (
-      <ErrorBoundary title="PDF viewer failed to load">
+      <ErrorBoundary>
         <Suspense fallback={
           <div className="min-h-screen bg-gray-50 flex items-center justify-center">
             <div className="text-center">
