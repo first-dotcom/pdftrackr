@@ -87,25 +87,38 @@ export const authenticate = async (req: Request, _res: Response, next: NextFunct
           throw new CustomError("User email not found in Clerk", 400);
         }
 
-        const newUser = await db
-          .insert(users)
-          .values({
-            clerkId: payload.sub,
-            email,
-            firstName: firstName || null,
-            lastName: lastName || null,
-            plan: "free",
-          })
-          .returning();
-
-        if (newUser.length > 0) {
+        // Check if user already exists (race condition protection)
+        const existingUserCheck = await db.select().from(users).where(eq(users.clerkId, payload.sub)).limit(1);
+        
+        if (existingUserCheck.length > 0) {
+          // User was created by another request while we were fetching from Clerk
           req.user = {
-            ...newUser[0],
-            plan: newUser[0].plan as UserPlan,
+            ...existingUserCheck[0],
+            plan: existingUserCheck[0].plan as UserPlan,
           };
-          logger.info("New user created", { email, userId: payload.sub });
+          logger.info("Existing user logged in (race condition)", { email, userId: payload.sub });
         } else {
-          throw new CustomError("Failed to create user account", 500);
+          // Create new user
+          const newUser = await db
+            .insert(users)
+            .values({
+              clerkId: payload.sub,
+              email,
+              firstName: firstName || null,
+              lastName: lastName || null,
+              plan: "free",
+            })
+            .returning();
+
+          if (newUser.length > 0) {
+            req.user = {
+              ...newUser[0],
+              plan: newUser[0].plan as UserPlan,
+            };
+            logger.info("New user created", { email, userId: payload.sub });
+          } else {
+            throw new CustomError("Failed to create user account", 500);
+          }
         }
       } catch (clerkError) {
         logger.error("Failed to fetch user from Clerk", {

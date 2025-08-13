@@ -14,7 +14,7 @@ interface StorageInfo {
 }
 
 export default function StorageUsage() {
-  const { getToken, isLoaded: authLoaded } = useAuth();
+  const { isLoaded: authLoaded } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
   const api = useApi();
   

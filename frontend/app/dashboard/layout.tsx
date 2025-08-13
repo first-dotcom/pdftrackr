@@ -6,6 +6,7 @@ import DashboardSidebar from "@/components/DashboardSidebar";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import FloatingUploadButton from "@/components/FloatingUploadButton";
 import WaitlistModal from "@/components/WaitlistModal";
+
 import { useAuth } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 import { useState, type ReactNode } from "react";
@@ -37,32 +38,32 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <DashboardHeader onMobileMenuClick={handleMobileSidebarOpen} />
-      
-      <div className="flex">
-        {/* Mobile-only sidebar */}
-        <div className="lg:hidden">
-          <DashboardSidebar 
-            isMobileOpen={isMobileSidebarOpen} 
-            onMobileClose={handleMobileSidebarClose} 
-          />
-        </div>
+        <DashboardHeader onMobileMenuClick={handleMobileSidebarOpen} />
         
-        <main className="flex-1 w-full">
-          {/* Intelligent responsive layout */}
-          <div className="flex justify-center">
-            <div className="w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-              <div className="flex gap-8">
-                {/* Main content area */}
-                <div className="flex-1 min-w-0">
-            {/* Breadcrumbs - Only show on mobile for cleaner desktop */}
-            <div className="mb-6 lg:hidden">
-              <Breadcrumbs />
-            </div>
-            <ErrorBoundary>
-              {children}
-            </ErrorBoundary>
-                </div>
+        <div className="flex">
+          {/* Mobile-only sidebar */}
+          <div className="lg:hidden">
+            <DashboardSidebar 
+              isMobileOpen={isMobileSidebarOpen} 
+              onMobileClose={handleMobileSidebarClose} 
+            />
+          </div>
+          
+          <main className="flex-1 w-full">
+            {/* Intelligent responsive layout */}
+            <div className="flex justify-center">
+              <div className="w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                <div className="flex gap-8">
+                  {/* Main content area */}
+                  <div className="flex-1 min-w-0">
+              {/* Breadcrumbs - Only show on mobile for cleaner desktop */}
+              <div className="mb-6 lg:hidden">
+                <Breadcrumbs />
+              </div>
+              <ErrorBoundary>
+                {children}
+              </ErrorBoundary>
+                  </div>
                 
                 {/* Right sidebar for large screens - could be used for ads, quick actions, etc */}
                 <div className="hidden xl:block w-80 flex-shrink-0">

@@ -1,36 +1,44 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { config } from "../config";
-import * as schema from "../models/schema";
 import { logger } from "./logger";
 
-// Create postgres client
+// Create the connection
 const client = postgres(config.database.url, {
-  max: 10,
+  max: 1,
   idle_timeout: 20,
   connect_timeout: 10,
 });
 
-// Create drizzle instance
-export const db = drizzle(client, { schema });
+// Create the database instance
+export const db = drizzle(client);
 
-export async function connectDatabase() {
+// Function to run migrations automatically
+export async function runMigrations() {
   try {
-    // Test the connection
-    await client`SELECT 1`;
-    logger.info("Database connected successfully");
+    logger.info("Running database migrations...");
+    await migrate(db, { migrationsFolder: "./drizzle" });
+    logger.info("Database migrations completed successfully");
   } catch (error) {
-    logger.error("Database connection failed:", error);
+    logger.error("Migration failed:", error);
     throw error;
   }
 }
 
-export async function closeDatabase() {
+// Function to initialize database (run migrations and test connection)
+export async function initializeDatabase() {
   try {
-    await client.end();
-    logger.info("Database connection closed");
+    // Test connection first
+    await client`SELECT 1`;
+    logger.info("Database connection established");
+    
+    // Run migrations
+    await runMigrations();
+    
+    logger.info("Database initialization completed");
   } catch (error) {
-    logger.error("Error closing database connection:", error);
+    logger.error("Database initialization failed:", error);
     throw error;
   }
 }

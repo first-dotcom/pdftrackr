@@ -16,7 +16,7 @@ import { File as FileType, ShareLink } from "@/shared/types";
 export default function FileDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { getToken } = useAuth();
+
   const api = useApi();
   const fileId = params.id as string;
 

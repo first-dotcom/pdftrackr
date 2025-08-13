@@ -31,7 +31,7 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const { getToken } = useAuth();
+
   const api = useApi();
 
   useEffect(() => {

@@ -9,7 +9,7 @@ import { config } from "./config";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
 import { metricsMiddleware } from "./middleware/metrics";
 import { addRequestId, csrfProtection, securityHeaders } from "./middleware/security";
-import { connectDatabase } from "./utils/database";
+import { initializeDatabase } from "./utils/database";
 import { logger } from "./utils/logger";
 import { connectRedis } from "./utils/redis";
 
@@ -258,8 +258,8 @@ app.use(errorHandler);
 
 async function startServer() {
   try {
-    // Connect to databases
-    await connectDatabase();
+    // Initialize database (connect and run migrations)
+    await initializeDatabase();
     await connectRedis();
 
     const port = config.server.port;

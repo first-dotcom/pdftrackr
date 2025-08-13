@@ -62,21 +62,7 @@ export const updateProfileSchema = z.object({
   lastName: nameSchema.optional(),
 });
 
-// Pagination validation
-export const paginationSchema = z.object({
-  page: z.string().optional().refine((val) => {
-    const num = parseInt(val || "1", 10);
-    if (isNaN(num) || num < 1 || num > 1000) {
-      throw new Error("Page must be a number between 1 and 1000");
-    }
-  }).default("1"),
-  limit: z.string().optional().refine((val) => {
-    const num = parseInt(val || "10", 10);
-    if (isNaN(num) || num < 1 || num > 100) {
-      throw new Error("Limit must be a number between 1 and 100");
-    }
-  }).default("10"),
-});
+
 
 // IP address validation
 export const ipAddressSchema = z.string().ip();
@@ -148,13 +134,21 @@ export function getUserData(req: Request) {
 }
 
 /**
- * Safely extract query parameters with defaults
+ * Safely extract and validate query parameters with defaults
  */
 export function getQueryParams(req: Request) {
-  return {
-    page: parseInt((req.query["page"] as string) || "1", 10),
-    limit: parseInt((req.query["limit"] as string) || "10", 10),
-  };
+  const page = parseInt((req.query["page"] as string) || "1", 10);
+  const limit = parseInt((req.query["limit"] as string) || "10", 10);
+  
+  // Validate parsed numbers
+  if (isNaN(page) || page < 1 || page > 1000) {
+    throw new Error("Page must be a number between 1 and 1000");
+  }
+  if (isNaN(limit) || limit < 1 || limit > 100) {
+    throw new Error("Limit must be a number between 1 and 100");
+  }
+  
+  return { page, limit };
 }
 
 /**

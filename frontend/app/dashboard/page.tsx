@@ -52,7 +52,7 @@ export default function DashboardPage() {
   const [_loading, setLoading] = useState(true);
   const [_error, setError] = useState<string | null>(null);
 
-  const { getToken, isLoaded: authLoaded } = useAuth();
+  const { isLoaded: authLoaded } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
   const api = useApi();
 

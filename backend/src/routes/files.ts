@@ -33,7 +33,6 @@ import {
   getQueryParams,
   getUserData,
   getUserId,
-  paginationSchema,
 } from "../utils/validation";
 import { invalidateUserDashboardCache } from "./analytics";
 
@@ -175,15 +174,10 @@ router.get(
   authenticate,
   asyncHandler(async (req: Request, res: Response) => {
     logger.info("Query:", req.query);
-    const result = paginationSchema.safeParse(req.query);
-    if (!result.success) {  
-      return errorResponse(res, "Invalid query parameters", 400);
-    }
-
-    const { page: pageString, limit: limitString } = result.data;
-    const page = parseInt(pageString, 10);
-    const limit = parseInt(limitString, 10);
-    const offset = (page - 1) * limit;
+    
+    try {
+      const { page, limit } = getQueryParams(req);
+      const offset = (page - 1) * limit;
 
     // Get files with calculated view counts and share links
     const userFiles = await db
@@ -263,6 +257,12 @@ router.get(
       .where(eq(files.userId, req.user?.id));
 
     paginatedResponse(res, filesWithShareLinks, page, limit, totalCount[0]?.count || 0);
+    } catch (error) {
+      if (error instanceof Error) {
+        return errorResponse(res, error.message, 400);
+      }
+      return errorResponse(res, "Invalid query parameters", 400);
+    }
   }),
 );
 

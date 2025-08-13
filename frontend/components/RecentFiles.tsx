@@ -20,7 +20,7 @@ interface File {
 }
 
 export default function RecentFiles() {
-  const { getToken, isLoaded: authLoaded } = useAuth();
+  const { isLoaded: authLoaded } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
   const api = useApi();
   

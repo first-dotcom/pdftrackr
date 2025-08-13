@@ -454,7 +454,7 @@ export default function FilesPage() {
   const [deletingFiles, setDeletingFiles] = useState<Set<number>>(new Set());
   const [sharingFiles, setSharingFiles] = useState<Set<number>>(new Set());
 
-  const { getToken, isLoaded: authLoaded } = useAuth();
+  const { isLoaded: authLoaded } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
   const api = useApi();
   const { toasts, removeToast, showError, showSuccess } = useToasts();

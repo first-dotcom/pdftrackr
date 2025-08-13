@@ -29,7 +29,7 @@ export default function UploadPage() {
     filesQuota: number;
   } | null>(null);
   const router = useRouter();
-  const { getToken } = useAuth();
+
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -162,11 +162,6 @@ export default function UploadPage() {
 
   const uploadFile = async (uploadFile: UploadFile) => {
     try {
-      const token = await getToken();
-      if (!token) {
-        throw new Error("Authentication required");
-      }
-
       // Generate CSRF token
       const csrfToken = generateCSRFToken();
       
