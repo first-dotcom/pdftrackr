@@ -129,6 +129,23 @@ export default function SecurePDFViewer({
     };
   }, [sessionData]);
 
+  // Track session end after 30 seconds of viewing (for engagement metrics)
+  useEffect(() => {
+    if (sessionData.totalPages > 0) {
+      // For single-page PDFs, use shorter timer
+      const timerDuration = sessionData.totalPages === 1 ? 10000 : 30000; // 10s for single page, 30s for multi-page
+      console.log(`Setting up ${timerDuration/1000}-second timer for session end (${sessionData.totalPages} pages)`);
+      
+      const timer = setTimeout(() => {
+        console.log(`${timerDuration/1000}-second timer triggered, calling trackSessionEnd`);
+        trackSessionEnd();
+      }, timerDuration);
+
+      return () => clearTimeout(timer);
+    }
+    return undefined; // Explicit return for TypeScript
+  }, [sessionData.totalPages, sessionData.maxPageReached]);
+
   // Initialize PDF URL
   useEffect(() => {
     if (sessionId) {
@@ -187,6 +204,14 @@ export default function SecurePDFViewer({
     // Track initial page view
     trackPageView(1, numPages);
     
+    // For single-page PDFs, trigger session end after a short delay
+    if (numPages === 1) {
+      console.log('Single-page PDF detected, will trigger session end after 5 seconds');
+      setTimeout(() => {
+        trackSessionEnd();
+      }, 5000); // 5 seconds for single-page PDFs
+    }
+    
     onLoadSuccess?.();
   };
 
@@ -214,6 +239,22 @@ export default function SecurePDFViewer({
       const newPage = Math.min(prev + 1, numPages);
       if (newPage !== prev) {
         trackPageView(newPage, numPages);
+        
+        // Track session end when user reaches the last page (completion)
+        if (newPage === numPages) {
+          console.log('Reached last page, triggering session end');
+          setTimeout(() => {
+            trackSessionEnd();
+          }, 1000); // Small delay to ensure page view is tracked first
+        }
+        
+        // Also track session end after viewing 2+ pages (engagement)
+        if (newPage >= 2) {
+          console.log('Viewed 2+ pages, triggering session end');
+          setTimeout(() => {
+            trackSessionEnd();
+          }, 2000);
+        }
       }
       return newPage;
     });

@@ -1,8 +1,9 @@
 import { and, desc, eq, or } from "drizzle-orm";
-import { auditLogs, viewSessions, pageViews } from "../models/schema";
+import { auditLogs, viewSessions, pageViews, files, shareLinks } from "../models/schema";
 import { db } from "../utils/database";
 import { logger } from "../utils/logger";
 import { geolocationService } from "./geolocation";
+import { v4 as uuidv4 } from "uuid";
 
 export interface AuditLogData {
   event: string;
@@ -162,10 +163,51 @@ export class AuditService {
     email?: string;
     page: number;
     totalPages: number;
+    sessionId?: string;
   }) {
+    // Create session if it doesn't exist
+    let sessionId = data.sessionId;
+    if (!sessionId) {
+      sessionId = uuidv4();
+    }
+    
+    // Ensure sessionId is a valid UUID
+    if (sessionId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sessionId)) {
+      sessionId = uuidv4(); // Generate new UUID if invalid
+    }
+    
+    if (sessionId) {
+      try {
+        // Check if session already exists
+        const existingSession = await db
+          .select({ sessionId: viewSessions.sessionId })
+          .from(viewSessions)
+          .where(eq(viewSessions.sessionId, sessionId))
+          .limit(1);
+        
+        if (existingSession.length === 0) {
+          // Create new session
+          await db.insert(viewSessions).values({
+            shareId: data.shareId,
+            sessionId: sessionId,
+            viewerEmail: data.email,
+            ipAddressHash: this.hashIP(data.ip),
+            userAgent: data.userAgent,
+            startedAt: new Date(),
+            lastActiveAt: new Date(),
+            totalDuration: 0,
+            isUnique: true, // We'll determine this later
+            consentGiven: true, // Assuming consent for analytics
+          });
+        }
+      } catch (error) {
+        logger.warn("Failed to create view session", { error, shareId: data.shareId });
+      }
+    }
     const readingDepth = Math.round((data.page / data.totalPages) * 100);
     
-    return this.logEvent({
+    // Store in audit logs for compliance
+    const auditResult = await this.logEvent({
       event: "page_view",
       shareId: data.shareId,
       fileId: data.fileId,
@@ -180,6 +222,24 @@ export class AuditService {
         isCompletion: readingDepth >= 100,
       },
     });
+
+    // ALSO store in analytics tables for dashboard queries
+    if (data.sessionId) {
+      try {
+        // Store page view in analytics table
+        await db.insert(pageViews).values({
+          sessionId: data.sessionId,
+          pageNumber: data.page,
+          viewedAt: new Date(),
+          duration: 0, // Will be updated on session end
+          scrollDepth: 0, // Will be updated if we implement scroll tracking
+        });
+      } catch (error) {
+        logger.warn("Failed to store page view in analytics table", { error, sessionId: data.sessionId });
+      }
+    }
+
+    return auditResult;
   }
 
   async logSessionEnd(data: {
@@ -192,6 +252,7 @@ export class AuditService {
     pagesViewed: number;
     totalPages: number;
     maxPageReached: number;
+    sessionId?: string;
   }) {
     const completionRate = Math.round((data.maxPageReached / data.totalPages) * 100);
     const engagementScore = this.calculateEngagementScore(
@@ -200,7 +261,8 @@ export class AuditService {
       data.totalPages
     );
 
-    return this.logEvent({
+    // Store in audit logs for compliance
+    const auditResult = await this.logEvent({
       event: "session_end",
       shareId: data.shareId,
       fileId: data.fileId,
@@ -219,6 +281,33 @@ export class AuditService {
         readingSpeed: data.durationSeconds > 0 ? Math.round(data.pagesViewed / (data.durationSeconds / 60)) : 0, // pages per minute
       },
     });
+
+    // ALSO update analytics tables for dashboard queries
+    if (data.sessionId) {
+      try {
+        // Update session duration in viewSessions table
+        await db
+          .update(viewSessions)
+          .set({
+            totalDuration: data.durationSeconds,
+            lastActiveAt: new Date(),
+          })
+          .where(eq(viewSessions.sessionId, data.sessionId));
+
+        // Update page view durations (distribute total duration across pages)
+        const avgDurationPerPage = Math.round(data.durationSeconds / data.pagesViewed);
+        await db
+          .update(pageViews)
+          .set({
+            duration: avgDurationPerPage,
+          })
+          .where(eq(pageViews.sessionId, data.sessionId));
+      } catch (error) {
+        logger.warn("Failed to update analytics tables for session end", { error, sessionId: data.sessionId });
+      }
+    }
+
+    return auditResult;
   }
 
   async logReturnVisit(data: {
@@ -244,6 +333,12 @@ export class AuditService {
         visitorType: data.totalVisits === 1 ? "new" : data.totalVisits < 5 ? "returning" : "frequent",
       },
     });
+  }
+
+  // 🔐 UTILITY METHODS
+  private hashIP(ip: string): string {
+    // Simple hash for GDPR compliance - in production use crypto.createHash('sha256')
+    return Buffer.from(ip).toString('base64').substring(0, 64);
   }
 
   // 🧮 ENGAGEMENT CALCULATION
@@ -376,8 +471,15 @@ export class AuditService {
         sessionPageCounts.set(pv.sessionId, Math.max(sessionPageCounts.get(pv.sessionId) || 0, pv.pageNumber));
       });
 
+      // Calculate completion rate: for single-page PDFs, completion = viewed the page
+      // For multi-page PDFs, completion = reached the last page
+      const maxPageViewed = Array.from(sessionPageCounts.values()).reduce((max, page) => Math.max(max, page), 0);
+      const isSinglePage = maxPageViewed <= 1;
+      
       const completionRate = sessions.length > 0
-        ? Math.round((Array.from(sessionPageCounts.values()).filter(maxPage => maxPage >= 3).length / sessions.length) * 100)
+        ? Math.round((Array.from(sessionPageCounts.values()).filter(maxPage => 
+            isSinglePage ? maxPage >= 1 : maxPage >= 3 // For single page: viewed page 1, for multi-page: reached page 3+
+          ).length / sessions.length) * 100)
         : 0;
 
       return {

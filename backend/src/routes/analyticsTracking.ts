@@ -38,6 +38,7 @@ router.post(
         userAgent: req.get('User-Agent') || '',
         page: parseInt(page),
         totalPages: parseInt(totalPages),
+        sessionId: sessionId,
       });
 
       logger.debug(`Page view tracked: ${shareId} page ${page}/${totalPages}`);
@@ -90,6 +91,7 @@ router.post(
         pagesViewed: parseInt(pagesViewed) || 1,
         totalPages: parseInt(totalPages) || 1,
         maxPageReached: parseInt(maxPageReached),
+        sessionId: sessionId,
       });
 
       logger.debug(`Session end tracked: ${shareId} - ${durationSeconds}s, ${maxPageReached}/${totalPages} pages`);
