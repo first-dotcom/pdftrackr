@@ -13,6 +13,7 @@ interface File {
   originalName: string;
   size: number;
   createdAt: string;
+  viewCount: number;
   shareLinks?: Array<{
     viewCount: number;
     uniqueViewCount: number;
@@ -65,9 +66,7 @@ export default function RecentFiles() {
     return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
-  const getTotalViews = (shareLinks: Array<{ viewCount: number }> = []) => {
-    return shareLinks.reduce((total, link) => total + link.viewCount, 0);
-  };
+
 
   // Show loading state while Clerk is initializing
   if (!isReady) {
@@ -239,7 +238,7 @@ export default function RecentFiles() {
                           <div className="flex items-center space-x-4 text-sm text-gray-500">
                             <span className="flex items-center">
                               <Eye className="h-4 w-4 mr-1" aria-hidden="true" />
-                              {getTotalViews(file.shareLinks)} views
+                              {file.viewCount || 0} views
                             </span>
                             <span className="flex items-center">
                               <Calendar className="h-4 w-4 mr-1" aria-hidden="true" />
@@ -253,7 +252,7 @@ export default function RecentFiles() {
                           <span className="font-medium">{formatFileSize(file.size)}</span>
                           <span className="flex items-center">
                             <Eye className="h-4 w-4 mr-1" aria-hidden="true" />
-                            {getTotalViews(file.shareLinks)} views
+                            {file.viewCount || 0} views
                           </span>
                           <span className="flex items-center">
                             <Calendar className="h-4 w-4 mr-1" aria-hidden="true" />
