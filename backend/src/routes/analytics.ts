@@ -88,7 +88,7 @@ router.get(
       })
       .from(viewSessions)
       .where(
-        and(sql`${viewSessions.shareId} = ANY(${shareIds})`, gte(viewSessions.startedAt, start)),
+        and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)),
       );
 
     // Email captures count
@@ -98,7 +98,7 @@ router.get(
       })
       .from(emailCaptures)
       .where(
-        and(sql`${emailCaptures.shareId} = ANY(${shareIds})`, gte(emailCaptures.capturedAt, start)),
+        and(inArray(emailCaptures.shareId, shareIds), gte(emailCaptures.capturedAt, start)),
       );
 
     // Views over time (daily breakdown)
@@ -110,7 +110,7 @@ router.get(
       })
       .from(viewSessions)
       .where(
-        and(sql`${viewSessions.shareId} = ANY(${shareIds})`, gte(viewSessions.startedAt, start)),
+        and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)),
       )
       .groupBy(sql`DATE(${viewSessions.startedAt})`)
       .orderBy(sql`DATE(${viewSessions.startedAt})`);
@@ -123,7 +123,7 @@ router.get(
       })
       .from(viewSessions)
       .where(
-        and(sql`${viewSessions.shareId} = ANY(${shareIds})`, gte(viewSessions.startedAt, start)),
+        and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)),
       )
       .groupBy(viewSessions.country)
       .orderBy(desc(sql<number>`COUNT(*)`))
@@ -137,7 +137,7 @@ router.get(
       })
       .from(viewSessions)
       .where(
-        and(sql`${viewSessions.shareId} = ANY(${shareIds})`, gte(viewSessions.startedAt, start)),
+        and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)),
       )
       .groupBy(viewSessions.device)
       .orderBy(desc(sql<number>`COUNT(*)`))
@@ -151,7 +151,7 @@ router.get(
       })
       .from(viewSessions)
       .where(
-        and(sql`${viewSessions.shareId} = ANY(${shareIds})`, gte(viewSessions.startedAt, start)),
+        and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)),
       )
       .groupBy(viewSessions.referer)
       .orderBy(desc(sql<number>`COUNT(*)`))
@@ -168,7 +168,7 @@ router.get(
       .from(pageViews)
       .innerJoin(viewSessions, eq(pageViews.sessionId, viewSessions.sessionId))
       .where(
-        and(sql`${viewSessions.shareId} = ANY(${shareIds})`, gte(viewSessions.startedAt, start)),
+        and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)),
       )
       .groupBy(pageViews.pageNumber)
       .orderBy(pageViews.pageNumber);
@@ -238,7 +238,7 @@ router.get(
 
     // Cache key based on user and time range
     const cacheKey = `dashboard:${userId}:${days}d`;
-    const CACHE_TTL = 300; // 5 minutes
+    const CACHE_TTL = 60; // 1 minute (reduced for more responsive updates)
 
     try {
       // Try to get cached data first
@@ -289,7 +289,7 @@ router.get(
         .from(viewSessions)
         .where(
           and(
-            sql`${viewSessions.shareId} = ANY(${shareIds})`,
+            inArray(viewSessions.shareId, shareIds),
             gte(viewSessions.startedAt, startDate)
           )
         ) : [{ totalViews: 0, totalUniqueViews: 0, totalDuration: 0, avgDuration: 0 }];
@@ -302,7 +302,7 @@ router.get(
         .from(emailCaptures)
         .where(
           and(
-            sql`${emailCaptures.shareId} = ANY(${shareIds})`,
+            inArray(emailCaptures.shareId, shareIds),
             gte(emailCaptures.capturedAt, startDate)
           )
         ) : [{ emailCaptures: 0 }];
@@ -383,7 +383,7 @@ router.get(
         .from(viewSessions)
         .where(
           and(
-            sql`${viewSessions.shareId} = ANY(${shareIds})`,
+            inArray(viewSessions.shareId, shareIds),
             gte(viewSessions.startedAt, startDate)
           )
         )
