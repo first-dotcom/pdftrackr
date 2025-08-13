@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useApi } from "@/hooks/useApi";
 import { HardDrive, TrendingUp, FileText, AlertCircle } from "lucide-react";
+import { formatFileSize, getStorageColor, calculatePercentage } from "@/utils/formatters";
 
 interface StorageInfo {
   storageUsed: number;
@@ -70,34 +71,12 @@ export default function StorageUsage() {
     }
   };
 
-  const formatBytes = (bytes: number) => {
-    if (bytes === 0) {
-      return "0 Bytes";
-    }
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
-  };
 
-  const storagePercentage =
-    storage.storageQuota > 0 ? (storage.storageUsed / storage.storageQuota) * 100 : 0;
-  const filesPercentage =
-    storage.filesQuota === -1
-      ? 0
-      : storage.filesQuota > 0
-        ? (storage.filesCount / storage.filesQuota) * 100
-        : 0;
 
-  const getProgressBarColor = (percentage: number) => {
-    if (percentage >= 90) {
-      return "bg-gradient-to-r from-red-500 to-red-600";
-    }
-    if (percentage >= 75) {
-      return "bg-gradient-to-r from-yellow-500 to-yellow-600";
-    }
-    return "bg-gradient-to-r from-primary-500 to-primary-600";
-  };
+  const storagePercentage = calculatePercentage(storage.storageUsed, storage.storageQuota);
+  const filesPercentage = storage.filesQuota === -1 
+    ? 0 
+    : calculatePercentage(storage.filesCount, storage.filesQuota);
 
   // Show loading state while Clerk is initializing
   if (!isReady) {
@@ -192,18 +171,18 @@ export default function StorageUsage() {
             </div>
             <div className="text-right">
               <p className="text-sm sm:text-base font-semibold text-gray-900">
-                {formatBytes(storage.storageUsed)}
+                {formatFileSize(storage.storageUsed)}
               </p>
               <p className="text-xs sm:text-sm text-gray-500">
-                of {formatBytes(storage.storageQuota)}
+                of {formatFileSize(storage.storageQuota)}
               </p>
             </div>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
             <div
-              className={`h-3 rounded-full transition-all duration-500 ease-out shadow-sm ${getProgressBarColor(
-                storagePercentage,
-              )}`}
+                              className={`h-3 rounded-full transition-all duration-500 ease-out shadow-sm ${getStorageColor(
+                  storagePercentage,
+                )}`}
               style={{ width: `${Math.min(storagePercentage, 100)}%` }}
             />
           </div>
@@ -212,7 +191,7 @@ export default function StorageUsage() {
               {storagePercentage.toFixed(1)}% used
             </p>
             <p className="text-xs sm:text-sm text-gray-500">
-              {formatBytes(storage.storageQuota - storage.storageUsed)} remaining
+                              {formatFileSize(storage.storageQuota - storage.storageUsed)} remaining
             </p>
           </div>
         </div>
@@ -242,9 +221,9 @@ export default function StorageUsage() {
             <>
               <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                 <div
-                  className={`h-3 rounded-full transition-all duration-500 ease-out shadow-sm ${getProgressBarColor(
-                    filesPercentage,
-                  )}`}
+                                  className={`h-3 rounded-full transition-all duration-500 ease-out shadow-sm ${getStorageColor(
+                  filesPercentage,
+                )}`}
                   style={{ width: `${Math.min(filesPercentage, 100)}%` }}
                 />
               </div>
