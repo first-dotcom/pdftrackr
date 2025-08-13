@@ -186,7 +186,7 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
     });
 
     try {
-      const scanResult = await pdfScanner.scanPDF(file.path, fileId);
+      const scanResult = await pdfScanner.scanPDF(file.buffer, fileId);
 
       // Log scan result
       await auditService.logVirusScan({

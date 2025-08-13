@@ -116,9 +116,17 @@ class ClamAVScanner {
 }
 
 // PDF Structure validation
-export const validatePDFStructure = (filePath: string) => {
+export const validatePDFStructure = (input: string | Buffer) => {
   try {
-    const buffer = fs.readFileSync(filePath);
+    let buffer: Buffer;
+    
+    if (typeof input === 'string') {
+      // Input is a file path
+      buffer = fs.readFileSync(input);
+    } else {
+      // Input is already a buffer
+      buffer = input;
+    }
 
     // Check PDF header
     if (!buffer.slice(0, 4).equals(Buffer.from("%PDF"))) {
@@ -164,7 +172,7 @@ class PDFScanningService {
     this.clamAV = new ClamAVScanner();
   }
 
-  async scanPDF(filePath: string, fileId: string) {
+  async scanPDF(input: string | Buffer, fileId: string) {
     const scanResult = {
       fileId,
       scannedAt: new Date(),
@@ -179,7 +187,7 @@ class PDFScanningService {
       logger.info(`Starting comprehensive scan for file: ${fileId}`);
 
       // Step 1: Basic PDF structure validation
-      const structureCheck = validatePDFStructure(filePath);
+      const structureCheck = validatePDFStructure(input);
       scanResult.riskLevel = structureCheck.riskLevel as 'low' | 'medium' | 'high' | 'unknown';
 
       if (!structureCheck.isValid) {
@@ -194,21 +202,27 @@ class PDFScanningService {
         );
       }
 
-      // Step 2: ClamAV virus scan
-      const isAvailable = await this.clamAV.isAvailable();
+      // Step 2: ClamAV virus scan (only if we have a file path)
+      if (typeof input === 'string') {
+        const isAvailable = await this.clamAV.isAvailable();
 
-      if (isAvailable) {
-        const clamResult = await this.clamAV.scanFile(filePath);
-        scanResult.scanners.push("ClamAV");
+        if (isAvailable) {
+          const clamResult = await this.clamAV.scanFile(input);
+          scanResult.scanners.push("ClamAV");
 
-        if (!clamResult.isClean) {
-          scanResult.threats.push(`ClamAV: ${clamResult.virusName || "Unknown threat"}`);
-          return scanResult;
+          if (!clamResult.isClean) {
+            scanResult.threats.push(`ClamAV: ${clamResult.virusName || "Unknown threat"}`);
+            return scanResult;
+          }
+        } else {
+          logger.warn("ClamAV is not available - file uploaded without virus scan");
+          scanResult.scanners.push("Structure-only");
+          scanResult.error = "ClamAV unavailable";
         }
       } else {
-        logger.warn("ClamAV is not available - file uploaded without virus scan");
+        // Buffer input - skip ClamAV scan
+        logger.info("Buffer input detected - skipping ClamAV scan");
         scanResult.scanners.push("Structure-only");
-        scanResult.error = "ClamAV unavailable";
       }
 
       // All checks passed
