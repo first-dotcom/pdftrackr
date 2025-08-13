@@ -51,16 +51,28 @@ export default function SimpleStats({ userId }: SimpleStatsProps) {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="animate-pulse">
-            <div className="card">
-              <div className="card-body p-6">
-                <div className="h-16 bg-gray-200 rounded"></div>
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900">Overview</h2>
+          <p className="mt-1 text-gray-600">Your document sharing statistics</p>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="animate-pulse">
+              <div className="card">
+                <div className="card-body p-4 sm:p-6">
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-gray-200 rounded-lg flex-shrink-0"></div>
+                    <div className="ml-4 flex-1">
+                      <div className="h-8 bg-gray-200 rounded w-20 mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-16"></div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     );
   }
@@ -74,25 +86,33 @@ export default function SimpleStats({ userId }: SimpleStatsProps) {
       label: 'Total Files',
       value: stats.totalFiles.toLocaleString(),
       icon: FileText,
-      color: 'text-blue-600',
+      bgGradient: 'from-blue-50 to-blue-100',
+      borderColor: 'border-blue-200',
+      iconColor: 'text-blue-600',
     },
     {
       label: 'Total Views',
       value: stats.totalViews.toLocaleString(),
       icon: Eye,
-      color: 'text-green-600',
+      bgGradient: 'from-green-50 to-green-100',
+      borderColor: 'border-green-200',
+      iconColor: 'text-green-600',
     },
     {
       label: 'Share Links',
       value: stats.totalShares.toLocaleString(),
       icon: Share2,
-      color: 'text-purple-600',
+      bgGradient: 'from-purple-50 to-purple-100',
+      borderColor: 'border-purple-200',
+      iconColor: 'text-purple-600',
     },
     {
       label: 'Avg View Time',
       value: stats.avgViewTime > 0 ? `${stats.avgViewTime}m` : '-',
       icon: Clock,
-      color: 'text-orange-600',
+      bgGradient: 'from-orange-50 to-orange-100',
+      borderColor: 'border-orange-200',
+      iconColor: 'text-orange-600',
     },
   ];
 
@@ -105,17 +125,22 @@ export default function SimpleStats({ userId }: SimpleStatsProps) {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-6">
         {statItems.map((item) => (
-          <div key={item.label} className="card">
-            <div className="card-body p-6">
+          <div 
+            key={item.label} 
+            className="card hover:shadow-md transition-shadow duration-200 cursor-pointer"
+          >
+            <div className="card-body p-4 sm:p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <item.icon className={`h-8 w-8 ${item.color}`} />
+                  <div className={`w-12 h-12 bg-gradient-to-br ${item.bgGradient} rounded-lg flex items-center justify-center border ${item.borderColor}`}>
+                    <item.icon className={`h-6 w-6 ${item.iconColor}`} />
+                  </div>
                 </div>
-                <div className="ml-4">
-                  <p className="text-2xl font-bold text-gray-900">
+                <div className="ml-4 flex-1 min-w-0">
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 truncate">
                     {item.value}
                   </p>
-                  <p className="text-sm text-gray-500">{item.label}</p>
+                  <p className="text-sm text-gray-600 font-medium truncate">{item.label}</p>
                 </div>
               </div>
             </div>
