@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Home } from "lucide-react";
 import { useApi } from "@/hooks/useApi";
 
 interface BreadcrumbsProps {
@@ -82,19 +82,36 @@ export default function Breadcrumbs({ fileName }: BreadcrumbsProps) {
   }
 
   return (
-    <nav className="flex items-center space-x-1 text-sm text-gray-500 mb-4">
-      {breadcrumbs.map((breadcrumb, index) => (
-        <div key={breadcrumb.href} className="flex items-center">
-          {index > 0 && <ChevronRight className="h-4 w-4 mx-1" />}
-          {breadcrumb.current ? (
-            <span className="text-gray-900 font-medium">{breadcrumb.name}</span>
-          ) : (
-            <Link href={breadcrumb.href} className="hover:text-gray-700 hover:underline">
-              {breadcrumb.name}
-            </Link>
-          )}
-        </div>
-      ))}
+    <nav className="bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-3 sm:p-4 mb-6 shadow-sm">
+      <div className="flex items-center space-x-1 sm:space-x-2 text-sm sm:text-base text-gray-600 overflow-x-auto">
+        {breadcrumbs.map((breadcrumb, index) => (
+          <div key={breadcrumb.href} className="flex items-center flex-shrink-0">
+            {index > 0 && (
+              <ChevronRight className="h-4 w-4 mx-1 sm:mx-2 text-gray-400 flex-shrink-0" />
+            )}
+            {breadcrumb.current ? (
+              <span className="text-gray-900 font-semibold px-2 py-1 rounded-md bg-white shadow-sm border border-gray-200">
+                {index === 0 && <Home className="h-4 w-4 inline mr-1" />}
+                <span className="hidden sm:inline">{breadcrumb.name}</span>
+                <span className="sm:hidden">
+                  {breadcrumb.name.length > 12 ? breadcrumb.name.substring(0, 12) + "..." : breadcrumb.name}
+                </span>
+              </span>
+            ) : (
+              <Link 
+                href={breadcrumb.href} 
+                className="px-2 py-1 rounded-md hover:bg-white hover:text-gray-900 hover:shadow-sm border border-transparent hover:border-gray-200 transition-all duration-200 font-medium"
+              >
+                {index === 0 && <Home className="h-4 w-4 inline mr-1" />}
+                <span className="hidden sm:inline">{breadcrumb.name}</span>
+                <span className="sm:hidden">
+                  {breadcrumb.name.length > 12 ? breadcrumb.name.substring(0, 12) + "..." : breadcrumb.name}
+                </span>
+              </Link>
+            )}
+          </div>
+        ))}
+      </div>
     </nav>
   );
 }
