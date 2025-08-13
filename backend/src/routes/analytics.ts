@@ -307,6 +307,20 @@ router.get(
           )
         ) : [{ emailCaptures: 0 }];
 
+      // Get total share links count
+      const shareLinksCount = await db
+        .select({
+          totalShares: sql<number>`COUNT(DISTINCT ${shareLinks.id})`,
+        })
+        .from(files)
+        .innerJoin(
+          shareLinks,
+          and(
+            eq(files.id, shareLinks.fileId),
+            eq(files.userId, userId)
+          ),
+        );
+
       const stats = {
         totalFiles: fileCount[0]?.totalFiles || 0,
         totalViews: viewStats[0]?.totalViews || 0,
@@ -314,6 +328,7 @@ router.get(
         totalDuration: viewStats[0]?.totalDuration || 0,
         avgDuration: viewStats[0]?.avgDuration || 0,
         emailCaptures: emailStats[0]?.emailCaptures || 0,
+        totalShares: shareLinksCount[0]?.totalShares || 0,
       };
 
       // Get recent views (last 5)
@@ -407,6 +422,7 @@ router.get(
         totalDuration: Number(stats?.totalDuration) || 0,
         avgDuration: Math.round(Number(stats?.avgDuration) || 0),
         emailCaptures: Number(stats?.emailCaptures) || 0,
+        totalShares: Number(stats?.totalShares) || 0,
         recentViews,
         topFiles,
         viewsByDay,
@@ -432,6 +448,7 @@ router.get(
         totalDuration: 0,
         avgDuration: 0,
         emailCaptures: 0,
+        totalShares: 0,
         recentViews: [],
         topFiles: [],
         viewsByDay: [],

@@ -198,14 +198,7 @@ export default function FileDetailPage() {
               </div>
             </div>
             <div className="card-body">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="flex items-center space-x-3">
-                  <Eye className="h-5 w-5 text-gray-400" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{file.viewCount}</p>
-                    <p className="text-xs text-gray-500">Total Views</p>
-                  </div>
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex items-center space-x-3">
                   <Calendar className="h-5 w-5 text-gray-400" />
                   <div>
