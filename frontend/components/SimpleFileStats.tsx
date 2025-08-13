@@ -36,7 +36,7 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
           totalViews: data.totalViews || 0,
           uniqueViewers: data.uniqueViewers || 0,
           completionRate: data.completionRate || 0,
-          avgViewTime: Math.round((data.avgSessionDuration || 0) / 60), // Convert seconds to minutes
+          avgViewTime: data.avgSessionDuration || 0, // Keep in seconds for better precision
         });
       } else {
         setError('Failed to load file stats');
@@ -119,7 +119,7 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
     },
     {
       label: 'Avg View Time',
-      value: stats.avgViewTime > 0 ? `${stats.avgViewTime}m` : '-',
+      value: stats.avgViewTime > 0 ? `${stats.avgViewTime}s` : '-',
       icon: Clock,
       bgGradient: 'from-orange-50 to-orange-100',
       borderColor: 'border-orange-200',
