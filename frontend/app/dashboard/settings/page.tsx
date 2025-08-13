@@ -1,8 +1,6 @@
 "use client";
 
-import { config } from "@/lib/config";
-import { useAuth } from "@clerk/nextjs";
-import { Bell, CreditCard, Download, Shield, Trash2, User } from "lucide-react";
+import { Bell, Download, Shield, Trash2, User, HardDrive, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useApi } from "@/hooks/useApi";
 
@@ -101,13 +99,23 @@ export default function SettingsPage() {
     return (settings.storage.used / settings.storage.limit) * 100;
   };
 
+  const getProgressBarColor = (percentage: number) => {
+    if (percentage >= 90) {
+      return "bg-gradient-to-r from-red-500 to-red-600";
+    }
+    if (percentage >= 75) {
+      return "bg-gradient-to-r from-yellow-500 to-yellow-600";
+    }
+    return "bg-gradient-to-r from-primary-500 to-primary-600";
+  };
+
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div className="card animate-pulse">
-          <div className="card-body">
-            <div className="h-4 bg-gray-200 rounded w-1/3 mb-4" />
-            <div className="space-y-3">
+          <div className="card-body p-4 sm:p-6">
+            <div className="h-6 bg-gray-200 rounded w-1/3 mb-4" />
+            <div className="space-y-4">
               {[...Array(5)].map((_, i) => (
                 <div key={`skeleton-${i}`} className="h-4 bg-gray-200 rounded" />
               ))}
@@ -120,12 +128,12 @@ export default function SettingsPage() {
 
   if (!settings) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div className="card">
-          <div className="card-body text-center py-12">
-            <User className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">Settings Unavailable</h3>
-            <p className="mt-2 text-gray-600">Unable to load your settings at this time.</p>
+          <div className="card-body p-4 sm:p-6 text-center py-12">
+            <User className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-400" />
+            <h3 className="mt-4 text-lg sm:text-xl font-medium text-gray-900">Settings Unavailable</h3>
+            <p className="mt-2 text-sm sm:text-base text-gray-600">Unable to load your settings at this time.</p>
           </div>
         </div>
       </div>
@@ -133,32 +141,38 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Account Information */}
       <div className="card">
         <div className="card-header">
-          <h3 className="text-lg font-medium text-gray-900 flex items-center">
-            <User className="mr-2 h-5 w-5" />
+          <h3 className="text-base sm:text-lg font-medium text-gray-900 flex items-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg flex items-center justify-center border border-blue-200 mr-3">
+              <User className="h-4 w-4 text-blue-600" />
+            </div>
             Account Information
           </h3>
+          <p className="mt-1 text-sm text-gray-500">Manage your account details and preferences</p>
         </div>
-        <div className="card-body space-y-4">
+        <div className="card-body p-4 sm:p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
             <input
               type="email"
               value={settings.email}
               disabled
-              className="input mt-1 w-full bg-gray-50"
+              className="input w-full bg-gray-50 cursor-not-allowed"
+              placeholder="your@email.com"
             />
+            <p className="text-xs text-gray-500 mt-1">Email address cannot be changed</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Display Name</label>
             <input
               type="text"
               value={settings.name}
               onChange={(e) => updateSettings({ name: e.target.value })}
-              className="input mt-1 w-full"
+              className="input w-full"
+              placeholder="Enter your display name"
             />
           </div>
         </div>
@@ -167,30 +181,43 @@ export default function SettingsPage() {
       {/* Storage Usage */}
       <div className="card">
         <div className="card-header">
-          <h3 className="text-lg font-medium text-gray-900 flex items-center">
-            <CreditCard className="mr-2 h-5 w-5" />
+          <h3 className="text-base sm:text-lg font-medium text-gray-900 flex items-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-green-50 to-green-100 rounded-lg flex items-center justify-center border border-green-200 mr-3">
+              <HardDrive className="h-4 w-4 text-green-600" />
+            </div>
             Storage & Plan
           </h3>
+          <p className="mt-1 text-sm text-gray-500">Monitor your storage usage and plan details</p>
         </div>
-        <div className="card-body space-y-4">
+        <div className="card-body p-4 sm:p-6 space-y-4">
           <div>
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-gray-700">Storage Used</span>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm font-semibold text-gray-900">
                 {formatStorage(settings.storage.used)} / {formatStorage(settings.storage.limit)}
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
               <div
-                className="bg-primary-600 h-2 rounded-full transition-all duration-300"
+                className={`h-2.5 rounded-full transition-all duration-500 ease-out shadow-sm ${getProgressBarColor(getStoragePercentage())}`}
                 style={{ width: `${Math.min(getStoragePercentage(), 100)}%` }}
               />
             </div>
-            <p className="text-xs text-gray-500 mt-1">
-              {settings.storage.plan.charAt(0).toUpperCase() + settings.storage.plan.slice(1)} Plan
-            </p>
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-xs text-gray-500">
+                {getStoragePercentage().toFixed(1)}% used
+              </p>
+              <p className="text-xs font-medium text-gray-700 capitalize">
+                {settings.storage.plan} Plan
+              </p>
+            </div>
           </div>
-          <button type="button" className="btn-outline btn-sm">
+          <button 
+            type="button" 
+            className="btn-outline btn-md w-full sm:w-auto flex items-center justify-center"
+            onClick={() => document.getElementById("waitlist-modal")?.classList.remove("hidden")}
+          >
+            <TrendingUp className="h-4 w-4 mr-2" />
             Upgrade Plan
           </button>
         </div>
@@ -199,14 +226,17 @@ export default function SettingsPage() {
       {/* Notifications */}
       <div className="card">
         <div className="card-header">
-          <h3 className="text-lg font-medium text-gray-900 flex items-center">
-            <Bell className="mr-2 h-5 w-5" />
+          <h3 className="text-base sm:text-lg font-medium text-gray-900 flex items-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg flex items-center justify-center border border-purple-200 mr-3">
+              <Bell className="h-4 w-4 text-purple-600" />
+            </div>
             Notifications
           </h3>
+          <p className="mt-1 text-sm text-gray-500">Configure how you receive notifications</p>
         </div>
-        <div className="card-body space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
+        <div className="card-body p-4 sm:p-6 space-y-4">
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div className="flex-1">
               <p className="text-sm font-medium text-gray-700">Email Notifications</p>
               <p className="text-xs text-gray-500">Receive notifications via email</p>
             </div>
@@ -225,8 +255,8 @@ export default function SettingsPage() {
             </label>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div className="flex-1">
               <p className="text-sm font-medium text-gray-700">New View Notifications</p>
               <p className="text-xs text-gray-500">Notify when someone views your files</p>
             </div>
@@ -250,14 +280,17 @@ export default function SettingsPage() {
       {/* Privacy & Data */}
       <div className="card">
         <div className="card-header">
-          <h3 className="text-lg font-medium text-gray-900 flex items-center">
-            <Shield className="mr-2 h-5 w-5" />
+          <h3 className="text-base sm:text-lg font-medium text-gray-900 flex items-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg flex items-center justify-center border border-orange-200 mr-3">
+              <Shield className="h-4 w-4 text-orange-600" />
+            </div>
             Privacy & Data
           </h3>
+          <p className="mt-1 text-sm text-gray-500">Control your privacy settings and data collection</p>
         </div>
-        <div className="card-body space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
+        <div className="card-body p-4 sm:p-6 space-y-4">
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div className="flex-1">
               <p className="text-sm font-medium text-gray-700">Track Analytics</p>
               <p className="text-xs text-gray-500">Collect viewer analytics for your files</p>
             </div>
@@ -277,7 +310,7 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Data Retention</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Data Retention Period</label>
             <select
               value={settings.privacy.dataRetention}
               onChange={(e) =>
@@ -300,38 +333,44 @@ export default function SettingsPage() {
       {/* Data Management */}
       <div className="card">
         <div className="card-header">
-          <h3 className="text-lg font-medium text-gray-900 flex items-center">
-            <Download className="mr-2 h-5 w-5" />
+          <h3 className="text-base sm:text-lg font-medium text-gray-900 flex items-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-red-50 to-red-100 rounded-lg flex items-center justify-center border border-red-200 mr-3">
+              <Download className="h-4 w-4 text-red-600" />
+            </div>
             Data Management
           </h3>
+          <p className="mt-1 text-sm text-gray-500">Export your data or manage your account</p>
         </div>
-        <div className="card-body space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
+        <div className="card-body p-4 sm:p-6 space-y-4">
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div className="flex-1">
               <p className="text-sm font-medium text-gray-700">Export My Data</p>
               <p className="text-xs text-gray-500">Download all your data in JSON format</p>
             </div>
-            <button type="button" className="btn-outline btn-sm">
+            <button type="button" className="btn-outline btn-md flex items-center">
+              <Download className="h-4 w-4 mr-2" />
               Export
             </button>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-700">Delete My Account</p>
-              <p className="text-xs text-gray-500">Permanently delete your account and all data</p>
+          <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-red-700">Delete My Account</p>
+              <p className="text-xs text-red-600">Permanently delete your account and all data</p>
             </div>
-            <button type="button" className="btn-outline btn-sm text-red-600 hover:text-red-700">
-              <Trash2 className="mr-1 h-4 w-4" />
+            <button type="button" className="btn-outline btn-md text-red-600 hover:text-red-700 border-red-300 hover:border-red-400 hover:bg-red-50 flex items-center">
+              <Trash2 className="h-4 w-4 mr-2" />
               Delete
             </button>
           </div>
         </div>
       </div>
 
+      {/* Save Status */}
       {saving && (
-        <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg">
-          Settings saved!
+        <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+          Saving settings...
         </div>
       )}
     </div>

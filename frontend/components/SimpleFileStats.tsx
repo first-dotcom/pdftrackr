@@ -52,9 +52,19 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
     return (
       <div className="space-y-4">
         <div className="h-6 bg-gray-200 rounded w-1/3 animate-pulse"></div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-6">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-20 bg-gray-200 rounded animate-pulse"></div>
+            <div key={i} className="card animate-pulse">
+              <div className="card-body p-4 sm:p-6">
+                <div className="flex items-center">
+                  <div className="w-12 h-12 bg-gray-200 rounded-lg flex-shrink-0"></div>
+                  <div className="ml-4 flex-1">
+                    <div className="h-8 bg-gray-200 rounded w-20 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-16"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       </div>
@@ -70,9 +80,11 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
     return (
       <div className="card">
         <div className="card-body p-6 text-center">
-          <Eye className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No views yet</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <div className="mx-auto w-24 h-24 bg-gradient-to-br from-gray-50 to-gray-100 rounded-full flex items-center justify-center mb-6">
+            <Eye className="h-12 w-12 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No views yet</h3>
+          <p className="text-gray-500 mb-8 max-w-sm mx-auto">
             Share this document to start tracking views.
           </p>
         </div>
@@ -85,25 +97,33 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
       label: 'Views',
       value: stats.totalViews.toLocaleString(),
       icon: Eye,
-      color: 'text-blue-600',
+      bgGradient: 'from-blue-50 to-blue-100',
+      borderColor: 'border-blue-200',
+      iconColor: 'text-blue-600',
     },
     {
       label: 'Unique Viewers',
       value: stats.uniqueViewers.toLocaleString(),
       icon: Users,
-      color: 'text-green-600',
+      bgGradient: 'from-green-50 to-green-100',
+      borderColor: 'border-green-200',
+      iconColor: 'text-green-600',
     },
     {
       label: 'Completion Rate',
       value: `${stats.completionRate}%`,
       icon: CheckCircle,
-      color: 'text-purple-600',
+      bgGradient: 'from-purple-50 to-purple-100',
+      borderColor: 'border-purple-200',
+      iconColor: 'text-purple-600',
     },
     {
       label: 'Avg View Time',
       value: stats.avgViewTime > 0 ? `${stats.avgViewTime}m` : '-',
       icon: Clock,
-      color: 'text-orange-600',
+      bgGradient: 'from-orange-50 to-orange-100',
+      borderColor: 'border-orange-200',
+      iconColor: 'text-orange-600',
     },
   ];
 
@@ -118,19 +138,24 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
         </p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-6">
         {statItems.map((item) => (
-          <div key={item.label} className="card">
-            <div className="card-body p-4">
+          <div 
+            key={item.label} 
+            className="card hover:shadow-md transition-shadow duration-200 cursor-pointer"
+          >
+            <div className="card-body p-4 sm:p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <item.icon className={`h-6 w-6 ${item.color}`} />
+                  <div className={`w-12 h-12 bg-gradient-to-br ${item.bgGradient} rounded-lg flex items-center justify-center border ${item.borderColor}`}>
+                    <item.icon className={`h-6 w-6 ${item.iconColor}`} />
+                  </div>
                 </div>
-                <div className="ml-3">
-                  <p className="text-xl font-bold text-gray-900">
+                <div className="ml-4 flex-1 min-w-0">
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 truncate">
                     {item.value}
                   </p>
-                  <p className="text-xs text-gray-500">{item.label}</p>
+                  <p className="text-sm text-gray-600 font-medium truncate">{item.label}</p>
                 </div>
               </div>
             </div>
