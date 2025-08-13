@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { FileText, Eye, Share2, Clock } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
+import { formatViewTime } from '@/utils/formatters';
 
 interface SimpleStats {
   totalFiles: number;
@@ -37,7 +38,7 @@ export default function SimpleStats({ userId }: SimpleStatsProps) {
           totalFiles: data.totalFiles || 0,
           totalViews: data.totalViews || 0,
           totalShares: data.totalShares || 0,
-          avgViewTime: Math.round((data.avgDuration || 0) / 60), // Convert seconds to minutes
+          avgViewTime: data.avgDuration || 0, // Keep in seconds for better precision
         });
       } else {
         setError('Failed to load stats');
@@ -108,7 +109,7 @@ export default function SimpleStats({ userId }: SimpleStatsProps) {
     },
     {
       label: 'Avg View Time',
-      value: stats.avgViewTime > 0 ? `${stats.avgViewTime}m` : '-',
+      value: stats.avgViewTime > 0 ? formatViewTime(stats.avgViewTime) : '-',
       icon: Clock,
       bgGradient: 'from-orange-50 to-orange-100',
       borderColor: 'border-orange-200',

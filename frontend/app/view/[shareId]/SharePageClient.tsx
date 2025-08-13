@@ -2,6 +2,7 @@
 
 import { config } from "@/lib/config";
 import { useApi } from "@/hooks/useApi";
+import { formatFileSize } from "@/utils/formatters";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { lazy, Suspense } from "react";
 
@@ -172,15 +173,7 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
     }
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) {
-      return "0 Bytes";
-    }
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
-  };
+
 
   if (loading) {
     return (

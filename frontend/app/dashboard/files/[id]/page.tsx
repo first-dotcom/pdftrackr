@@ -8,6 +8,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ShareLinkModal from "@/components/ShareLinkModal";
 import { useApi } from "@/hooks/useApi";
+import { formatFileSize } from "@/utils/formatters";
 import SimpleFileStats from "@/components/SimpleFileStats";
 import { File as FileType, ShareLink } from "@/shared/types";
 
@@ -218,7 +219,7 @@ export default function FileDetailPage() {
                   <Download className="h-5 w-5 text-gray-400" />
                   <div>
                     <p className="text-sm font-medium text-gray-900">
-                      {(file.size / 1024 / 1024).toFixed(2)} MB
+                      {formatFileSize(file.size)}
                     </p>
                     <p className="text-xs text-gray-500">File Size</p>
                   </div>

@@ -3,6 +3,7 @@
 import { Bell, Download, Shield, Trash2, User, HardDrive, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useApi } from "@/hooks/useApi";
+import { formatFileSize, getProgressColor, calculatePercentage } from "@/utils/formatters";
 
 interface UserSettings {
   email: string;
@@ -87,27 +88,7 @@ export default function SettingsPage() {
     }
   };
 
-  const formatStorage = (bytes: number) => {
-    const mb = bytes / (1024 * 1024);
-    return `${mb.toFixed(1)} MB`;
-  };
 
-  const getStoragePercentage = () => {
-    if (!settings) {
-      return 0;
-    }
-    return (settings.storage.used / settings.storage.limit) * 100;
-  };
-
-  const getProgressBarColor = (percentage: number) => {
-    if (percentage >= 90) {
-      return "bg-gradient-to-r from-red-500 to-red-600";
-    }
-    if (percentage >= 75) {
-      return "bg-gradient-to-r from-yellow-500 to-yellow-600";
-    }
-    return "bg-gradient-to-r from-primary-500 to-primary-600";
-  };
 
   if (loading) {
     return (
@@ -194,18 +175,18 @@ export default function SettingsPage() {
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-gray-700">Storage Used</span>
               <span className="text-sm font-semibold text-gray-900">
-                {formatStorage(settings.storage.used)} / {formatStorage(settings.storage.limit)}
+                {formatFileSize(settings.storage.used)} / {formatFileSize(settings.storage.limit)}
               </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
               <div
-                className={`h-2.5 rounded-full transition-all duration-500 ease-out shadow-sm ${getProgressBarColor(getStoragePercentage())}`}
-                style={{ width: `${Math.min(getStoragePercentage(), 100)}%` }}
+                className={`h-2.5 rounded-full transition-all duration-500 ease-out shadow-sm ${getProgressColor(calculatePercentage(settings.storage.used, settings.storage.limit))}`}
+                style={{ width: `${Math.min(calculatePercentage(settings.storage.used, settings.storage.limit), 100)}%` }}
               />
             </div>
             <div className="flex items-center justify-between mt-2">
               <p className="text-xs text-gray-500">
-                {getStoragePercentage().toFixed(1)}% used
+                {calculatePercentage(settings.storage.used, settings.storage.limit).toFixed(1)}% used
               </p>
               <p className="text-xs font-medium text-gray-700 capitalize">
                 {settings.storage.plan} Plan

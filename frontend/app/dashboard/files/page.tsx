@@ -24,6 +24,7 @@ import Link from "next/link";
 import React, { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import type { File } from "@/shared/types";
 import { useApi } from "@/hooks/useApi";
+import { formatFileSize } from "@/utils/formatters";
 
 const FILES_PER_PAGE = 20;
 
@@ -48,13 +49,7 @@ const FileCard = React.memo(function FileCard({
   const [showActions, setShowActions] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const formatFileSize = useCallback((bytes: number) => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
-  }, []);
+
 
   const getActiveShareLinks = useCallback((shareLinks: Array<{ isActive: boolean }> = []) => {
     return shareLinks.filter((link) => link.isActive).length;

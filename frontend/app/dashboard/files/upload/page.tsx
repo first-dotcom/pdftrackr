@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type React from "react";
 import { useCallback, useEffect, useState } from "react";
 import { useApi } from "@/hooks/useApi";
+import { formatFileSize, getProgressColor, calculatePercentage } from "@/utils/formatters";
 
 interface UploadFile {
   file: File;
@@ -241,15 +242,7 @@ export default function UploadPage() {
     }
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) {
-      return "0 Bytes";
-    }
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
-  };
+
 
   const getStatusIcon = (status: UploadFile["status"]) => {
     switch (status) {
@@ -266,15 +259,7 @@ export default function UploadPage() {
     }
   };
 
-  const getProgressBarColor = (percentage: number) => {
-    if (percentage >= 90) {
-      return "bg-red-500";
-    }
-    if (percentage >= 75) {
-      return "bg-yellow-500";
-    }
-    return "bg-primary-600";
-  };
+
 
   const pendingFiles = files.filter((f) => f.status === "pending").length;
   const successFiles = files.filter((f) => f.status === "success").length;
@@ -312,19 +297,19 @@ export default function UploadPage() {
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                     <div
-                      className={`h-2.5 rounded-full transition-all duration-500 ease-out ${getProgressBarColor(
-                        (userQuotas.storageUsed / userQuotas.storageQuota) * 100
+                      className={`h-2.5 rounded-full transition-all duration-500 ease-out ${getProgressColor(
+                        calculatePercentage(userQuotas.storageUsed, userQuotas.storageQuota)
                       )}`}
                       style={{
                         width: `${Math.min(
-                          (userQuotas.storageUsed / userQuotas.storageQuota) * 100,
+                          calculatePercentage(userQuotas.storageUsed, userQuotas.storageQuota),
                           100,
                         )}%`,
                       }}
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    {((userQuotas.storageUsed / userQuotas.storageQuota) * 100).toFixed(1)}% used
+                    {calculatePercentage(userQuotas.storageUsed, userQuotas.storageQuota).toFixed(1)}% used
                   </p>
                 </div>
                 <div>
@@ -338,25 +323,25 @@ export default function UploadPage() {
                     <>
                       <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                         <div
-                          className={`h-2.5 rounded-full transition-all duration-500 ease-out ${getProgressBarColor(
-                            (userQuotas.filesCount / userQuotas.filesQuota) * 100
+                          className={`h-2.5 rounded-full transition-all duration-500 ease-out ${getProgressColor(
+                            calculatePercentage(userQuotas.filesCount, userQuotas.filesQuota)
                           )}`}
                           style={{
                             width: `${Math.min(
-                              (userQuotas.filesCount / userQuotas.filesQuota) * 100,
+                              calculatePercentage(userQuotas.filesCount, userQuotas.filesQuota),
                               100,
                             )}%`,
                           }}
                         />
                       </div>
                       <p className="text-xs text-gray-500 mt-1">
-                        {((userQuotas.filesCount / userQuotas.filesQuota) * 100).toFixed(1)}% used
+                        {calculatePercentage(userQuotas.filesCount, userQuotas.filesQuota).toFixed(1)}% used
                       </p>
                     </>
                   )}
                 </div>
               </div>
-              {(userQuotas.storageUsed / userQuotas.storageQuota) * 100 > 80 && (
+              {calculatePercentage(userQuotas.storageUsed, userQuotas.storageQuota) > 80 && (
                 <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                   <p className="text-sm text-red-700 flex items-center">
                     <AlertCircle className="h-4 w-4 mr-2" />

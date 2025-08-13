@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import SkeletonLoader from "@/components/SkeletonLoader";
 import { useApi } from "@/hooks/useApi";
+import { formatViewTime } from "@/utils/formatters";
 
 interface DashboardData {
   totalFiles: number;
@@ -88,14 +89,7 @@ export default function DashboardPage() {
     }
   };
 
-  const formatDuration = (seconds: number) => {
-    if (seconds === 0) {
-      return "—"; // Show dash when no duration is tracked
-    }
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
-  };
+
 
   const formatNumber = (num: number | string | undefined | null) => {
     if (num === undefined || num === null) {
@@ -215,7 +209,7 @@ export default function DashboardPage() {
                         {view.viewerName || view.viewerEmail || "Anonymous"}
                       </div>
                       <div className="text-xs text-gray-500 truncate">
-                        {formatDuration(view.totalDuration)} • {view.city || view.country || "Unknown location"}
+                        {formatViewTime(view.totalDuration)} • {view.city || view.country || "Unknown location"}
                       </div>
                     </div>
                   </div>
