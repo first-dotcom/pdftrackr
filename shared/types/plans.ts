@@ -1,57 +1,91 @@
 // Plan Types
-export type UserPlan = "free" | "pro" | "business";
-export type WaitlistPlan = "pro" | "business" | "either";
+export type UserPlan = "free" | "starter" | "pro" | "business";
+export type WaitlistPlan = "starter" | "pro" | "business" | "either";
 
 // Plan Hierarchy for permission checking
-export const planHierarchy = { free: 0, pro: 1, business: 2 } as const;
+export const planHierarchy = { free: 0, starter: 1, pro: 2, business: 3 } as const;
 
 // Quota Configuration - Single source of truth for both frontend and backend
 export const planQuotas = {
   free: {
-    // Competitive with Papermark Free
-    storage: 500 * 1024 * 1024, // 500MB (more generous)
-    fileCount: 25, // 25 files vs Papermark's 50 documents
+    storage: 500 * 1024 * 1024, // 500MB
+    fileCount: 25, // 25 files
     fileSize: 10 * 1024 * 1024, // 10MB per file
-    shareLinks: 25, // 25 share links vs Papermark's 50
+    shareLinks: 25, // 25 share links
     analyticsRetention: 30, // 30 days
-    teamMembers: 1,
-    customBranding: false,
     passwordProtection: true,
-    emailRequired: true,
+    emailGating: true,
+    downloadControl: true,
+    virusScanning: true,
+    linkExpiration: true,
+    fullAnalytics: true,
+    // Paid plan extras
+    emailNotifications: false,
+    customBranding: false,
+    prioritySupport: false,
+    apiAccess: false,
+    bulkOperations: false,
+    exportAnalytics: false,
+  },
+  starter: {
+    storage: 2 * 1024 * 1024 * 1024, // 2GB
+    fileCount: 100, // 100 files
+    fileSize: 25 * 1024 * 1024, // 25MB per file
+    shareLinks: 100, // 100 share links
+    analyticsRetention: 30, // 30 days
+    passwordProtection: true,
+    emailGating: true,
+    downloadControl: true,
+    virusScanning: true,
+    linkExpiration: true,
+    fullAnalytics: true,
+    // Paid plan extras
+    emailNotifications: true,
+    customBranding: false,
+    prioritySupport: false,
+    apiAccess: false,
+    bulkOperations: false,
+    exportAnalytics: false,
   },
   pro: {
-    // Competitive pricing: $19/month (vs Papermark €24)
-    storage: 5 * 1024 * 1024 * 1024, // 5GB
-    fileCount: 200, // 200 files vs Papermark's 100
-    fileSize: 50 * 1024 * 1024, // 50MB per file (large uploads)
+    storage: 10 * 1024 * 1024 * 1024, // 10GB
+    fileCount: 500, // 500 files
+    fileSize: 50 * 1024 * 1024, // 50MB per file
     shareLinks: -1, // unlimited share links
-    analyticsRetention: 365, // 1 year
-    teamMembers: 1,
-    customBranding: true,
+    analyticsRetention: 30, // 30 days
     passwordProtection: true,
-    emailRequired: true,
-    folderOrganization: true,
-    removeBranding: true,
+    emailGating: true,
+    downloadControl: true,
+    virusScanning: true,
+    linkExpiration: true,
+    fullAnalytics: true,
+    // Paid plan extras
+    emailNotifications: true,
+    customBranding: false,
+    prioritySupport: false,
+    apiAccess: false,
+    bulkOperations: true,
+    exportAnalytics: true,
   },
   business: {
-    // Competitive pricing: $49/month (vs Papermark €59)
-    storage: 25 * 1024 * 1024 * 1024, // 25GB
+    storage: 50 * 1024 * 1024 * 1024, // 50GB
     fileCount: -1, // unlimited files
     fileSize: 100 * 1024 * 1024, // 100MB per file
     shareLinks: -1, // unlimited
-    analyticsRetention: 730, // 2 years
-    teamMembers: 5, // 5 team members vs Papermark's 3
-    customBranding: true,
+    analyticsRetention: 30, // 30 days
     passwordProtection: true,
-    emailRequired: true,
-    emailVerification: true,
-    folderOrganization: true,
-    removeBranding: true,
-    allowBlockList: true,
-    screenshotProtection: true,
-    customDomain: true,
-    webhooks: true,
+    emailGating: true,
+    downloadControl: true,
+    virusScanning: true,
+    linkExpiration: true,
+    fullAnalytics: true,
+    // Paid plan extras
+    emailNotifications: true,
+    customBranding: true,
     prioritySupport: true,
+    apiAccess: true,
+    bulkOperations: true,
+    exportAnalytics: true,
   },
 } as const;
 

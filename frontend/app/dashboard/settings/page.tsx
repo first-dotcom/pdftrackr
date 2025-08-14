@@ -4,6 +4,7 @@ import { Bell, Download, Shield, Trash2, User, HardDrive, TrendingUp } from "luc
 import { useEffect, useState } from "react";
 import { useApi } from "@/hooks/useApi";
 import { formatFileSize, getProgressColor, calculatePercentage } from "@/utils/formatters";
+import { planQuotas } from "@/shared/types";
 
 interface UserSettings {
   email: string;
@@ -61,7 +62,7 @@ export default function SettingsPage() {
           },
           storage: {
             used: 0,
-            limit: 500 * 1024 * 1024, // 500MB
+            limit: planQuotas.free.storage, // Use shared plan quotas
             plan: "free",
           },
         });

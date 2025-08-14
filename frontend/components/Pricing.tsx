@@ -6,20 +6,22 @@ import WaitlistModal from "./WaitlistModal";
 
 const plans = [
   {
-    name: "Free Forever",
+    name: "Free",
     price: "$0",
     description: "Everything you need to get started",
     features: [
       "500MB storage space",
       "Up to 25 PDF files",
-      "25 share links per file",
+      "25 share links",
       "10MB max file size",
       "Password protection",
       "Email gating",
-      "Full analytics for 30 days",
-      "Watermarking",
+      "Link expiration",
       "Download control",
       "Virus scanning",
+      "Full analytics (30 days)",
+      "Page-by-page tracking",
+      "Geography & device analytics",
     ],
     cta: "Get Started Free",
     href: "/sign-up",
@@ -29,43 +31,63 @@ const plans = [
     badgeColor: "bg-green-100 text-green-800",
   },
   {
-    name: "Pro",
-    price: "$19",
-    description: "For professionals who need more resources",
+    name: "Starter",
+    price: "$4",
+    description: "Perfect for individuals and small projects",
     features: [
       "Everything in Free, plus:",
-      "5GB storage",
-      "200 files",
+      "2GB storage space",
+      "Up to 100 PDF files",
+      "100 share links",
+      "25MB max file size",
+      "Email notifications",
+    ],
+    cta: "Get Started",
+    href: "/sign-up",
+    featured: false,
+    available: true,
+    badge: "POPULAR",
+    badgeColor: "bg-blue-100 text-blue-800",
+  },
+  {
+    name: "Pro",
+    price: "$9",
+    description: "For professionals who need more resources",
+    features: [
+      "Everything in Starter, plus:",
+      "10GB storage space",
+      "Up to 500 PDF files",
       "Unlimited share links",
       "50MB max file size",
-      "Priority support",
+      "Bulk operations",
+      "Export analytics",
     ],
-    cta: "Join Waitlist",
-    href: "#waitlist",
+    cta: "Get Started",
+    href: "/sign-up",
     featured: false,
-    available: false,
-    badge: "Coming Q1 2025",
-    badgeColor: "bg-gray-100 text-gray-800",
+    available: true,
+    badge: "PRO",
+    badgeColor: "bg-purple-100 text-purple-800",
   },
   {
     name: "Business",
-    price: "$49",
-    description: "For teams and growing businesses",
+    price: "$19",
+    description: "For growing businesses and power users",
     features: [
       "Everything in Pro, plus:",
-      "25GB storage",
-      "Unlimited files",
+      "50GB storage space",
+      "Unlimited PDF files",
       "100MB max file size",
-      "Team collaboration",
       "Custom branding",
+      "Priority support",
       "API access",
     ],
-    cta: "Join Waitlist",
-    href: "#waitlist",
+    cta: "Get Started",
+    href: "/sign-up",
     featured: false,
-    available: false,
-    badge: "Coming Q1 2025",
-    badgeColor: "bg-gray-100 text-gray-800",
+    available: true,
+    badge: "BUSINESS",
+    badgeColor: "bg-orange-100 text-orange-800",
   },
 ];
 
@@ -82,7 +104,7 @@ export default function Pricing() {
           </p>
         </div>
 
-        <div className="mt-12 space-y-4 sm:mt-16 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-6 lg:max-w-4xl lg:mx-auto xl:max-w-none xl:grid-cols-3">
+        <div className="mt-12 space-y-4 sm:mt-16 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-6 lg:max-w-6xl lg:mx-auto xl:max-w-none xl:grid-cols-4">
           {plans.map((plan) => (
             <div
               key={plan.name}
@@ -144,9 +166,50 @@ export default function Pricing() {
 
         {/* Additional Note */}
         <div className="mt-12 text-center">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 mb-4">
             All plans include secure hosting, GDPR compliance, and automatic backups
           </p>
+          <div className="bg-gray-50 rounded-lg p-6 max-w-4xl mx-auto">
+            <h4 className="text-sm font-medium text-gray-900 mb-3">All Plans Include:</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm text-gray-600">
+              <div className="flex items-center">
+                <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                Full analytics (views, time, completion rate)
+              </div>
+              <div className="flex items-center">
+                <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                Password protection
+              </div>
+              <div className="flex items-center">
+                <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                Link expiration
+              </div>
+              <div className="flex items-center">
+                <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                Email gating
+              </div>
+              <div className="flex items-center">
+                <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                Download control
+              </div>
+              <div className="flex items-center">
+                <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                Virus scanning
+              </div>
+              <div className="flex items-center">
+                <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                30-day analytics history
+              </div>
+              <div className="flex items-center">
+                <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                Geography & device tracking
+              </div>
+              <div className="flex items-center">
+                <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                Page-by-page analytics
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <WaitlistModal />

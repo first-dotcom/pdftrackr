@@ -2,28 +2,34 @@ import { Briefcase, Users, Laptop, GraduationCap } from "lucide-react";
 
 const useCases = [
   {
-    icon: Briefcase,
-    title: "Sales Teams",
-    description: "Track proposal engagement and know when prospects are most interested",
-    benefits: ["See when clients open proposals", "Track time spent on pricing pages", "Get notified of repeat views"],
+    title: "Sales Professionals",
+    description: "Share proposals and contracts securely with real-time tracking",
+    icon: "📊",
   },
   {
-    icon: Users,
-    title: "HR Departments", 
-    description: "Monitor candidate document reviews and streamline hiring",
-    benefits: ["Verify candidates reviewed materials", "Track offer letter views", "Ensure policy acknowledgment"],
+    title: "Legal Professionals", 
+    description: "Send confidential documents with password protection and audit trails",
+    icon: "⚖️",
   },
   {
-    icon: Laptop,
-    title: "Freelancers",
-    description: "Ensure clients read contracts and track project documents",
-    benefits: ["Confirm contract reviews", "Share portfolios securely", "Build email lists from viewers"],
+    title: "HR Departments",
+    description: "Distribute employee documents with email capture and analytics",
+    icon: "👥",
   },
   {
-    icon: GraduationCap,
+    title: "Marketing Teams",
+    description: "Track engagement on whitepapers and case studies",
+    icon: "📈",
+  },
+  {
+    title: "Consultants",
+    description: "Deliver reports with professional branding and insights",
+    icon: "💼",
+  },
+  {
     title: "Educators",
-    description: "See student engagement with course materials",
-    benefits: ["Track reading completion", "Identify struggling students", "Measure material effectiveness"],
+    description: "Share course materials with student progress tracking",
+    icon: "🎓",
   },
 ];
 
@@ -39,27 +45,19 @@ export default function UseCases() {
             Perfect For Every Professional
           </p>
           <p className="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
-            See how different teams use PDFTrackr to share documents smarter
+            See how different professionals use PDFTrackr to share documents smarter
           </p>
         </div>
 
         <div className="mt-10">
-          <div className="space-y-10 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-x-8 md:gap-y-10">
+          <div className="space-y-10 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-x-8 md:gap-y-10">
             {useCases.map((useCase) => (
               <div key={useCase.title} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-center h-12 w-12 rounded-md bg-primary-100 text-primary-600 mb-4">
-                  <useCase.icon className="h-6 w-6" aria-hidden="true" />
+                <div className="flex items-center justify-center h-12 w-12 rounded-md bg-primary-100 text-primary-600 mb-4 text-2xl">
+                  {useCase.icon}
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">{useCase.title}</h3>
-                <p className="text-sm text-gray-500 mb-4">{useCase.description}</p>
-                <ul className="space-y-2">
-                  {useCase.benefits.map((benefit, index) => (
-                    <li key={index} className="flex items-start">
-                      <span className="text-primary-600 mr-2">•</span>
-                      <span className="text-sm text-gray-600">{benefit}</span>
-                    </li>
-                  ))}
-                </ul>
+                <p className="text-sm text-gray-500">{useCase.description}</p>
               </div>
             ))}
           </div>

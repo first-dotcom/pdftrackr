@@ -23,11 +23,11 @@ export const users = pgTable(
     email: varchar("email", { length: 255 }).notNull().unique(),
     firstName: varchar("first_name", { length: 100 }),
     lastName: varchar("last_name", { length: 100 }),
-    plan: varchar("plan", { length: 20 }).notNull().default("free"), // free, pro, team
+    plan: varchar("plan", { length: 20 }).notNull().default("free"), // free, starter, pro, business
     storageUsed: bigint("storage_used", { mode: "number" }).notNull().default(0),
     filesCount: integer("files_count").notNull().default(0),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
   (table) => ({
     clerkIdIdx: uniqueIndex("users_clerk_id_idx").on(table.clerkId),
@@ -270,14 +270,13 @@ export const waitlist = pgTable(
   {
     id: serial("id").primaryKey(),
     email: varchar("email", { length: 255 }).notNull().unique(),
-    plan: varchar("plan", { length: 20 }).notNull(), // pro, team, either
-    source: varchar("source", { length: 100 }), // pricing-page, dashboard, etc.
+    plan: varchar("plan", { length: 20 }).notNull(), // starter, pro, business, either
+    source: varchar("source", { length: 100 }),
     ipAddress: varchar("ip_address", { length: 45 }),
     userAgent: text("user_agent"),
-    referer: text("referer"),
-    notified: boolean("notified").notNull().default(false), // when we launch plans
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    referer: varchar("referer", { length: 500 }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
   (table) => ({
     emailIdx: uniqueIndex("waitlist_email_idx").on(table.email),

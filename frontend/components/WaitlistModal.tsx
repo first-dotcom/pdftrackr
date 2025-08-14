@@ -7,7 +7,7 @@ import { sanitizeUserInput } from "@/utils/security";
 
 export default function WaitlistModal() {
   const [email, setEmail] = useState("");
-  const [plan, setPlan] = useState("pro");
+  const [plan, setPlan] = useState("starter");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -55,7 +55,7 @@ export default function WaitlistModal() {
   const closeModal = () => {
     document.getElementById("waitlist-modal")?.classList.add("hidden");
     setEmail("");
-    setPlan("pro");
+    setPlan("starter");
     setSubmitted(false);
     setError("");
   };
@@ -81,7 +81,7 @@ export default function WaitlistModal() {
       <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 id="waitlist-modal-title" className="text-lg font-semibold text-gray-900">
-            Join the Waitlist
+            Get Started Today
           </h2>
           <button
             type="button"
@@ -98,7 +98,7 @@ export default function WaitlistModal() {
             <div className="flex items-center p-4 bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg border border-primary-200">
               <Bell className="h-5 w-5 text-primary-600 mr-3 flex-shrink-0" />
               <p className="text-sm text-primary-700 font-medium">
-                Be the first to know when premium plans launch!
+                Choose your plan and start sharing documents securely!
               </p>
             </div>
 
@@ -126,19 +126,20 @@ export default function WaitlistModal() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Interested Plan
+                  Preferred Plan
                 </label>
                 <select
                   value={plan}
                   onChange={(e) => setPlan(e.target.value)}
                   className="input w-full"
                 >
-                  <option value="pro">Pro Plan ($19/month)</option>
-                  <option value="business">Business Plan ($49/month)</option>
+                  <option value="starter">Starter Plan ($4/month)</option>
+                  <option value="pro">Pro Plan ($9/month)</option>
+                  <option value="business">Business Plan ($19/month)</option>
                   <option value="either">Either plan</option>
                 </select>
                 <p className="text-xs text-gray-500 mt-1">
-                  We'll notify you when your preferred plan becomes available
+                  We'll help you choose the best plan for your needs
                 </p>
               </div>
 
@@ -158,10 +159,10 @@ export default function WaitlistModal() {
                   {loading ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Joining...
+                      Processing...
                     </>
                   ) : (
-                    "Join Waitlist"
+                    "Get Started"
                   )}
                 </button>
               </div>
@@ -174,10 +175,10 @@ export default function WaitlistModal() {
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                You're on the list!
+                Thank you!
               </h3>
               <p className="text-gray-600 mb-4">
-                We'll email you as soon as premium plans are available.
+                We'll be in touch soon to help you get started with PDFTrackr.
               </p>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-500">

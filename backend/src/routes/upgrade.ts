@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { authenticate } from "../middleware/auth";
 import { CustomError, asyncHandler } from "../middleware/errorHandler";
+import { logger } from "../utils/logger";
 
 const router: Router = Router();
 
@@ -16,19 +17,26 @@ router.post(
   }),
 );
 
-router.get(
-  "/plans",
-  asyncHandler(async (_req, res) => {
+// Get available plans
+router.get("/plans", async (req, res) => {
+  try {
+    const plans = {
+      available: ["free", "starter", "pro", "business"] as const,
+      coming_soon: [] as const,
+      current_plan: "free" as const, // This will be updated based on user's actual plan
+    };
+
     res.json({
       success: true,
-      data: {
-        available: ["free"],
-        coming_soon: ["pro", "team"],
-        message:
-          "Premium plans are currently under development. Join our waitlist to be notified when they launch!",
-      },
+      data: plans,
     });
-  }),
-);
+  } catch (error) {
+    logger.error("Failed to get plans:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to get plans",
+    });
+  }
+});
 
 export default router;

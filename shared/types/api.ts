@@ -1,3 +1,5 @@
+import type { UserPlan, WaitlistPlan } from "./plans";
+
 // Shared API Types for Backend-Frontend Communication
 
 // Base API Response Structure
@@ -70,13 +72,10 @@ export interface ShareLink {
 
 // User Types
 export interface User {
-  id: number;
-  clerkId: string;
+  id: string;
   email: string;
-  firstName: string | null;
-  lastName: string | null;
-  avatarUrl: string | null;
-  plan: "free" | "pro" | "business";
+  name: string;
+  plan: UserPlan;
   storageUsed: number;
   filesCount: number;
   createdAt: string;
@@ -133,20 +132,16 @@ export interface StorageInfo {
   filesCount: number;
   storageQuota: number;
   filesQuota: number;
-  plan: "free" | "pro" | "business";
+  plan: UserPlan;
 }
 
 // Waitlist Types
 export interface WaitlistEntry {
   id: number;
   email: string;
-  plan: "pro" | "business" | "either";
-  source: string | null;
-  ipAddress: string | null;
-  userAgent: string | null;
-  referer: string | null;
+  plan: WaitlistPlan;
+  source: string;
   createdAt: string;
-  updatedAt: string;
 }
 
 // API Endpoint Response Types
@@ -203,4 +198,21 @@ export interface PaginationQuery {
 // Analytics Query Types
 export interface AnalyticsQuery extends PaginationQuery {
   days?: number;
+}
+
+export interface UserProfile {
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    plan: "free" | "starter" | "pro" | "business";
+    storageUsed: number;
+    filesCount: number;
+    createdAt: string;
+    updatedAt: string;
+  };
+  quotas: {
+    storage: number;
+    fileCount: number;
+  };
 }

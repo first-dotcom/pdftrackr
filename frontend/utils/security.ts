@@ -4,7 +4,7 @@
  */
 
 import { z } from "zod";
-import { waitlistPlanSchema } from "./validation";
+import { waitlistPlanSchema, validatePlan } from "./validation";
 
 // Zod schemas for robust validation
 export const emailSchema = z.string().email().max(254);
@@ -28,14 +28,8 @@ export const validateEmail = (email: string): { valid: boolean; error?: string }
   }
 };
 
-export const validatePlan = (plan: string): { valid: boolean; error?: string } => {
-  try {
-    planSchema.parse(plan);
-    return { valid: true };
-  } catch (_error) {
-    return { valid: false, error: "Invalid plan selection" };
-  }
-};
+// Re-export validatePlan from validation.ts to avoid duplication
+export { validatePlan };
 
 // Simple XSS protection for user-generated content
 export const sanitizeHtml = (input: string): string => {
