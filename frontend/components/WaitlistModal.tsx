@@ -81,7 +81,7 @@ export default function WaitlistModal() {
       <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 id="waitlist-modal-title" className="text-lg font-semibold text-gray-900">
-            Get Started Today
+            Join the Waitlist
           </h2>
           <button
             type="button"
@@ -98,7 +98,7 @@ export default function WaitlistModal() {
             <div className="flex items-center p-4 bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg border border-primary-200">
               <Bell className="h-5 w-5 text-primary-600 mr-3 flex-shrink-0" />
               <p className="text-sm text-primary-700 font-medium">
-                Choose your plan and start sharing documents securely!
+                Be the first to know when paid plans launch in Q3 2025!
               </p>
             </div>
 
@@ -126,7 +126,7 @@ export default function WaitlistModal() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Preferred Plan
+                  Interested Plan
                 </label>
                 <select
                   value={plan}
@@ -139,7 +139,7 @@ export default function WaitlistModal() {
                   <option value="either">Either plan</option>
                 </select>
                 <p className="text-xs text-gray-500 mt-1">
-                  We'll help you choose the best plan for your needs
+                  We'll notify you when your preferred plan becomes available
                 </p>
               </div>
 
@@ -162,7 +162,7 @@ export default function WaitlistModal() {
                       Processing...
                     </>
                   ) : (
-                    "Get Started"
+                    "Join Waitlist"
                   )}
                 </button>
               </div>
@@ -175,10 +175,10 @@ export default function WaitlistModal() {
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Thank you!
+                You're on the list!
               </h3>
               <p className="text-gray-600 mb-4">
-                We'll be in touch soon to help you get started with PDFTrackr.
+                We'll email you when paid plans launch in Q3 2025.
               </p>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-500">

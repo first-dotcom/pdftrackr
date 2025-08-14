@@ -26,7 +26,7 @@ export default function Hero() {
                   onClick={() => document.getElementById("waitlist-modal")?.classList.remove("hidden")}
                   className="text-primary-600 hover:text-primary-700 underline"
                 >
-                  Join the waitlist for Pro plans launching Q1 2025
+                  Join the waitlist for Pro plans launching Q3 2025
                 </button>
               </p>
 
