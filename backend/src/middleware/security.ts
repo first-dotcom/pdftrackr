@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import type { NextFunction, Request, Response } from "express";
 import { logger } from "../utils/logger";
 import { CustomError } from "./errorHandler";
+import { getFileSizeLimit } from "../../../shared/types";
 
 // Verify Clerk webhook signature
 export const verifyClerkWebhook = (req: Request, _res: Response, next: NextFunction) => {
@@ -70,7 +71,7 @@ export const validateFileUpload = (req: Request, _res: Response, next: NextFunct
   }
 
   // Check file size (this is also handled by multer, but double-check)
-  const maxSize = 50 * 1024 * 1024; // 50MB
+  const maxSize = getFileSizeLimit("business"); // Use business plan limit as max
   if (file.size > maxSize) {
     throw new CustomError("File too large", 400);
   }

@@ -214,5 +214,6 @@ export interface UserProfile {
   quotas: {
     storage: number;
     fileCount: number;
+    fileSize: number;
   };
 }

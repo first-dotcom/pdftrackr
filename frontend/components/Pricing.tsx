@@ -3,6 +3,7 @@
 import { Check } from "lucide-react";
 import Link from "next/link";
 import WaitlistModal from "./WaitlistModal";
+import { getFileSizeLimitDisplay } from "@/shared/types";
 
 const plans = [
   {
@@ -13,7 +14,7 @@ const plans = [
       "500MB storage space",
       "Up to 25 PDF files",
       "25 share links",
-      "10MB max file size",
+      `${getFileSizeLimitDisplay("free")} max file size`,
       "Password protection",
       "Email gating",
       "Link expiration",
@@ -39,7 +40,7 @@ const plans = [
       "2GB storage space",
       "Up to 100 PDF files",
       "100 share links",
-      "25MB max file size",
+      `${getFileSizeLimitDisplay("starter")} max file size`,
       "Email notifications",
     ],
     cta: "Join Waitlist",
@@ -58,7 +59,7 @@ const plans = [
       "10GB storage space",
       "Up to 500 PDF files",
       "Unlimited share links",
-      "50MB max file size",
+      `${getFileSizeLimitDisplay("pro")} max file size`,
       "Bulk operations",
       "Export analytics",
     ],
@@ -77,7 +78,7 @@ const plans = [
       "Everything in Pro, plus:",
       "50GB storage space",
       "Unlimited PDF files",
-      "100MB max file size",
+      `${getFileSizeLimitDisplay("business")} max file size`,
       "Custom branding",
       "Priority support",
       "API access",

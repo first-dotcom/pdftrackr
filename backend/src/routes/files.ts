@@ -35,6 +35,7 @@ import {
   getUserId,
 } from "../utils/validation";
 import { invalidateUserDashboardCache } from "./analytics";
+import { getFileSizeLimit } from "../../../shared/types";
 
 const router: Router = Router();
 
@@ -42,7 +43,7 @@ const router: Router = Router();
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB max (will be checked against plan limits)
+    fileSize: getFileSizeLimit("business"), // Use business plan limit as max
   },
   fileFilter: (_req, file, cb) => {
     if (file.mimetype === "application/pdf") {

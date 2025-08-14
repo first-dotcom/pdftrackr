@@ -7,6 +7,8 @@ import type React from "react";
 import { useCallback, useEffect, useState } from "react";
 import { useApi } from "@/hooks/useApi";
 import { formatFileSize, getProgressColor, calculatePercentage } from "@/utils/formatters";
+import type { UserProfile } from "@/shared/types";
+import { getFileSizeLimit } from "@/shared/types";
 
 interface UploadFile {
   file: File;
@@ -21,38 +23,26 @@ export default function UploadPage() {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [userQuotas, setUserQuotas] = useState<{
-    storageUsed: number;
-    storageQuota: number;
-    filesCount: number;
-    filesQuota: number;
-  } | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const router = useRouter();
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
-  // Fetch user quotas on component mount
+  // Fetch user profile on component mount
   useEffect(() => {
-    const fetchUserQuotas = async () => {
+    const fetchUserProfile = async () => {
       try {
         const response = await api.users.profile();
 
         if (response.success && response.data) {
-          const userData = (response.data as any).user;
-          const quotas = (response.data as any).quotas;
-          setUserQuotas({
-            storageUsed: userData.storageUsed,
-            storageQuota: quotas.storage,
-            filesCount: userData.filesCount,
-            filesQuota: quotas.fileCount,
-          });
+          setUserProfile(response.data as UserProfile);
         }
       } catch (error) {
-        console.error("Failed to fetch user quotas:", error);
+        console.error("Failed to fetch user profile:", error);
       }
     };
 
-    fetchUserQuotas();
+    fetchUserProfile();
   }, [api]);
 
   const validateFile = useCallback(
@@ -62,30 +52,37 @@ export default function UploadPage() {
         return "Only PDF files are allowed";
       }
 
-      // Check file size (10MB limit)
-      const maxSize = 10 * 1024 * 1024; // 10MB
-      if (file.size > maxSize) {
-        return "File size must be less than 10MB";
+      // Check file size against user's plan limit
+      if (userProfile) {
+        if (file.size > userProfile.quotas.fileSize) {
+          return `File size must be less than ${formatFileSize(userProfile.quotas.fileSize)}`;
+        }
+      } else {
+        // Fallback to a reasonable limit while profile is loading
+        const fallbackLimit = getFileSizeLimit("free"); // Use free plan limit as fallback
+        if (file.size > fallbackLimit) {
+          return `File size must be less than ${formatFileSize(fallbackLimit)} (loading plan limits...)`;
+        }
       }
 
       // Check user quotas if available
-      if (userQuotas) {
+      if (userProfile) {
         // Check storage quota
-        if (userQuotas.storageUsed + file.size > userQuotas.storageQuota) {
+        if (userProfile.user.storageUsed + file.size > userProfile.quotas.storage) {
           return `Upload would exceed storage quota (${formatFileSize(
-            userQuotas.storageUsed,
-          )} / ${formatFileSize(userQuotas.storageQuota)})`;
+            userProfile.user.storageUsed,
+          )} / ${formatFileSize(userProfile.quotas.storage)})`;
         }
 
         // Check file count quota (if not unlimited)
-        if (userQuotas.filesQuota !== -1 && userQuotas.filesCount >= userQuotas.filesQuota) {
-          return `Upload would exceed file count limit (${userQuotas.filesCount} / ${userQuotas.filesQuota})`;
+        if (userProfile.quotas.fileCount !== -1 && userProfile.user.filesCount >= userProfile.quotas.fileCount) {
+          return `Upload would exceed file count limit (${userProfile.user.filesCount} / ${userProfile.quotas.fileCount})`;
         }
       }
 
       return null;
     },
-    [userQuotas],
+    [userProfile],
   );
 
   const handleFileSelect = useCallback(
@@ -281,7 +278,7 @@ export default function UploadPage() {
       <div className="card">
         <div className="card-body p-4 sm:p-6">
           {/* Quota Status - Modern Progress Bar Design */}
-          {userQuotas && (
+          {userProfile && (
             <div className="mb-6 p-4 sm:p-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200">
               <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-4 flex items-center">
                 <HardDrive className="h-5 w-5 mr-2 text-gray-500" />
@@ -292,56 +289,56 @@ export default function UploadPage() {
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-gray-700">Storage</span>
                     <span className="text-sm font-semibold text-gray-900">
-                      {formatFileSize(userQuotas.storageUsed)} / {formatFileSize(userQuotas.storageQuota)}
+                      {formatFileSize(userProfile.user.storageUsed)} / {formatFileSize(userProfile.quotas.storage)}
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                     <div
                       className={`h-2.5 rounded-full transition-all duration-500 ease-out ${getProgressColor(
-                        calculatePercentage(userQuotas.storageUsed, userQuotas.storageQuota)
+                        calculatePercentage(userProfile.user.storageUsed, userProfile.quotas.storage)
                       )}`}
                       style={{
                         width: `${Math.min(
-                          calculatePercentage(userQuotas.storageUsed, userQuotas.storageQuota),
+                          calculatePercentage(userProfile.user.storageUsed, userProfile.quotas.storage),
                           100,
                         )}%`,
                       }}
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    {calculatePercentage(userQuotas.storageUsed, userQuotas.storageQuota).toFixed(1)}% used
+                    {calculatePercentage(userProfile.user.storageUsed, userProfile.quotas.storage).toFixed(1)}% used
                   </p>
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-gray-700">Files</span>
                     <span className="text-sm font-semibold text-gray-900">
-                      {userQuotas.filesCount} / {userQuotas.filesQuota === -1 ? "∞" : userQuotas.filesQuota}
+                      {userProfile.user.filesCount} / {userProfile.quotas.fileCount === -1 ? "∞" : userProfile.quotas.fileCount}
                     </span>
                   </div>
-                  {userQuotas.filesQuota !== -1 && (
+                  {userProfile.quotas.fileCount !== -1 && (
                     <>
                       <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                         <div
                           className={`h-2.5 rounded-full transition-all duration-500 ease-out ${getProgressColor(
-                            calculatePercentage(userQuotas.filesCount, userQuotas.filesQuota)
+                            calculatePercentage(userProfile.user.filesCount, userProfile.quotas.fileCount)
                           )}`}
                           style={{
                             width: `${Math.min(
-                              calculatePercentage(userQuotas.filesCount, userQuotas.filesQuota),
+                              calculatePercentage(userProfile.user.filesCount, userProfile.quotas.fileCount),
                               100,
                             )}%`,
                           }}
                         />
                       </div>
                       <p className="text-xs text-gray-500 mt-1">
-                        {calculatePercentage(userQuotas.filesCount, userQuotas.filesQuota).toFixed(1)}% used
+                        {calculatePercentage(userProfile.user.filesCount, userProfile.quotas.fileCount).toFixed(1)}% used
                       </p>
                     </>
                   )}
                 </div>
               </div>
-              {calculatePercentage(userQuotas.storageUsed, userQuotas.storageQuota) > 80 && (
+              {calculatePercentage(userProfile.user.storageUsed, userProfile.quotas.storage) > 80 && (
                 <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                   <p className="text-sm text-red-700 flex items-center">
                     <AlertCircle className="h-4 w-4 mr-2" />
@@ -384,7 +381,7 @@ export default function UploadPage() {
                   onChange={handleFileInput}
                 />
               </div>
-              <p className="text-sm text-gray-500 mt-3">PDF files only, up to 10MB each</p>
+              <p className="text-sm text-gray-500 mt-3">PDF files only, up to {formatFileSize(getFileSizeLimit("free"))} each</p>
             </div>
           </div>
         </div>
