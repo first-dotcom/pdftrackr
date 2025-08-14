@@ -114,17 +114,7 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
       }
     }
 
-    // 5. Check for excessive size or complexity - prevent DoS
-    const MAX_PDF_COMPLEXITY = 1000; // Max objects/streams
-    const objectMatches = bufferStr.match(/\d+\s+\d+\s+obj/g);
-    if (objectMatches && objectMatches.length > MAX_PDF_COMPLEXITY) {
-      logger.warn("PDF complexity exceeds limits", {
-        objects: objectMatches.length,
-        filename: file.originalname,
-        ip: req.ip,
-      });
-      throw new CustomError("PDF file too complex", 400);
-    }
+
 
     // 6. Check for embedded files - security risk
     const embeddedFilePatterns = [/\/EmbeddedFile/gi, /\/Filespec/gi, /\/EF/gi];
