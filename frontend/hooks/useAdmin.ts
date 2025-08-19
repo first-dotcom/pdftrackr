@@ -20,12 +20,17 @@ export function useAdmin() {
           return;
         }
 
-        // Try to access admin stats endpoint to check if user is admin
-        const response = await fetch('/api/admin/stats', {
+        // Get user profile which includes admin status
+        const response = await fetch('/api/users/profile', {
           headers: { 'Authorization': `Bearer ${token}` },
         });
 
-        setIsAdmin(response.ok);
+        if (response.ok) {
+          const data = await response.json();
+          setIsAdmin(data.data?.user?.isAdmin || false);
+        } else {
+          setIsAdmin(false);
+        }
       } catch (error) {
         console.error('Failed to check admin status:', error);
         setIsAdmin(false);
