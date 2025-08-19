@@ -16,6 +16,7 @@ interface AdminStats {
   totalWaitlist: number;
   storageUsed: number;
   doSpacesUsage: number;
+  storageLimit: number | null;
 }
 
 interface AdminUser {
@@ -213,14 +214,26 @@ export default function AdminPage() {
               
               <div className="mb-4">
                 <div className="flex justify-between text-sm text-gray-600 mb-2">
-                  <span>Storage: {formatFileSize(stats?.storageUsed || 0)} / 40 GB</span>
-                  <span>{Math.round(((stats?.storageUsed || 0) / (40 * 1024 * 1024 * 1024)) * 100)}%</span>
+                  <span>
+                    Storage: {formatFileSize(stats?.storageUsed || 0)}
+                    {stats?.storageLimit ? ` / ${formatFileSize(stats.storageLimit)}` : ""}
+                  </span>
+                  <span>
+                    {stats?.storageLimit
+                      ? Math.round(((stats?.storageUsed || 0) / (stats.storageLimit || 1)) * 100)
+                      : 0}%
+                  </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
                     className="bg-primary-600 h-2 rounded-full transition-all duration-300"
                     style={{ 
-                      width: `${Math.min(((stats?.storageUsed || 0) / (40 * 1024 * 1024 * 1024)) * 100, 100)}%` 
+                      width: `${Math.min(
+                        stats?.storageLimit
+                          ? ((stats?.storageUsed || 0) / (stats.storageLimit || 1)) * 100
+                          : 0,
+                        100
+                      )}%` 
                     }}
                   ></div>
                 </div>

@@ -11,6 +11,7 @@ const envSchema = z.object({
 
   // Database - use URL format (simpler)
   DATABASE_URL: z.string().default("postgresql://postgres:password@postgres:5432/pdftrackr"),
+  DATABASE_POOL_MAX: z.string().default("20"),
 
   // Redis - use URL format (simpler)
   REDIS_URL: z.string().default("redis://redis:6379"),
@@ -24,6 +25,8 @@ const envSchema = z.object({
   S3_BUCKET: z.string().default("pdftrackr"),
   S3_ACCESS_KEY: z.string().default(""),
   S3_SECRET_KEY: z.string().default(""),
+  // Optional: Spaces storage limit in GB (used for admin progress bar)
+  DO_SPACES_STORAGE_LIMIT: z.string().default("250"),
 
   // App URL - single source of truth
   APP_URL: z.string().default("http://localhost:3000"),
@@ -45,6 +48,7 @@ export const config = {
   },
   database: {
     url: env.DATABASE_URL,
+    poolMax: parseInt(env.DATABASE_POOL_MAX, 10),
   },
   redis: {
     url: env.REDIS_URL,
@@ -59,6 +63,11 @@ export const config = {
     accessKeyId: env.S3_ACCESS_KEY || "",
     secretAccessKey: env.S3_SECRET_KEY || "",
     enabled: !!(env.S3_ACCESS_KEY && env.S3_SECRET_KEY), // Only enable if credentials are provided
+    // Convert GB -> bytes if provided
+    limitBytes:
+      env.DO_SPACES_STORAGE_LIMIT && !Number.isNaN(Number(env.DO_SPACES_STORAGE_LIMIT))
+        ? Number(env.DO_SPACES_STORAGE_LIMIT) * 1024 * 1024 * 1024
+        : undefined,
   },
   app: {
     url: env.APP_URL,

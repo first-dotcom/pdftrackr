@@ -4,9 +4,9 @@ import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { config } from "../config";
 import { logger } from "./logger";
 
-// Create the connection
+// Create the connection (configurable pool size)
 const client = postgres(config.database.url, {
-  max: 1,
+  max: Number.isFinite(config.database.poolMax) ? config.database.poolMax : 20,
   idle_timeout: 20,
   connect_timeout: 10,
 });

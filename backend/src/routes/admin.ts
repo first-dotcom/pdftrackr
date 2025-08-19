@@ -87,6 +87,7 @@ router.get("/stats", adminRateLimit, authenticate, requireAdmin, async (req, res
         totalWaitlist: waitlistCount.count,
         storageUsed,
         doSpacesUsage,
+        storageLimit: config.storage.limitBytes ?? null,
       },
     });
   } catch (error) {
