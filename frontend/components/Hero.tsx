@@ -67,7 +67,7 @@ export default function Hero() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">proposal-2024.pdf</span>
+                    <span className="text-sm text-gray-600">proposal-2025.pdf</span>
                     <span className="text-sm font-medium text-green-600">12 views</span>
                   </div>
                   <div className="flex items-center justify-between">

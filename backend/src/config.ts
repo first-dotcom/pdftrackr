@@ -32,7 +32,7 @@ const envSchema = z.object({
   APP_URL: z.string().default("http://localhost:3000"),
   
   // Security
-  IP_HASH_SALT: z.string().default("pdftrackr-salt-2024"),
+  IP_HASH_SALT: z.string().default("pdftrackr-salt-5"),
   
   // Admin
   ADMIN_EMAILS: z.string().default(""),

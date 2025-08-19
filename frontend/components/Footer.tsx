@@ -33,59 +33,6 @@ export default function Footer() {
                       Pricing
                     </Link>
                   </li>
-                  <li>
-                    <Link href="/docs" className="text-base text-gray-300 hover:text-white">
-                      Documentation
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="mt-12 md:mt-0">
-                <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase">
-                  Support
-                </h3>
-                <ul className="mt-4 space-y-4">
-                  <li>
-                    <Link href="/help" className="text-base text-gray-300 hover:text-white">
-                      Help Center
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/contact" className="text-base text-gray-300 hover:text-white">
-                      Contact
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/status" className="text-base text-gray-300 hover:text-white">
-                      Status
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="md:grid md:grid-cols-2 md:gap-8">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase">
-                  Company
-                </h3>
-                <ul className="mt-4 space-y-4">
-                  <li>
-                    <Link href="/about" className="text-base text-gray-300 hover:text-white">
-                      About
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/blog" className="text-base text-gray-300 hover:text-white">
-                      Blog
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/careers" className="text-base text-gray-300 hover:text-white">
-                      Careers
-                    </Link>
-                  </li>
                 </ul>
               </div>
 
@@ -96,12 +43,12 @@ export default function Footer() {
                 <ul className="mt-4 space-y-4">
                   <li>
                     <Link href="/privacy" className="text-base text-gray-300 hover:text-white">
-                      Privacy
+                      Privacy Policy
                     </Link>
                   </li>
                   <li>
                     <Link href="/terms" className="text-base text-gray-300 hover:text-white">
-                      Terms
+                      Terms of Service
                     </Link>
                   </li>
                 </ul>
@@ -112,7 +59,7 @@ export default function Footer() {
 
         <div className="mt-12 border-t border-gray-700 pt-8">
           <p className="text-base text-gray-400 xl:text-center">
-            © 2024 PDFTrackr. All rights reserved.
+            © 2025 PDFTrackr. All rights reserved.
           </p>
         </div>
       </div>
