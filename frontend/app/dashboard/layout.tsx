@@ -48,7 +48,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               onMobileClose={handleMobileSidebarClose} 
             />
           </div>
-          
+
           <main className="flex-1 w-full">
             {/* Intelligent responsive layout */}
             <div className="flex justify-center">

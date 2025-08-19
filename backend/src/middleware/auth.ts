@@ -26,6 +26,7 @@ declare global {
               filesCount: number;
               createdAt: Date;
               updatedAt: Date;
+              isAdmin: boolean;
             }
         | undefined;
     }
@@ -95,6 +96,7 @@ export const authenticate = async (req: Request, _res: Response, next: NextFunct
           req.user = {
             ...existingUserCheck[0],
             plan: existingUserCheck[0].plan as UserPlan,
+            isAdmin: config.admin.emails.includes(existingUserCheck[0].email),
           };
           logger.info("Existing user logged in (race condition)", { email, userId: payload.sub });
         } else {
@@ -114,6 +116,7 @@ export const authenticate = async (req: Request, _res: Response, next: NextFunct
             req.user = {
               ...newUser[0],
               plan: newUser[0].plan as UserPlan,
+              isAdmin: config.admin.emails.includes(newUser[0].email),
             };
             logger.info("New user created", { email, userId: payload.sub });
           } else {
@@ -134,6 +137,7 @@ export const authenticate = async (req: Request, _res: Response, next: NextFunct
         req.user = {
           ...user,
           plan: user.plan as UserPlan,
+          isAdmin: config.admin.emails.includes(user.email),
         };
       } else {
         throw new CustomError("User not found", 404);
@@ -176,6 +180,7 @@ export const optionalAuth = async (req: Request, _res: Response, next: NextFunct
             req.user = {
               ...user,
               plan: user.plan as UserPlan,
+              isAdmin: config.admin.emails.includes(user.email),
             };
           }
         }

@@ -1,10 +1,9 @@
 import { ClerkProvider } from "@clerk/nextjs";
-import { Inter } from "next/font/google";
 import type React from "react";
 import "./globals.css";
 import ConsentBanner from "@/components/ConsentBanner";
 
-const inter = Inter({ subsets: ["latin"] });
+// Use Tailwind's font-sans (configured to prefer Inter if available, then system fonts)
 
 export const viewport = "width=device-width, initial-scale=1";
 
@@ -94,7 +93,7 @@ export default function RootLayout({
             dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
           />
         </head>
-        <body className={inter.className}>
+        <body className="font-sans">
           <div className="min-h-screen bg-gray-50">{children}</div>
           <ConsentBanner />
         </body>

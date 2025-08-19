@@ -30,6 +30,9 @@ const envSchema = z.object({
   
   // Security
   IP_HASH_SALT: z.string().default("pdftrackr-salt-2024"),
+  
+  // Admin
+  ADMIN_EMAILS: z.string().default(""),
 });
 
 // Parse and validate environment variables
@@ -62,6 +65,9 @@ export const config = {
   },
   security: {
     ipHashSalt: env.IP_HASH_SALT,
+  },
+  admin: {
+    emails: env.ADMIN_EMAILS ? env.ADMIN_EMAILS.split(',').map(email => email.trim()) : [],
   },
   quotas: planQuotas,
 };

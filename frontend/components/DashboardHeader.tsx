@@ -3,9 +3,10 @@
 import { UserButton } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
-import { Menu, FileText, LayoutDashboard } from "lucide-react";
+import { Menu, FileText, LayoutDashboard, Shield } from "lucide-react";
 import Link from "next/link";
 import { clsx } from "clsx";
+import { useAdmin } from "@/hooks/useAdmin";
 
 interface DashboardHeaderProps {
   onMobileMenuClick?: () => void;
@@ -19,6 +20,7 @@ const navigation = [
 export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderProps) {
   const pathname = usePathname();
   const { user } = useUser();
+  const { isAdmin } = useAdmin();
 
   // Get contextual title based on current path (for mobile)
   const getContextualTitle = () => {
@@ -67,7 +69,7 @@ export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderPr
 
             {/* Desktop Navigation Tabs */}
             <nav className="hidden lg:flex space-x-8 ml-8">
-              {navigation.map((item) => {
+              {[...navigation, ...(isAdmin ? [{ name: "Admin", href: "/dashboard/admin", icon: Shield }] : [])].map((item) => {
                 const isActive = pathname === item.href || 
                   (item.href === "/dashboard/files" && pathname.startsWith("/dashboard/files"));
                 

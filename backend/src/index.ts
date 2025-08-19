@@ -18,6 +18,7 @@ import analyticsTrackingRoutes from "./routes/analyticsTracking";
 // Import routes
 import authRoutes from "./routes/auth";
 import filesRoutes from "./routes/files";
+import adminRoutes from "./routes/admin";
 
 import shareRoutes from "./routes/share";
 import upgradeRoutes from "./routes/upgrade";
@@ -240,6 +241,7 @@ app.get("/health", (_req, res) => {
 // API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/files", filesRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/analytics", analyticsTrackingRoutes); // New real-time tracking endpoints
 app.use("/api/users", usersRoutes);
