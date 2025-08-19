@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc && tsc-alias",
-    "start": "node dist/app/src/index.js",
+    "start": "pm2-runtime start ecosystem.config.js",
+    "test:db-pool": "tsx src/scripts/test-db-pool.ts",
     "test": "jest",
     "lint": "biome check .",
     "lint:fix": "biome check --apply .",

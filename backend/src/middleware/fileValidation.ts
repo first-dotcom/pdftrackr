@@ -29,6 +29,9 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
   }
 
   const file = req.file;
+  const fileSizeBytes = file.size;
+  const SMALL_FILE_BYTES = 100 * 1024; // 100KB
+  const LIGHT_VALIDATION_BYTES = 1 * 1024 * 1024; // 1MB
 
   try {
     // 1. Validate PDF magic number (header) - strict check
@@ -42,9 +45,8 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
       throw new CustomError("Invalid PDF file format", 400);
     }
 
-    // 2. Check for PDF trailer - strict validation
-    const bufferStr = file.buffer.toString("ascii");
-    if (!bufferStr.includes("%%EOF")) {
+    // 2. Check for PDF trailer - strict validation (fast check without heavy regex)
+    if (!file.buffer.includes(Buffer.from("%%EOF"))) {
       logger.warn("PDF missing EOF marker", {
         filename: file.originalname,
         ip: req.ip,
@@ -62,6 +64,32 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
       });
       throw new CustomError("File size mismatch - potential tampering", 400);
     }
+
+    // Early return optimizations for small files
+    // - Files under 100KB: perform only the basic checks above and return
+    if (fileSizeBytes < SMALL_FILE_BYTES) {
+      // Sanitize filename only; skip heavy scanning and hashing
+      const originalName = file.originalname;
+      file.originalname = sanitizeFilename(originalName);
+      if (originalName !== file.originalname) {
+        logger.info("Filename sanitized", { original: originalName, sanitized: file.originalname });
+      }
+      return next();
+    }
+
+    // - Files under 1MB: perform light validation only (basic checks + filename sanitize)
+    if (fileSizeBytes < LIGHT_VALIDATION_BYTES) {
+      const originalName = file.originalname;
+      file.originalname = sanitizeFilename(originalName);
+      if (originalName !== file.originalname) {
+        logger.info("Filename sanitized", { original: originalName, sanitized: file.originalname });
+      }
+      // Skip heavy regex scanning, hashing and virus scanning for small PDFs
+      return next();
+    }
+
+    // From here on, perform heavy validation (large files >= 1MB)
+    const bufferStr = file.buffer.toString("ascii");
 
     // 4. Enhanced security scanning - comprehensive dangerous content detection
     const dangerousPatterns = [
@@ -163,11 +191,11 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
       });
     }
 
-    // 10. Add file hash for integrity checking
+    // 10. Add file hash for integrity checking (only for large files)
     const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
     (req as RequestWithFileHash).fileHash = hash;
 
-    // 11. Virus scanning
+    // 11. Virus scanning (only for large files)
     const fileId = `temp_${Date.now()}_${Math.random().toString(36).substring(7)}`;
     logger.info("Starting virus scan for PDF", {
       filename: file.originalname,

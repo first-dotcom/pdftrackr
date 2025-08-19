@@ -1,7 +1,7 @@
 FROM node:20-alpine AS base
 
-# Install pnpm and security updates
-RUN npm install -g pnpm && \
+# Install pnpm, pm2 and security updates
+RUN npm install -g pnpm pm2 && \
     apk upgrade --no-cache && \
     apk add --no-cache dumb-init curl && \
     rm -rf /var/cache/apk/*
@@ -53,10 +53,11 @@ COPY --from=builder --chown=pdftrackr:nodejs /app/package*.json ./
 COPY --from=builder --chown=pdftrackr:nodejs /app/drizzle ./drizzle
 COPY --from=builder --chown=pdftrackr:nodejs /app/../shared ../shared
 COPY --from=builder --chown=pdftrackr:nodejs /app/tsconfig.json ./tsconfig.json
+COPY --from=builder --chown=pdftrackr:nodejs /app/ecosystem.config.js ./ecosystem.config.js
 RUN mkdir -p logs && chown pdftrackr:nodejs logs
 USER pdftrackr
 EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD curl -f http://localhost:3001/health || exit 1
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "dist/app/src/index.js"]
+CMD ["pm2-runtime", "start", "ecosystem.config.js"]

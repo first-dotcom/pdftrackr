@@ -88,7 +88,7 @@ app.use(
 // Rate limiting - production-optimized
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: config.env === "production" ? 100 : 500, // Stricter limits for production
+  max: config.env === "production" ? 1000 : 2000, // Relaxed limits for launch
   message: {
     error: "Too many requests from this IP, please try again later.",
     retryAfter: "15 minutes",
