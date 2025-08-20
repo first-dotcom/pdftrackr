@@ -57,7 +57,7 @@ export function Toast({ id, type, title, message, duration = 5000, onClose }: To
 
   return (
     <div
-      className={`fixed top-4 right-4 z-50 max-w-sm w-full bg-white border rounded-lg shadow-lg transition-all duration-300 transform ${
+      className={`fixed top-4 right-4 left-4 sm:left-auto sm:max-w-sm z-50 w-auto bg-white border rounded-lg shadow-lg transition-all duration-300 transform ${
         isVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
       } ${toastStyles[type]}`}
       role="alert"
@@ -67,9 +67,9 @@ export function Toast({ id, type, title, message, duration = 5000, onClose }: To
         <div className="flex-shrink-0">
           <Icon className={`h-5 w-5 ${iconStyles[type]}`} aria-hidden="true" />
         </div>
-        <div className="ml-3 flex-1">
-          <p className="text-sm font-medium">{title}</p>
-          {message && <p className="mt-1 text-sm opacity-90">{message}</p>}
+        <div className="ml-3 flex-1 min-w-0">
+          <p className="text-sm font-medium break-words">{title}</p>
+          {message && <p className="mt-1 text-sm opacity-90 break-words">{message}</p>}
         </div>
         <div className="ml-4 flex-shrink-0">
           <button
@@ -78,7 +78,7 @@ export function Toast({ id, type, title, message, duration = 5000, onClose }: To
               setIsVisible(false);
               setTimeout(() => onClose(id), 300);
             }}
-            className={`inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 ${iconStyles[type]} hover:opacity-75`}
+            className={`inline-flex rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-offset-2 ${iconStyles[type]} hover:opacity-75 min-h-[44px] min-w-[44px] items-center justify-center touch-manipulation`}
             aria-label="Close notification"
           >
             <X className="h-4 w-4" aria-hidden="true" />
@@ -102,7 +102,7 @@ interface ToastContainerProps {
 
 export function ToastContainer({ toasts, onClose }: ToastContainerProps) {
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2">
+    <div className="fixed top-4 right-4 left-4 sm:left-auto z-50 space-y-2">
       {toasts.map((toast) => (
         <Toast key={toast.id} {...toast} onClose={onClose} />
       ))}

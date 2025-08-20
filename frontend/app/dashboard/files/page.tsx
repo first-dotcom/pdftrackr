@@ -156,7 +156,7 @@ const FileCard = React.memo(function FileCard({
                   type="button"
                   onClick={() => onShare(file)}
                   disabled={isSharing || isDeleting}
-                  className="flex items-center justify-center w-10 h-10 text-primary-600 hover:text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center w-12 h-12 text-primary-600 hover:text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                   aria-label="Create share link"
                   onKeyDown={(e) => handleKeyDown(e, () => onShare(file))}
                 >
@@ -170,7 +170,7 @@ const FileCard = React.memo(function FileCard({
                   type="button"
                   onClick={() => onDelete(file.id)}
                   disabled={isDeleting || isSharing}
-                  className="flex items-center justify-center w-10 h-10 text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center w-12 h-12 text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                   aria-label="Delete file"
                   onKeyDown={(e) => handleKeyDown(e, () => onDelete(file.id))}
                 >
@@ -251,7 +251,7 @@ function Pagination({
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+          className="relative inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 min-h-[44px] touch-manipulation"
           aria-label="Previous page"
         >
           Previous
@@ -259,7 +259,7 @@ function Pagination({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+          className="relative ml-3 inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 min-h-[44px] touch-manipulation"
           aria-label="Next page"
         >
           Next
@@ -277,7 +277,7 @@ function Pagination({
             <button
               onClick={() => onPageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="relative inline-flex items-center justify-center rounded-l-md px-3 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] touch-manipulation"
               aria-label="Previous page"
             >
               <ChevronLeft className="h-5 w-5" aria-hidden="true" />
@@ -290,7 +290,7 @@ function Pagination({
                 <button
                   key={page}
                   onClick={() => onPageChange(page)}
-                  className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+                  className={`relative inline-flex items-center justify-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] touch-manipulation ${
                     page === currentPage
                       ? 'z-10 bg-primary-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600'
                       : 'text-gray-900 hover:bg-gray-50'
@@ -306,7 +306,7 @@ function Pagination({
             <button
               onClick={() => onPageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="relative inline-flex items-center justify-center rounded-r-md px-3 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] touch-manipulation"
               aria-label="Next page"
             >
               <ChevronRight className="h-5 w-5" aria-hidden="true" />
@@ -408,10 +408,11 @@ function EmptyState({ hasFiles, onUpload }: { hasFiles: boolean; onUpload: () =>
       {!hasFiles && (
         <button
           onClick={onUpload}
-          className="btn-primary btn-lg inline-flex items-center"
+          className="btn-primary btn-lg inline-flex items-center min-h-[44px] touch-manipulation"
         >
           <Plus className="h-5 w-5 mr-2" aria-hidden="true" />
-          Upload your first PDF
+          <span className="hidden xs:inline">Upload your first PDF</span>
+          <span className="xs:hidden">Upload PDF</span>
         </button>
       )}
     </div>
@@ -675,10 +676,11 @@ export default function FilesPage() {
           <div className="flex justify-end">
             <Link 
               href="/dashboard/files/upload" 
-              className="btn-primary btn-lg w-full sm:w-auto flex items-center justify-center"
+              className="btn-primary btn-lg w-full sm:w-auto flex items-center justify-center min-h-[44px]"
             >
               <Plus className="h-5 w-5 mr-2" aria-hidden="true" />
-              Upload PDF
+              <span className="hidden xs:inline">Upload PDF</span>
+              <span className="xs:hidden">Upload</span>
             </Link>
           </div>
         </div>

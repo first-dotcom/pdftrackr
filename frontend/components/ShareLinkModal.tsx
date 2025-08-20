@@ -209,19 +209,24 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b">
+      <div className="bg-white rounded-lg w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b">
           <h2 className="text-lg font-semibold text-gray-900">
             {shareLink ? "Share Link Created!" : "Create Share Link"}
           </h2>
-          <button type="button" onClick={handleClose} className="text-gray-400 hover:text-gray-500">
+          <button 
+            type="button" 
+            onClick={handleClose} 
+            className="text-gray-400 hover:text-gray-500 p-2 -m-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+            aria-label="Close modal"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {shareLink ? (
           // Success state - show created link
-          <div className="p-6 space-y-4">
+          <div className="p-4 sm:p-6 space-y-4">
             <div className="text-center">
               <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
               <h3 className="mt-2 text-lg font-medium text-gray-900">Share link created!</h3>
@@ -231,17 +236,17 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Share URL</label>
-                <div className="flex">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="text"
                     value={`${window.location.origin}/view/${shareLink.shareId}`}
                     readOnly
-                    className="flex-1 input rounded-r-none"
+                    className="flex-1 input rounded-md sm:rounded-r-none text-sm"
                   />
                   <button
                     type="button"
                     onClick={copyToClipboard}
-                    className="btn-primary btn-md rounded-l-none flex items-center"
+                    className="btn-primary btn-md rounded-md sm:rounded-l-none flex items-center justify-center min-h-[44px] touch-manipulation"
                   >
                     {copied ? (
                       <>
@@ -290,18 +295,18 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
               <button
                 type="button"
                 onClick={() => setShareLink(null)}
-                className="flex-1 btn-outline btn-md"
+                className="flex-1 btn-outline btn-md min-h-[44px] touch-manipulation"
               >
                 Create Another
               </button>
-              <button type="button" onClick={handleClose} className="flex-1 btn-primary btn-md">
+              <button type="button" onClick={handleClose} className="flex-1 btn-primary btn-md min-h-[44px] touch-manipulation">
                 Done
               </button>
             </div>
           </div>
         ) : (
           // Form state - create new link
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4">
             <div className="text-sm text-gray-600 mb-4">
               Creating share link for:{" "}
               <span className="font-medium">{file.title || "Untitled Document"}</span>
@@ -389,7 +394,7 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
                 Advanced Options
               </h4>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Expires After
@@ -430,10 +435,10 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
             </div>
 
             <div className="flex gap-3 pt-4">
-              <button type="button" onClick={handleClose} className="flex-1 btn-outline btn-md">
+              <button type="button" onClick={handleClose} className="flex-1 btn-outline btn-md min-h-[44px] touch-manipulation">
                 Cancel
               </button>
-              <button type="submit" disabled={loading} className="flex-1 btn-primary btn-md">
+              <button type="submit" disabled={loading} className="flex-1 btn-primary btn-md min-h-[44px] touch-manipulation">
                 {loading ? "Creating..." : "Create Share Link"}
               </button>
             </div>
