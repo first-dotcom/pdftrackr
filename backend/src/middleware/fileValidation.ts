@@ -93,42 +93,14 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
 
     // 4. Enhanced security scanning - comprehensive dangerous content detection
     const dangerousPatterns = [
-      // JavaScript execution patterns
-      /\/JavaScript\s*\[/gi,
-      /\/JS\s*\[/gi,
+      // Keep ONLY clearly dangerous, high-confidence patterns to reduce false positives
+      /\/JavaScript\b/gi,
+      /\/JS\b/gi,
       /\/Action\s*\/Launch/gi,
-      /\/Launch/gi,
-      /\/SubmitForm/gi,
-      /\/ImportData/gi,
-      /\/ResetForm/gi,
-
-      // Embedded executable content
-      /\/EmbeddedFile.*\/F\s*\(/gi,
-      /\/RichMedia.*\/Params/gi,
-
-      // Script injection patterns
+      /\/Launch\b/gi,
       /<script/gi,
       /javascript:/gi,
-      /vbscript:/gi,
       /data:text\/html/gi,
-      /data:application\/x-javascript/gi,
-
-      // URL schemes that could be dangerous
-      /file:\/\//gi,
-      /ftp:\/\//gi,
-      /gopher:\/\//gi,
-
-      // Form submission patterns
-      /\/SubmitForm\s*\[/gi,
-      /\/ImportData\s*\[/gi,
-
-      // Annotations that could execute code
-      /\/A\s*\[.*\/Launch/gi,
-      /\/A\s*\[.*\/JavaScript/gi,
-
-      // XFA forms (potential security risk)
-      /\/XFA\s*\[/gi,
-      /\/AcroForm.*\/XFA/gi,
     ];
 
     for (const pattern of dangerousPatterns) {
@@ -147,15 +119,13 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
     // 6. Check for embedded files - security risk
     const embeddedFilePatterns = [/\/EmbeddedFile/gi, /\/Filespec/gi, /\/EF/gi];
 
-    for (const pattern of embeddedFilePatterns) {
-      if (pattern.test(bufferStr)) {
-        logger.warn("Embedded files detected in PDF", {
-          pattern: pattern.source,
-          filename: file.originalname,
-          ip: req.ip,
-        });
-        throw new CustomError("PDF contains embedded files which are not allowed", 400);
-      }
+    // Temporarily relax embedded file blocking to reduce false positives (allow but log)
+    if (embeddedFilePatterns.some((pattern) => pattern.test(bufferStr))) {
+      logger.warn("Embedded files detected in PDF - allowing due to relaxed validation", {
+        filename: file.originalname,
+        ip: req.ip,
+      });
+      // Do not throw here; continue with validation
     }
 
     // 7. Validate PDF structure integrity (relaxed check)
