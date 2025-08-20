@@ -5,7 +5,8 @@ import { useAuth } from "@clerk/nextjs";
 import { formatDistanceToNow } from "date-fns";
 import { ArrowLeft, Calendar, FileText, Share2, Eye, Download } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { ToastContainer, useToasts } from "@/components/Toast";
 import ShareLinkModal from "@/components/ShareLinkModal";
 import { useApi } from "@/hooks/useApi";
 import { formatFileSize } from "@/utils/formatters";
@@ -28,6 +29,13 @@ export default function FileDetailPage() {
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [editingShareLink, setEditingShareLink] = useState<ShareLink | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { toasts, removeToast, showSuccess } = useToasts();
+  const showSuccessRef = useRef(showSuccess);
+
+  // Update ref when showSuccess changes
+  useEffect(() => {
+    showSuccessRef.current = showSuccess;
+  }, [showSuccess]);
 
   useEffect(() => {
     if (fileId) {
@@ -35,6 +43,20 @@ export default function FileDetailPage() {
       fetchShareLinks();
     }
   }, [fileId]);
+
+  // Flash success toast after redirect from upload
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("pdftrackr:flash");
+      if (raw) {
+        const flash = JSON.parse(raw) as { type: string; title: string; message?: string; ts?: number };
+        sessionStorage.removeItem("pdftrackr:flash");
+        if (flash?.title) {
+          showSuccessRef.current(flash.title, flash.message);
+        }
+      }
+    } catch {}
+  }, []); // Empty dependency array - only run once on mount
 
   const fetchFileDetails = async () => {
     try {
@@ -424,6 +446,9 @@ export default function FileDetailPage() {
           }}
         />
       )}
+
+      {/* Toasts */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
     </div>
   );
 }

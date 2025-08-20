@@ -453,6 +453,12 @@ export default function FilesPage() {
   const { user, isLoaded: userLoaded } = useUser();
   const api = useApi();
   const { toasts, removeToast, showError, showSuccess } = useToasts();
+  const showSuccessRef = useRef(showSuccess);
+
+  // Update ref when showSuccess changes
+  useEffect(() => {
+    showSuccessRef.current = showSuccess;
+  }, [showSuccess]);
 
   const isReady = authLoaded && userLoaded;
   const totalPages = Math.ceil(totalFiles / FILES_PER_PAGE);
@@ -506,6 +512,20 @@ export default function FilesPage() {
       fetchFiles(currentPage);
     }
   }, [isReady, user, currentPage]); // FIXED: Removed fetchFiles from dependencies
+
+  // Flash success toast after redirect from upload
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("pdftrackr:flash");
+      if (raw) {
+        const flash = JSON.parse(raw) as { type: string; title: string; message?: string; ts?: number };
+        sessionStorage.removeItem("pdftrackr:flash");
+        if (flash?.title) {
+          showSuccessRef.current(flash.title, flash.message);
+        }
+      }
+    } catch {}
+  }, []); // Empty dependency array - only run once on mount
 
   // FIXED: Create stable debounced search function
   const debouncedSearch = useMemo(

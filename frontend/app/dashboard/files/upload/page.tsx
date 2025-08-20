@@ -16,6 +16,8 @@ interface UploadFile {
   status: "pending" | "uploading" | "success" | "error";
   progress: number;
   error?: string | null;
+  uploadedId?: number;
+  uploadedTitle?: string | null;
 }
 
 export default function UploadPage() {
@@ -174,7 +176,14 @@ export default function UploadPage() {
         throw new Error(errorMessage);
       }
 
-      return response;
+      // Expecting { data: { file: { id, title, ... } }, message }
+      const data = (response as any)?.data;
+      const file = data?.file;
+      return {
+        fileId: file?.id as number,
+        fileTitle: (file?.title as string | null) ?? uploadFile.file.name.replace(".pdf", ""),
+        message: (response as any)?.message as string | undefined,
+      };
     } catch (error) {
       throw error;
     }
@@ -189,6 +198,7 @@ export default function UploadPage() {
 
     const validFiles = files.filter((f) => f.status === "pending");
 
+    const successfulUploads: Array<{ id: number; title: string | null; message?: string }> = [];
     for (const file of validFiles) {
       setFiles((prev) =>
         prev.map((f) => (f.id === file.id ? { ...f, status: "uploading", progress: 0 } : f)),
@@ -204,12 +214,24 @@ export default function UploadPage() {
           );
         }, 200);
 
-        await uploadFile(file);
+        const result = await uploadFile(file);
 
         clearInterval(progressInterval);
         setFiles((prev) =>
-          prev.map((f) => (f.id === file.id ? { ...f, status: "success", progress: 100 } : f)),
+          prev.map((f) => (
+            f.id === file.id
+              ? { ...f, status: "success", progress: 100, uploadedId: result?.fileId, uploadedTitle: result?.fileTitle }
+              : f
+          )),
         );
+
+        if (result?.fileId) {
+          successfulUploads.push({ 
+            id: result.fileId, 
+            title: result.fileTitle ?? null, 
+            message: result.message 
+          });
+        }
       } catch (error) {
         setFiles((prev) =>
           prev.map((f) =>
@@ -228,14 +250,38 @@ export default function UploadPage() {
 
     setIsUploading(false);
 
-    // Redirect to files page after a short delay if all uploads succeeded
-    const allSuccess = files.every((f) => f.status === "success" || f.status === "error");
-    const hasSuccess = files.some((f) => f.status === "success");
-
-    if (allSuccess && hasSuccess) {
-      setTimeout(() => {
-        router.push("/dashboard/files");
-      }, 2000);
+    // Handle redirect based on number of successful uploads
+    if (successfulUploads.length > 0) {
+      try {
+        if (successfulUploads.length === 1) {
+          // Single file: redirect to file detail page
+          const upload = successfulUploads[0];
+          const flash = {
+            type: "success",
+            title: "File uploaded successfully",
+            message: upload.title ? `"${upload.title}" is ready.` : undefined,
+            ts: Date.now(),
+          };
+          sessionStorage.setItem("pdftrackr:flash", JSON.stringify(flash));
+          
+          setTimeout(() => {
+            router.push(`/dashboard/files/${upload.id}`);
+          }, 800);
+        } else {
+          // Multiple files: redirect to files list with count
+          const flash = {
+            type: "success",
+            title: `${successfulUploads.length} files uploaded successfully`,
+            message: `All files are ready to share.`,
+            ts: Date.now(),
+          };
+          sessionStorage.setItem("pdftrackr:flash", JSON.stringify(flash));
+          
+          setTimeout(() => {
+            router.push("/dashboard/files");
+          }, 800);
+        }
+      } catch {}
     }
   };
 
