@@ -1,26 +1,40 @@
 {
   "version": "5",
-  "dialect": "pg",
+  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
       "version": "5",
-      "when": 1754182928120,
+      "when": 1703123456789,
       "tag": "0000_red_romulus",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "5",
-      "when": 1754218219753,
+      "when": 1703123456790,
       "tag": "0001_sweet_darkhawk",
       "breakpoints": true
     },
     {
       "idx": 2,
       "version": "5",
-      "when": 1754412211417,
+      "when": 1703123456791,
       "tag": "0002_hesitant_menace",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1703123456792,
+      "tag": "0003_add_page_count",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1703123456793,
+      "tag": "0004_analytics_indexes",
       "breakpoints": true
     }
   ]

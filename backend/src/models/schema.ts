@@ -61,6 +61,7 @@ export const files = pgTable(
     fileHash: varchar("file_hash", { length: 64 }), // SHA-256 hash
     scanStatus: varchar("scan_status", { length: 20 }).default("passed"), // passed, failed, pending
     securityFlags: json("security_flags").$type<string[]>(), // Array of security warnings
+    pageCount: integer("page_count"), // Actual page count from PDF.js
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },

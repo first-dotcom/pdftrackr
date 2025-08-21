@@ -33,10 +33,10 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
       if (response.success) {
         const data = response.data as any;
         setStats({
-          totalViews: data.totalViews || 0,
-          uniqueViewers: data.uniqueViewers || 0,
-          completionRate: data.completionRate || 0,
-          avgViewTime: data.avgSessionDuration || 0, // Keep in seconds for better precision
+          totalViews: Number(data.totalViews) || 0,
+          uniqueViewers: Number(data.uniqueViewers) || 0,
+          completionRate: Number(data.completionRate) || 0,
+          avgViewTime: Number(data.avgSessionDuration) || 0, // Keep in seconds for better precision
         });
       } else {
         setError('Failed to load file stats');
@@ -76,7 +76,7 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
   }
 
   // Only show if there's actually some data
-  if (stats.totalViews === 0) {
+  if ((Number(stats.totalViews) || 0) === 0) {
     return (
       <div className="card">
         <div className="card-body p-6 text-center">
@@ -95,7 +95,7 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
   const statItems = [
     {
       label: 'Views',
-      value: stats.totalViews.toLocaleString(),
+      value: (Number(stats.totalViews) || 0).toLocaleString(),
       icon: Eye,
       bgGradient: 'from-blue-50 to-blue-100',
       borderColor: 'border-blue-200',
@@ -103,7 +103,7 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
     },
     {
       label: 'Unique Viewers',
-      value: stats.uniqueViewers.toLocaleString(),
+      value: (Number(stats.uniqueViewers) || 0).toLocaleString(),
       icon: Users,
       bgGradient: 'from-green-50 to-green-100',
       borderColor: 'border-green-200',
@@ -111,7 +111,7 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
     },
     {
       label: 'Completion Rate',
-      value: `${stats.completionRate}%`,
+      value: `${Number(stats.completionRate) || 0}%`,
       icon: CheckCircle,
       bgGradient: 'from-purple-50 to-purple-100',
       borderColor: 'border-purple-200',
@@ -119,7 +119,7 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
     },
     {
       label: 'Avg View Time',
-      value: stats.avgViewTime > 0 ? `${stats.avgViewTime}s` : '-',
+      value: (Number(stats.avgViewTime) || 0) > 0 ? `${Number(stats.avgViewTime) || 0}s` : '-',
       icon: Clock,
       bgGradient: 'from-orange-50 to-orange-100',
       borderColor: 'border-orange-200',

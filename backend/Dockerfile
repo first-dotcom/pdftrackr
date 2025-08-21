@@ -2,7 +2,7 @@ FROM node:20-alpine AS base
 
 # Install pnpm, pm2 and security updates
 RUN npm install -g pnpm pm2 && \
-    apk upgrade --no-cache && \
+    apk update && \
     apk add --no-cache dumb-init curl && \
     rm -rf /var/cache/apk/*
 

@@ -1,4 +1,4 @@
-import { and, desc, eq, gt, gte, inArray, isNotNull, isNull, lt, or, sql } from "drizzle-orm";
+import { and, desc, eq, gt, gte, inArray, isNotNull, isNull, lt, lte, or, sql } from "drizzle-orm";
 import { Router } from "express";
 import type { Request, Response } from "express";
 import { z } from "zod";
@@ -83,8 +83,8 @@ router.get(
       .select({
         totalViews: sql<number>`COUNT(*)`,
         uniqueViews: sql<number>`SUM(CASE WHEN ${viewSessions.isUnique} THEN 1 ELSE 0 END)`,
-        totalDuration: sql<number>`SUM(${viewSessions.totalDuration})`,
-        avgDuration: sql<number>`AVG(${viewSessions.totalDuration})`,
+        totalDuration: sql<number>`COALESCE(SUM(${viewSessions.totalDuration}), 0)`,
+        avgDuration: sql<number>`COALESCE(AVG(${viewSessions.totalDuration}), 0)`,
       })
       .from(viewSessions)
       .where(
@@ -162,8 +162,8 @@ router.get(
       .select({
         pageNumber: pageViews.pageNumber,
         views: sql<number>`COUNT(*)`,
-        avgDuration: sql<number>`AVG(${pageViews.duration})`,
-        avgScrollDepth: sql<number>`AVG(${pageViews.scrollDepth})`,
+        avgDuration: sql<number>`COALESCE(AVG(${pageViews.duration}), 0)`,
+        avgScrollDepth: sql<number>`COALESCE(AVG(${pageViews.scrollDepth}), 0)`,
       })
       .from(pageViews)
       .innerJoin(viewSessions, eq(pageViews.sessionId, viewSessions.sessionId))
@@ -210,6 +210,106 @@ router.get(
           avgDuration: Math.round(row.avgDuration || 0),
           avgScrollDepth: Math.round(row.avgScrollDepth || 0),
         })),
+      },
+    });
+  }),
+);
+
+// Get individual session data for detailed viewer behavior
+router.get(
+  "/files/:fileId/sessions",
+  authenticate,
+  asyncHandler(async (req: Request, res: Response) => {
+    if (!req.params.fileId) {
+      throw new CustomError("File ID is required", 400);
+    }
+
+    const fileId = parseInt(req.params.fileId);
+    const { startDate, endDate } = req.query;
+
+    if (!req.user?.id) {
+      res.status(401).json({ success: false, error: "Unauthorized" });
+      return;
+    }
+
+    // Verify file ownership
+    const file = await db
+      .select()
+      .from(files)
+      .where(and(eq(files.id, fileId), eq(files.userId, req.user.id)))
+      .limit(1);
+
+    if (file.length === 0) {
+      throw new CustomError("File not found", 404);
+    }
+
+    // Date range filters
+    const start = startDate
+      ? new Date(startDate as string)
+      : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 30 days ago
+    const _end = endDate ? new Date(endDate as string) : new Date();
+
+    // Get all share links for this file
+    const fileShareLinks = await db.select().from(shareLinks).where(eq(shareLinks.fileId, fileId));
+    const shareIds = fileShareLinks.map((link) => link.shareId);
+
+    if (shareIds.length === 0) {
+      res.json({
+        success: true,
+        data: {
+          sessions: [],
+        },
+      });
+      return;
+    }
+
+    // Get individual session data with page-level details
+    const sessionData = await db
+      .select({
+        sessionId: viewSessions.sessionId,
+        startedAt: viewSessions.startedAt,
+        totalDuration: viewSessions.totalDuration,
+        isUnique: viewSessions.isUnique,
+        pageNumber: pageViews.pageNumber,
+        pageDuration: pageViews.duration,
+        pageScrollDepth: pageViews.scrollDepth,
+      })
+      .from(viewSessions)
+      .leftJoin(pageViews, eq(viewSessions.sessionId, pageViews.sessionId))
+      .where(
+        and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)),
+      )
+      .orderBy(desc(viewSessions.startedAt), sql`${pageViews.pageNumber} NULLS LAST`);
+
+    // Group sessions and their page data
+    const sessionsMap = new Map();
+    
+    sessionData.forEach((row) => {
+      if (!sessionsMap.has(row.sessionId)) {
+        sessionsMap.set(row.sessionId, {
+          sessionId: row.sessionId,
+          startedAt: row.startedAt,
+          totalDuration: row.totalDuration,
+          isUnique: row.isUnique,
+          pages: [],
+        });
+      }
+      
+      if (row.pageNumber) {
+        sessionsMap.get(row.sessionId).pages.push({
+          pageNumber: row.pageNumber,
+          duration: row.pageDuration,
+          scrollDepth: row.pageScrollDepth,
+        });
+      }
+    });
+
+    const sessions = Array.from(sessionsMap.values());
+
+    res.json({
+      success: true,
+      data: {
+        sessions,
       },
     });
   }),
@@ -561,11 +661,11 @@ router.post(
       // Get daily stats for this file
       const dailyStats = await db
         .select({
-          totalViews: sql<number>`COUNT(*)`,
-          uniqueViews: sql<number>`SUM(CASE WHEN ${viewSessions.isUnique} THEN 1 ELSE 0 END)`,
-          totalDuration: sql<number>`SUM(${viewSessions.totalDuration})`,
-          avgDuration: sql<number>`AVG(${viewSessions.totalDuration})`,
-          emailCaptures: sql<number>`COUNT(DISTINCT ${emailCaptures.id})`,
+                  totalViews: sql<number>`COUNT(*)`,
+        uniqueViews: sql<number>`SUM(CASE WHEN ${viewSessions.isUnique} THEN 1 ELSE 0 END)`,
+        totalDuration: sql<number>`COALESCE(SUM(${viewSessions.totalDuration}), 0)`,
+        avgDuration: sql<number>`COALESCE(AVG(${viewSessions.totalDuration}), 0)`,
+        emailCaptures: sql<number>`COUNT(DISTINCT ${emailCaptures.id})`,
         })
         .from(viewSessions)
         .leftJoin(
@@ -648,6 +748,363 @@ router.post(
     });
   }),
 );
+
+// New aggregate endpoint for page-by-page analytics
+router.get(
+  "/files/:fileId/aggregate",
+  authenticate,
+  asyncHandler(async (req: Request, res: Response) => {
+    const fileId = parseInt(req.params.fileId);
+    const userId = req.user?.id;
+
+    if (!fileId || isNaN(fileId)) {
+      throw new CustomError("Invalid file ID", 400);
+    }
+
+    // Verify file ownership
+    const file = await db
+      .select({ id: files.id, pageCount: files.pageCount })
+      .from(files)
+      .where(and(eq(files.id, fileId), eq(files.userId, userId)))
+      .limit(1);
+
+    if (file.length === 0) {
+      throw new CustomError("File not found", 404);
+    }
+
+    const totalPages = file[0].pageCount || 1;
+
+    // Get all share IDs for this file
+    const shareLinksResult = await db
+      .select({ shareId: shareLinks.shareId })
+      .from(shareLinks)
+      .where(eq(shareLinks.fileId, fileId));
+
+    if (shareLinksResult.length === 0) {
+      res.json({
+        success: true,
+        data: {
+          fileStats: {
+            totalSessions: 0,
+            uniqueSessions: 0,
+            avgSessionTime: 0,
+            completionRate: 0
+          },
+          pageStats: [],
+          dropoffFunnel: []
+        }
+      });
+      return;
+    }
+
+    const shareIds = shareLinksResult.map(sl => sl.shareId);
+
+    // Date range filter (default: last 30 days)
+    const days = parseInt(req.query.days as string) || 30;
+    const start = new Date();
+    start.setDate(start.getDate() - days);
+
+    // Get file-level statistics
+    const fileStatsResult = await db
+      .select({
+        totalSessions: sql<number>`COUNT(*)`,
+        uniqueSessions: sql<number>`COUNT(DISTINCT ${viewSessions.sessionId})`,
+        avgSessionTime: sql<number>`COALESCE(AVG(${viewSessions.totalDuration}), 0)`,
+        totalDuration: sql<number>`COALESCE(SUM(${viewSessions.totalDuration}), 0)`
+      })
+      .from(viewSessions)
+      .where(and(
+        inArray(viewSessions.shareId, shareIds),
+        gte(viewSessions.startedAt, start)
+      ));
+
+    const fileStats = fileStatsResult[0];
+
+    // Get page-by-page statistics with efficient aggregation
+    const pageStatsResult = await db
+      .select({
+        pageNumber: pageViews.pageNumber,
+        totalViews: sql<number>`COUNT(*)`,
+        avgDuration: sql<number>`COALESCE(AVG(${pageViews.duration}), 0)`,
+        medianDuration: sql<number>`COALESCE(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY ${pageViews.duration}), 0)`,
+        p25Duration: sql<number>`COALESCE(PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY ${pageViews.duration}), 0)`,
+        p75Duration: sql<number>`COALESCE(PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY ${pageViews.duration}), 0)`,
+        skimRate: sql<number>`COALESCE(COUNT(CASE WHEN ${pageViews.duration} < 5 THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0), 0)`,
+        completionRate: sql<number>`COALESCE(COUNT(CASE WHEN ${pageViews.scrollDepth} >= 80 THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0), 0)`
+      })
+      .from(pageViews)
+      .innerJoin(viewSessions, eq(pageViews.sessionId, viewSessions.sessionId))
+      .where(and(
+        inArray(viewSessions.shareId, shareIds),
+        gte(viewSessions.startedAt, start)
+      ))
+      .groupBy(pageViews.pageNumber)
+      .orderBy(pageViews.pageNumber);
+
+    // Calculate drop-off funnel with safety checks
+    const dropoffFunnel = [];
+    const totalSessions = Number(fileStats.totalSessions) || 0;
+    for (let page = 1; page <= totalPages; page++) {
+      const pageStat = pageStatsResult.find(p => p.pageNumber === page);
+      if (pageStat && totalSessions > 0) {
+        const reachPercentage = (Number(pageStat.totalViews) / totalSessions) * 100;
+        dropoffFunnel.push({
+          page,
+          reachPercentage: Math.round(reachPercentage * 100) / 100
+        });
+      } else {
+        dropoffFunnel.push({
+          page,
+          reachPercentage: 0
+        });
+      }
+    }
+
+    // Format page stats with additional safety checks
+    const pageStats = pageStatsResult.map(stat => ({
+      pageNumber: stat.pageNumber,
+      totalViews: Number(stat.totalViews) || 0,
+      medianDuration: Math.round(Number(stat.medianDuration) || 0),
+      avgDuration: Math.round(Number(stat.avgDuration) || 0),
+      p25Duration: Math.round(Number(stat.p25Duration) || 0),
+      p75Duration: Math.round(Number(stat.p75Duration) || 0),
+      completionRate: Math.round(Number(stat.completionRate) || 0),
+      skimRate: Math.round(Number(stat.skimRate) || 0)
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        fileStats: {
+          totalSessions: Number(fileStats.totalSessions) || 0,
+          uniqueSessions: Number(fileStats.uniqueSessions) || 0,
+          avgSessionTime: Math.round(Number(fileStats.avgSessionTime) || 0),
+          completionRate: totalPages > 0 ? Math.round((dropoffFunnel[totalPages - 1]?.reachPercentage || 0) * 100) / 100 : 0
+        },
+        pageStats,
+        dropoffFunnel
+      }
+    });
+  })
+);
+
+// Paginated sessions endpoint for individual view
+router.get(
+  "/files/:fileId/sessions",
+  authenticate,
+  asyncHandler(async (req: Request, res: Response) => {
+    const fileId = parseInt(req.params.fileId);
+    const userId = req.user?.id;
+
+    if (!fileId || isNaN(fileId)) {
+      throw new CustomError("Invalid file ID", 400);
+    }
+
+    // Verify file ownership
+    const file = await db
+      .select({ id: files.id, pageCount: files.pageCount })
+      .from(files)
+      .where(and(eq(files.id, fileId), eq(files.userId, userId)))
+      .limit(1);
+
+    if (file.length === 0) {
+      throw new CustomError("File not found", 404);
+    }
+
+    // Get all share IDs for this file
+    const shareLinksResult = await db
+      .select({ shareId: shareLinks.shareId })
+      .from(shareLinks)
+      .where(eq(shareLinks.fileId, fileId));
+
+    if (shareLinksResult.length === 0) {
+      res.json({
+        success: true,
+        data: {
+          sessions: [],
+          pagination: {
+            page: 1,
+            limit: 20,
+            total: 0,
+            totalPages: 0
+          },
+          filters: {
+            applied: {},
+            available: {}
+          }
+        }
+      });
+      return;
+    }
+
+    const shareIds = shareLinksResult.map(sl => sl.shareId);
+
+    // Parse query parameters
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+    const offset = (page - 1) * limit;
+
+    // Parse filters
+    const emailSearch = req.query.email as string;
+    const device = req.query.device as string;
+    const country = req.query.country as string;
+    const dateFrom = req.query.dateFrom as string;
+    const dateTo = req.query.dateTo as string;
+
+    // Build where conditions
+    const whereConditions = [inArray(viewSessions.shareId, shareIds)];
+
+    if (emailSearch) {
+      whereConditions.push(sql`${viewSessions.viewerEmail} ILIKE ${`%${emailSearch}%`}`);
+    }
+
+    if (device) {
+      whereConditions.push(eq(viewSessions.device, device));
+    }
+
+    if (country) {
+      whereConditions.push(eq(viewSessions.country, country));
+    }
+
+    if (dateFrom) {
+      whereConditions.push(gte(viewSessions.startedAt, new Date(dateFrom)));
+    }
+
+    if (dateTo) {
+      whereConditions.push(lte(viewSessions.startedAt, new Date(dateTo)));
+    }
+
+    // Get total count for pagination
+    const totalCountResult = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(viewSessions)
+      .where(and(...whereConditions));
+
+    const total = Number(totalCountResult[0].count);
+    const totalPages = Math.ceil(total / limit);
+
+    // Get paginated sessions
+    const sessionsResult = await db
+      .select({
+        sessionId: viewSessions.sessionId,
+        startedAt: viewSessions.startedAt,
+        totalDuration: viewSessions.totalDuration,
+        viewerEmail: viewSessions.viewerEmail,
+        viewerName: viewSessions.viewerName,
+        device: viewSessions.device,
+        country: viewSessions.country,
+        browser: viewSessions.browser,
+        os: viewSessions.os,
+        isUnique: viewSessions.isUnique,
+        referer: viewSessions.referer
+      })
+      .from(viewSessions)
+      .where(and(...whereConditions))
+      .orderBy(desc(viewSessions.startedAt))
+      .limit(limit)
+      .offset(offset);
+
+    // Get page views for each session
+    const sessionIds = sessionsResult.map(s => s.sessionId);
+    const pageViewsResult = await db
+      .select({
+        sessionId: pageViews.sessionId,
+        pageNumber: pageViews.pageNumber,
+        duration: pageViews.duration,
+        scrollDepth: pageViews.scrollDepth,
+        viewedAt: pageViews.viewedAt
+      })
+      .from(pageViews)
+      .where(inArray(pageViews.sessionId, sessionIds))
+      .orderBy(pageViews.pageNumber);
+
+    // Group page views by session
+    const pageViewsBySession = new Map<string, any[]>();
+    pageViewsResult.forEach(pv => {
+      if (!pageViewsBySession.has(pv.sessionId)) {
+        pageViewsBySession.set(pv.sessionId, []);
+      }
+      pageViewsBySession.get(pv.sessionId)!.push({
+        pageNumber: pv.pageNumber,
+        duration: pv.duration,
+        scrollDepth: pv.scrollDepth,
+        viewedAt: pv.viewedAt
+      });
+    });
+
+    // Format sessions with their page views
+    const sessions = sessionsResult.map(session => ({
+      sessionId: session.sessionId,
+      startedAt: session.startedAt,
+      totalDuration: session.totalDuration,
+      viewerEmail: session.viewerEmail,
+      viewerName: session.viewerName,
+      device: session.device,
+      country: session.country,
+      browser: session.browser,
+      os: session.os,
+      isUnique: session.isUnique,
+      referer: session.referer,
+      pages: pageViewsBySession.get(session.sessionId) || []
+    }));
+
+    // Get available filter options
+    const availableFilters = await getAvailableFilters(shareIds);
+
+    res.json({
+      success: true,
+      data: {
+        sessions,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages
+        },
+        filters: {
+          applied: {
+            email: emailSearch,
+            device,
+            country,
+            dateFrom,
+            dateTo
+          },
+          available: availableFilters
+        }
+      }
+    });
+  })
+);
+
+// Helper function to get available filter options
+async function getAvailableFilters(shareIds: string[]) {
+  const [devices, countries] = await Promise.all([
+    db
+      .select({ device: viewSessions.device })
+      .from(viewSessions)
+      .where(and(
+        inArray(viewSessions.shareId, shareIds),
+        isNotNull(viewSessions.device)
+      ))
+      .groupBy(viewSessions.device)
+      .orderBy(viewSessions.device),
+
+    db
+      .select({ country: viewSessions.country })
+      .from(viewSessions)
+      .where(and(
+        inArray(viewSessions.shareId, shareIds),
+        isNotNull(viewSessions.country)
+      ))
+      .groupBy(viewSessions.country)
+      .orderBy(viewSessions.country)
+  ]);
+
+  return {
+    devices: devices.map(d => d.device).filter(Boolean),
+    countries: countries.map(c => c.country).filter(Boolean)
+  };
+}
 
 // Cache invalidation helpers
 export async function invalidateUserDashboardCache(userId: number): Promise<void> {

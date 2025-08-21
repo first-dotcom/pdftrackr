@@ -71,6 +71,12 @@ export default function SecurePDFViewer({
 
   // 📊 ANALYTICS FUNCTIONS
   const trackPageView = async (page: number, totalPages: number) => {
+    // Validate parameters
+    if (!page || page <= 0 || !totalPages || totalPages <= 0 || page > totalPages) {
+      console.warn(`Invalid page view tracking parameters: page=${page}, totalPages=${totalPages}`);
+      return;
+    }
+
     // Check consent before tracking
     if (typeof window !== 'undefined') {
       const consent = localStorage.getItem('analytics-consent');
@@ -101,8 +107,18 @@ export default function SecurePDFViewer({
     }
   };
 
-  const trackSessionEnd = async () => {
-    const durationSeconds = Math.round((Date.now() - sessionData.startTime) / 1000);
+  const trackSessionEnd = async (retryCount = 0) => {
+    const rawDurationSeconds = Math.round((Date.now() - sessionData.startTime) / 1000);
+    
+    // Cap duration to prevent unrealistic values (e.g., tab left open for hours)
+    // 30 minutes max for single page, 2 hours max for multi-page
+    const maxDuration = sessionData.totalPages === 1 ? 1800 : 7200; // 30min vs 2hr
+    const durationSeconds = Math.min(rawDurationSeconds, maxDuration);
+    
+    // Log if we're capping the duration
+    if (rawDurationSeconds > maxDuration) {
+      console.warn(`Session duration capped from ${rawDurationSeconds}s to ${maxDuration}s (${sessionData.totalPages} pages)`);
+    }
     
     try {
       await apiClient.analytics.trackSessionEnd({
@@ -117,23 +133,66 @@ export default function SecurePDFViewer({
       });
     } catch (error) {
       console.warn('Session end tracking failed:', error);
+      
+      // Retry logic for production reliability
+      if (retryCount < 2) {
+        setTimeout(() => {
+          trackSessionEnd(retryCount + 1);
+        }, 1000 * (retryCount + 1)); // Exponential backoff: 1s, 2s
+      }
     }
   };
 
-  // Cleanup: Track session end on component unmount
-  useEffect(() => {
-    return () => {
-      if (sessionData.totalPages > 0) {
-        trackSessionEnd();
-      }
-    };
-  }, [sessionData]);
-
-  // Track session end after 30 seconds of viewing (for engagement metrics)
+  // Simplified session end tracking for production reliability
   useEffect(() => {
     if (sessionData.totalPages > 0) {
-      // For single-page PDFs, use shorter timer
-      const timerDuration = sessionData.totalPages === 1 ? 10000 : 30000; // 10s for single page, 30s for multi-page
+      // Simple timer-based tracking with intelligent timing
+      let timerDuration: number;
+      
+      if (sessionData.totalPages === 1) {
+        timerDuration = 8000; // 8s for single page
+      } else if (sessionData.totalPages <= 5) {
+        timerDuration = 15000; // 15s for short docs
+      } else if (sessionData.totalPages <= 20) {
+        timerDuration = 25000; // 25s for medium docs
+      } else {
+        timerDuration = 35000; // 35s for long docs
+      }
+      
+      const timer = setTimeout(() => {
+        trackSessionEnd();
+      }, timerDuration);
+
+      // Cleanup on unmount
+      return () => {
+        clearTimeout(timer);
+        trackSessionEnd(); // Final tracking on unmount
+      };
+    }
+    
+    return () => {};
+  }, [sessionData.totalPages]);
+
+  // Track session end with intelligent timing based on user behavior
+  useEffect(() => {
+    if (sessionData.totalPages > 0) {
+      // Intelligent timer based on document type and user behavior
+      let timerDuration: number;
+      
+      if (sessionData.totalPages === 1) {
+        // Single page: 8 seconds (most single-page PDFs are quick reads)
+        timerDuration = 8000;
+      } else if (sessionData.totalPages <= 5) {
+        // Short document: 15 seconds (quick multi-page reads)
+        timerDuration = 15000;
+      } else if (sessionData.totalPages <= 20) {
+        // Medium document: 25 seconds (normal reading time)
+        timerDuration = 25000;
+      } else {
+        // Long document: 35 seconds (allows for page navigation)
+        timerDuration = 35000;
+      }
+      
       console.log(`Setting up ${timerDuration/1000}-second timer for session end (${sessionData.totalPages} pages)`);
       
       const timer = setTimeout(() => {
@@ -187,6 +246,14 @@ export default function SecurePDFViewer({
 
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+    // Validate page count
+    if (!numPages || numPages <= 0 || numPages > 10000) {
+      console.warn(`Invalid page count from PDF.js: ${numPages}`);
+      setLoading(false);
+      onError?.('Invalid PDF: Unable to determine page count');
+      return;
+    }
+
     setNumPages(numPages);
     setLoading(false);
     

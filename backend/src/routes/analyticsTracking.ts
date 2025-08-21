@@ -31,6 +31,13 @@ router.post(
     }
 
     try {
+      // Update file's page count if this is the first time we're seeing it
+      // Don't await this to avoid blocking page view tracking
+      auditService.updateFilePageCount(shareId, parseInt(totalPages))
+        .catch(error => {
+          logger.error('Failed to update file page count:', error);
+        });
+
       await auditService.logPageView({
         shareId,
         email,

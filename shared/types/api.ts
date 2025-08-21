@@ -43,6 +43,7 @@ export interface File {
   fileHash: string | null;
   scanStatus: string | null;
   securityFlags: string[] | null;
+  pageCount: number | null; // Actual page count from PDF.js
   createdAt: string;
   updatedAt: string;
   viewCount: number;
@@ -216,4 +217,87 @@ export interface UserProfile {
     fileCount: number;
     fileSize: number;
   };
+}
+
+export interface PageStats {
+  pageNumber: number;
+  totalViews: number;
+  medianDuration: number;
+  avgDuration: number;
+  p25Duration: number;
+  p75Duration: number;
+  completionRate: number;
+  skimRate: number;
+}
+
+export interface DropoffFunnel {
+  page: number;
+  reachPercentage: number;
+}
+
+export interface FileStats {
+  totalSessions: number;
+  uniqueSessions: number;
+  avgSessionTime: number;
+  completionRate: number;
+}
+
+export interface AggregateAnalytics {
+  fileStats: FileStats;
+  pageStats: PageStats[];
+  dropoffFunnel: DropoffFunnel[];
+}
+
+// Individual Session Types
+export interface SessionPageView {
+  pageNumber: number;
+  duration: number;
+  scrollDepth: number;
+  viewedAt: string;
+}
+
+export interface IndividualSession {
+  sessionId: string;
+  startedAt: string;
+  totalDuration: number;
+  viewerEmail: string | null;
+  viewerName: string | null;
+  device: string | null;
+  country: string | null;
+  browser: string | null;
+  os: string | null;
+  isUnique: boolean;
+  referer: string | null;
+  pages: SessionPageView[];
+}
+
+export interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface AppliedFilters {
+  email?: string;
+  device?: string;
+  country?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+export interface AvailableFilters {
+  devices: string[];
+  countries: string[];
+}
+
+export interface FilterState {
+  applied: AppliedFilters;
+  available: AvailableFilters;
+}
+
+export interface PaginatedSessionsResponse {
+  sessions: IndividualSession[];
+  pagination: PaginationInfo;
+  filters: FilterState;
 }

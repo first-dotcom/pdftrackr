@@ -11,6 +11,7 @@ import ShareLinkModal from "@/components/ShareLinkModal";
 import { useApi } from "@/hooks/useApi";
 import { formatFileSize } from "@/utils/formatters";
 import SimpleFileStats from "@/components/SimpleFileStats";
+import PageAnalytics from "@/components/PageAnalytics";
 import { File as FileType, ShareLink } from "@/shared/types";
 
 // Use the shared interfaces instead of custom definitions
@@ -412,6 +413,16 @@ export default function FileDetailPage() {
             </div>
           </div>
 
+          {/* Page-by-Page Analytics Section */}
+          {file && (
+            <div className="border-t pt-8">
+              <PageAnalytics 
+                fileId={parseInt(fileId)} 
+                totalPages={file.pageCount || Math.max(1, Math.ceil((file.size || 0) / 50000))} // Use real page count, fallback to estimate
+              />
+            </div>
+          )}
+
           {/* Simple Analytics Section - Show for each share link */}
           {shareLinks.length > 0 && (
             <div className="space-y-8">
@@ -425,6 +436,7 @@ export default function FileDetailPage() {
               ))}
             </div>
           )}
+
         </>
       ) : null}
 

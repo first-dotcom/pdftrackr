@@ -1,4 +1,4 @@
-import { and, desc, eq, or } from "drizzle-orm";
+import { and, desc, eq, or, isNull, ne } from "drizzle-orm";
 import { auditLogs, viewSessions, pageViews, files, shareLinks } from "../models/schema";
 import { db } from "../utils/database";
 import { logger } from "../utils/logger";
@@ -254,9 +254,22 @@ export class AuditService {
     maxPageReached: number;
     sessionId?: string;
   }) {
+    // Validate and cap duration to prevent unrealistic values
+    const maxDuration = data.totalPages === 1 ? 1800 : 7200; // 30min vs 2hr
+    const cappedDuration = Math.min(data.durationSeconds, maxDuration);
+    
+    if (data.durationSeconds > maxDuration) {
+      logger.warn(`Session duration capped from ${data.durationSeconds}s to ${cappedDuration}s for ${data.totalPages} pages`, {
+        shareId: data.shareId,
+        originalDuration: data.durationSeconds,
+        cappedDuration,
+        totalPages: data.totalPages
+      });
+    }
+    
     const completionRate = Math.round((data.maxPageReached / data.totalPages) * 100);
     const engagementScore = this.calculateEngagementScore(
-      data.durationSeconds, 
+      cappedDuration, // Use capped duration for calculations
       data.maxPageReached, 
       data.totalPages
     );
@@ -270,16 +283,16 @@ export class AuditService {
       userAgent: data.userAgent,
       email: data.email,
       success: true,
-      metadata: {
-        durationSeconds: data.durationSeconds,
-        durationMinutes: Math.round(data.durationSeconds / 60),
-        pagesViewed: data.pagesViewed,
-        totalPages: data.totalPages,
-        maxPageReached: data.maxPageReached,
-        completionRate,
-        engagementScore,
-        readingSpeed: data.durationSeconds > 0 ? Math.round(data.pagesViewed / (data.durationSeconds / 60)) : 0, // pages per minute
-      },
+              metadata: {
+          durationSeconds: cappedDuration, // Store capped duration
+          durationMinutes: Math.round(cappedDuration / 60),
+          pagesViewed: data.pagesViewed,
+          totalPages: data.totalPages,
+          maxPageReached: data.maxPageReached,
+          completionRate,
+          engagementScore,
+          readingSpeed: cappedDuration > 0 ? Math.round(data.pagesViewed / (cappedDuration / 60)) : 0, // pages per minute
+        },
     });
 
     // ALSO update analytics tables for dashboard queries
@@ -289,13 +302,13 @@ export class AuditService {
         await db
           .update(viewSessions)
           .set({
-            totalDuration: data.durationSeconds,
+            totalDuration: cappedDuration, // Use capped duration
             lastActiveAt: new Date(),
           })
           .where(eq(viewSessions.sessionId, data.sessionId));
 
         // Update page view durations (distribute total duration across pages)
-        const avgDurationPerPage = Math.round(data.durationSeconds / data.pagesViewed);
+        const avgDurationPerPage = Math.round(cappedDuration / data.pagesViewed);
         await db
           .update(pageViews)
           .set({
@@ -494,6 +507,62 @@ export class AuditService {
       const errorMessage = error instanceof Error ? error.message : String(error);
       logger.error(`Failed to get document engagement stats: ${errorMessage}`);
       return null;
+    }
+  }
+
+  async updateFilePageCount(shareId: string, pageCount: number) {
+    try {
+      // Validate page count
+      if (!pageCount || pageCount <= 0 || pageCount > 10000) {
+        logger.warn(`Invalid page count received: ${pageCount} for shareId: ${shareId}`);
+        return;
+      }
+
+      // Get the file ID from the share link
+      const shareLink = await db
+        .select({ fileId: shareLinks.fileId })
+        .from(shareLinks)
+        .where(eq(shareLinks.shareId, shareId))
+        .limit(1);
+
+      if (shareLink.length === 0) {
+        logger.warn(`Share link not found for page count update: ${shareId}`);
+        return;
+      }
+
+      const fileId = shareLink[0].fileId;
+
+      // Use UPSERT pattern to handle race conditions
+      // This will either insert or update atomically
+      await db
+        .update(files)
+        .set({ 
+          pageCount: pageCount,
+          updatedAt: new Date()
+        })
+        .where(
+          and(
+            eq(files.id, fileId),
+            or(
+              isNull(files.pageCount),
+              ne(files.pageCount, pageCount)
+            )
+          )
+        );
+
+      // Check if any rows were affected to log the update
+      const updatedFile = await db
+        .select({ pageCount: files.pageCount })
+        .from(files)
+        .where(eq(files.id, fileId))
+        .limit(1);
+
+      if (updatedFile.length > 0 && updatedFile[0].pageCount === pageCount) {
+        logger.info(`Updated page count for file ${fileId}: ${pageCount} pages`);
+      }
+    } catch (error) {
+      logger.error(`Failed to update file page count: ${error}`);
+      // Don't throw - this should not break page view tracking
     }
   }
 

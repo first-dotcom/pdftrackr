@@ -233,7 +233,38 @@ class ApiClient {
 
   analytics = {
     file: (fileId: number) => this.get(`/api/analytics/files/${fileId}`),
+    aggregate: (fileId: number, days?: number) => {
+      const searchParams = new URLSearchParams();
+      if (days) searchParams.append('days', days.toString());
+      searchParams.append('_t', Date.now().toString()); // Cache buster
+      const query = searchParams.toString();
+      return this.get(`/api/analytics/files/${fileId}/aggregate?${query}`);
+    },
+    sessions: (fileId: number, params?: {
+      page?: number;
+      limit?: number;
+      email?: string;
+      device?: string;
+      country?: string;
+      dateFrom?: string;
+      dateTo?: string;
+    }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.email) searchParams.append('email', params.email);
+      if (params?.device) searchParams.append('device', params.device);
+      if (params?.country) searchParams.append('country', params.country);
+      if (params?.dateFrom) searchParams.append('dateFrom', params.dateFrom);
+      if (params?.dateTo) searchParams.append('dateTo', params.dateTo);
+      const query = searchParams.toString();
+      return this.get(`/api/analytics/files/${fileId}/sessions${query ? `?${query}` : ''}`);
+    },
     share: (shareId: string) => this.get(`/api/analytics/shares/${shareId}`),
+    tracking: {
+      pageView: (data: any) => this.post("/api/analytics/tracking/page-view", data),
+      sessionEnd: (data: any) => this.post("/api/analytics/tracking/session-end", data),
+    },
     dashboard: () => this.get("/api/analytics/dashboard"),
     
     // 📊 NEW HIGH-VALUE ANALYTICS TRACKING
