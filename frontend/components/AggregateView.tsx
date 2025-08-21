@@ -23,12 +23,9 @@ export default function AggregateView({ fileId, totalPages, days = 30 }: Aggrega
       setLoading(true);
       setError(null);
       const response = await apiClient.analytics.aggregate(fileId, days);
-      console.log('AggregateView: Response received:', response);
       if (response.success && response.data) {
-        console.log('AggregateView: Setting data:', response.data);
         setData(response.data as AggregateAnalytics);
       } else {
-        console.log('AggregateView: Failed response:', response);
         setError('Failed to load analytics data');
       }
     } catch (err) {
@@ -44,14 +41,11 @@ export default function AggregateView({ fileId, totalPages, days = 30 }: Aggrega
   }, [fetchData]);
 
   const chartData = useMemo(() => {
-    console.log('AggregateView: Computing chartData from:', data);
     if (!data?.pageStats || !Array.isArray(data.pageStats)) {
-      console.log('AggregateView: No pageStats data available');
       return [];
     }
     
-    const result = data.pageStats.map(stat => {
-      console.log('AggregateView: Processing stat:', stat);
+    return data.pageStats.map(stat => {
       // Ensure all values are valid numbers and not NaN
       const medianTime = Number(stat.medianDuration);
       const avgTime = Number(stat.avgDuration);
@@ -66,29 +60,23 @@ export default function AggregateView({ fileId, totalPages, days = 30 }: Aggrega
       const safeCompletionRate = isNaN(completionRate) || completionRate < 0 ? 0 : completionRate;
       const safeSkimRate = isNaN(skimRate) || skimRate < 0 ? 0 : skimRate;
       
-      const item = {
+      return {
         page: `Page ${stat.pageNumber}`,
         medianTime: safeMedianTime,
         avgTime: safeAvgTime,
+        avgDuration: safeAvgTime,
         views: safeViews,
         completionRate: safeCompletionRate,
         skimRate: safeSkimRate
       };
-      console.log('AggregateView: Created chart item:', item);
-      return item;
     }).filter(item => {
       // Final safety filter - remove any items with NaN values
-      const isValid = !isNaN(item.medianTime) && 
+      return !isNaN(item.medianTime) && 
              !isNaN(item.avgTime) && 
              !isNaN(item.views) && 
              !isNaN(item.completionRate) && 
              !isNaN(item.skimRate);
-      console.log('AggregateView: Item valid:', isValid, item);
-      return isValid;
     });
-    
-    console.log('AggregateView: Final chartData:', result);
-    return result;
   }, [data]);
 
 
@@ -125,29 +113,34 @@ export default function AggregateView({ fileId, totalPages, days = 30 }: Aggrega
 
   return (
     <div className="space-y-6">
-      {/* Page-by-Page Reading Time (Horizontal Bar Chart) */}
+      {/* Page-by-Page Reading Time Chart */}
       <div className="bg-white p-6 rounded-lg border">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Page-by-Page Reading Time</h3>
-                       <p className="text-sm text-gray-600 mb-6">
-                 Average time spent on each page (horizontal bars show time duration)
-               </p>
+        <p className="text-sm text-gray-600 mb-6">
+          Average time spent on each page
+        </p>
         
-                       <ResponsiveContainer width="100%" height={320}>
-                 <BarChart
-                   data={chartData}
-                   layout="horizontal"
-                   margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                 >
-                   <CartesianGrid strokeDasharray="3 3" />
-                   <XAxis type="number" dataKey="avgTime" />
-                   <YAxis type="category" dataKey="page" width={80} />
-                   <Tooltip 
-                     formatter={(value: any) => [formatViewTime(value), 'Average Time']}
-                     labelFormatter={(label) => label}
-                   />
-                   <Bar dataKey="avgTime" fill="#3B82F6" />
-                 </BarChart>
-               </ResponsiveContainer>
+        {chartData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={320}>
+            <BarChart
+              data={chartData}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="page" />
+              <YAxis />
+              <Tooltip 
+                formatter={(value: any) => [formatViewTime(value), 'Average Time']}
+                labelFormatter={(label) => label}
+              />
+              <Bar dataKey="avgDuration" fill="#3B82F6" />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-600">No analytics data available yet.</p>
+          </div>
+        )}
       </div>
     </div>
   );

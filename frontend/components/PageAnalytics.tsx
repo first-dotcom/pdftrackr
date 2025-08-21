@@ -21,8 +21,10 @@ export default function PageAnalytics({ fileId, totalPages }: PageAnalyticsProps
         <div className="flex items-center space-x-4">
           {viewMode === 'aggregate' && (
             <div className="flex items-center space-x-2">
-              <label className="text-sm text-gray-600">Time Range:</label>
+              <label htmlFor="time-range-select" className="text-sm text-gray-600">Time Range:</label>
               <select
+                id="time-range-select"
+                name="timeRange"
                 value={days}
                 onChange={(e) => setDays(Number(e.target.value))}
                 className="text-sm border border-gray-300 rounded px-2 py-1"

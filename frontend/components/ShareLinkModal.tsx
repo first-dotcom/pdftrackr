@@ -400,6 +400,8 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
                     Expires After
                   </label>
                   <input
+                    id="expires-at-input"
+                    name="expiresAt"
                     type="date"
                     value={form.expiresAt}
                     onChange={(e) => handleFieldChange("expiresAt", e.target.value)}
@@ -417,6 +419,8 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Max Views</label>
                   <input
+                    id="max-views-input"
+                    name="maxViews"
                     type="number"
                     value={form.maxViews}
                     onChange={(e) => handleFieldChange("maxViews", e.target.value)}

@@ -174,8 +174,10 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
         {showFilters && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Device</label>
+              <label htmlFor="device-filter" className="block text-sm font-medium text-gray-700 mb-1">Device</label>
               <select
+                id="device-filter"
+                name="deviceFilter"
                 value={filters.device || ''}
                 onChange={(e) => handleFilterChange('device', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -188,8 +190,10 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+              <label htmlFor="country-filter" className="block text-sm font-medium text-gray-700 mb-1">Country</label>
               <select
+                id="country-filter"
+                name="countryFilter"
                 value={filters.country || ''}
                 onChange={(e) => handleFilterChange('country', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -202,8 +206,10 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date From</label>
+              <label htmlFor="date-from-filter" className="block text-sm font-medium text-gray-700 mb-1">Date From</label>
               <input
+                id="date-from-filter"
+                name="dateFromFilter"
                 type="date"
                 value={filters.dateFrom || ''}
                 onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
@@ -212,8 +218,10 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date To</label>
+              <label htmlFor="date-to-filter" className="block text-sm font-medium text-gray-700 mb-1">Date To</label>
               <input
+                id="date-to-filter"
+                name="dateToFilter"
                 type="date"
                 value={filters.dateTo || ''}
                 onChange={(e) => handleFilterChange('dateTo', e.target.value)}

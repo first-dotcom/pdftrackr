@@ -249,6 +249,8 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
                     Email Address <span className="text-red-500">*</span>
                   </label>
                   <input
+                    id="email-input"
+                    name="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -262,6 +264,8 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
                     Name <span className="text-gray-400">(optional)</span>
                   </label>
                   <input
+                    id="name-input"
+                    name="name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -277,14 +281,16 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Password <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="input w-full border border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-200 focus:ring-opacity-50 text-sm text-gray-900 placeholder-gray-400"
-                  placeholder="Enter password"
-                  required
-                />
+                                  <input
+                    id="password-input"
+                    name="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="input w-full border border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-200 focus:ring-opacity-50 text-sm text-gray-900 placeholder-gray-400"
+                    placeholder="Enter password"
+                    required
+                  />
               </div>
             )}
 

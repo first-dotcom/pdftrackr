@@ -294,6 +294,8 @@ export default function SettingsPage() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Data Retention Period</label>
             <select
+              id="data-retention-select"
+              name="dataRetention"
               value={settings.privacy.dataRetention}
               onChange={(e) =>
                 updateSettings({

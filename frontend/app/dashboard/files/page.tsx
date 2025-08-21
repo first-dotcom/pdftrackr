@@ -664,6 +664,8 @@ export default function FilesPage() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" aria-hidden="true" />
               <input
+                id="file-search"
+                name="fileSearch"
                 type="text"
                 placeholder="Search files..."
                 className="input pl-10 w-full h-12 text-base"

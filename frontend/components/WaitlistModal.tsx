@@ -129,6 +129,8 @@ export default function WaitlistModal() {
                   Interested Plan
                 </label>
                 <select
+                  id="plan-select"
+                  name="plan"
                   value={plan}
                   onChange={(e) => setPlan(e.target.value)}
                   className="input w-full"
