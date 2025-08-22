@@ -20,7 +20,7 @@ export default function Hero() {
                 Password-protect your documents, capture emails, track page-by-page engagement, and control downloads. 500MB free storage, no credit card required.
               </p>
 
-              <p className="mt-2 text-sm text-gray-400 sm:max-w-xl sm:mx-auto lg:mx-0">
+              <p className="mt-2 text-sm text-gray-500 sm:max-w-xl sm:mx-auto lg:mx-0">
                 Need more than 500MB?{" "}
                 <button
                   onClick={() => document.getElementById("waitlist-modal")?.classList.remove("hidden")}
@@ -68,15 +68,15 @@ export default function Hero() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Total Views</span>
-                    <span className="text-sm font-medium text-green-600">156</span>
+                    <span className="text-sm font-medium text-green-700">156</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Avg. Session</span>
-                    <span className="text-sm font-medium text-green-600">2m 34s</span>
+                    <span className="text-sm font-medium text-green-700">2m 34s</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Completion Rate</span>
-                    <span className="text-sm font-medium text-green-600">68%</span>
+                    <span className="text-sm font-medium text-green-700">68%</span>
                   </div>
                 </div>
               </div>

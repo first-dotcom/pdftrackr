@@ -118,10 +118,10 @@ export default function Pricing() {
               </div>
               <div className="p-6">
                 <h3 className="text-lg leading-6 font-medium text-gray-900">{plan.name}</h3>
-                <p className="mt-4 text-sm text-gray-500">{plan.description}</p>
+                <p className="mt-4 text-sm text-gray-600">{plan.description}</p>
                 <p className="mt-8">
                   <span className="text-4xl font-extrabold text-gray-900">{plan.price}</span>
-                  <span className="text-base font-medium text-gray-500">/month</span>
+                  <span className="text-base font-medium text-gray-600">/month</span>
                 </p>
                 {plan.available ? (
                   <Link
@@ -142,6 +142,7 @@ export default function Pricing() {
                         document.getElementById("waitlist-modal")?.classList.remove("hidden")
                       }
                       className="block w-full py-2 px-4 border border-gray-300 rounded-md text-sm font-medium text-center bg-gray-100 text-gray-500 cursor-pointer hover:bg-gray-200 transition-colors"
+                      aria-label={`Join waitlist for ${plan.name} plan`}
                     >
                       {plan.cta}
                     </button>
@@ -156,7 +157,7 @@ export default function Pricing() {
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex space-x-3">
                       <Check className="flex-shrink-0 h-5 w-5 text-green-500" />
-                      <span className="text-sm text-gray-500">{feature}</span>
+                      <span className="text-sm text-gray-600">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -167,7 +168,7 @@ export default function Pricing() {
 
         {/* Additional Note */}
         <div className="mt-12 text-center">
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-gray-600 mb-4">
             All plans include secure hosting, GDPR compliance, and automatic backups
           </p>
           <div className="bg-gray-50 rounded-lg p-6 max-w-4xl mx-auto">
