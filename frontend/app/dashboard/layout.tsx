@@ -8,7 +8,7 @@ import FloatingUploadButton from "@/components/FloatingUploadButton";
 import WaitlistModal from "@/components/WaitlistModal";
 
 import { useAuth } from "@clerk/nextjs";
-import { redirect } from "next/navigation";
+import { redirect, usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
 interface DashboardLayoutProps {
@@ -18,6 +18,12 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { isLoaded, userId } = useAuth();
+  const pathname = usePathname();
+
+  // Check if we should show Quick Actions (only on main dashboard, files, or admin pages)
+  const shouldShowQuickActions = pathname === '/dashboard' || 
+                                pathname.startsWith('/dashboard/files') || 
+                                pathname.startsWith('/dashboard/admin');
 
   // Show loading while auth is loading
   if (!isLoaded) {
@@ -65,54 +71,30 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </ErrorBoundary>
                   </div>
                 
-                {/* Right sidebar for large screens - could be used for ads, quick actions, etc */}
-                <div className="hidden xl:block w-80 flex-shrink-0">
-                  <div className="sticky top-6 space-y-6">
-                    {/* Quick Actions Panel */}
-                    <div className="card">
-                      <div className="card-header">
-                        <h3 className="text-sm font-medium text-gray-900">Quick Actions</h3>
-                      </div>
-                      <div className="card-body p-4 space-y-3">
-                        <a href="/dashboard/files/upload" className="block w-full btn-primary btn-sm text-center">
-                          Upload New PDF
-                        </a>
-                        <a href="/dashboard/files" className="block w-full btn-secondary btn-sm text-center">
-                          View All Files
-                        </a>
-                        <a href="/dashboard/settings" className="block w-full btn-secondary btn-sm text-center">
-                          Account Settings
-                        </a>
-                      </div>
-                    </div>
-                    
-                    {/* Tips Panel */}
-                    <div className="card">
-                      <div className="card-header">
-                        <h3 className="text-sm font-medium text-gray-900">💡 Tips</h3>
-                      </div>
-                      <div className="card-body p-4">
-                        <div className="space-y-3 text-sm text-gray-600">
-                          <p>• Share links expire automatically for security</p>
-                          <p>• Enable email gating to capture leads</p>
-                          <p>• Check analytics to see engagement</p>
-                          <p>• Watermarks protect your content</p>
+                {/* Right sidebar for large screens - quick actions */}
+                {shouldShowQuickActions && (
+                  <div className="hidden xl:block w-80 flex-shrink-0">
+                    <div className="sticky top-6 space-y-6">
+                      {/* Quick Actions Panel */}
+                      <div className="card">
+                        <div className="card-header">
+                          <h3 className="text-sm font-medium text-gray-900">Quick Actions</h3>
                         </div>
-                      </div>
-                    </div>
-                    
-                    {/* Placeholder for ads or additional content */}
-                    <div className="card bg-gray-50 border-dashed border-2 border-gray-300">
-                      <div className="card-body p-6 text-center">
-                        <div className="text-gray-400 text-sm">
-                          Ad Space
-                          <br />
-                          320x250
+                        <div className="card-body p-4 space-y-3">
+                          <a href="/dashboard/files/upload" className="block w-full btn-primary btn-sm text-center">
+                            Upload New PDF
+                          </a>
+                          <a href="/dashboard/files" className="block w-full btn-secondary btn-sm text-center">
+                            View All Files
+                          </a>
+                          <a href="/dashboard/settings" className="block w-full btn-secondary btn-sm text-center">
+                            Account Settings
+                          </a>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
