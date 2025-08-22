@@ -26,7 +26,7 @@ export default function Hero() {
                   onClick={() => document.getElementById("waitlist-modal")?.classList.remove("hidden")}
                   className="text-primary-600 hover:text-primary-700 underline"
                 >
-                  Join the waitlist for Pro plans launching Q3 2025
+                  Join the waitlist for Pro plans launching Q4 2025
                 </button>
               </p>
 
@@ -62,21 +62,21 @@ export default function Hero() {
             <div className="bg-white p-6 rounded-lg shadow-sm w-full max-w-md animate-pulse">
               <div className="bg-gray-50 p-4 rounded">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="font-semibold text-gray-700">Recent Views</span>
-                  <span className="text-sm text-gray-500">Last 7 days</span>
+                  <span className="font-semibold text-gray-700">Demo Analytics</span>
+                  <span className="text-sm text-gray-500">Sample Data</span>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">proposal-2025.pdf</span>
-                    <span className="text-sm font-medium text-green-600">12 views</span>
+                    <span className="text-sm text-gray-600">Total Views</span>
+                    <span className="text-sm font-medium text-green-600">156</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">contract-draft.pdf</span>
-                    <span className="text-sm font-medium text-green-600">8 views</span>
+                    <span className="text-sm text-gray-600">Avg. Session</span>
+                    <span className="text-sm font-medium text-green-600">2m 34s</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">presentation.pdf</span>
-                    <span className="text-sm font-medium text-green-600">24 views</span>
+                    <span className="text-sm text-gray-600">Completion Rate</span>
+                    <span className="text-sm font-medium text-green-600">68%</span>
                   </div>
                 </div>
               </div>

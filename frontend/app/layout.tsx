@@ -67,13 +67,13 @@ export default function RootLayout({
       "@type": "Offer",
       "price": "0",
       "priceCurrency": "USD",
-      "description": "Free plan with 500MB storage, password protection, email capture, real-time analytics, GDPR compliance, and virus scanning"
+      "description": "Free plan with 500MB storage, password protection, email capture, live analytics, GDPR compliance, and virus scanning"
     },
     "featureList": [
       "500MB free storage",
       "Password-protected sharing",
       "Email capture",
-      "Real-time analytics",
+      "Live analytics",
       "GDPR compliant",
       "Virus scanning"
     ],

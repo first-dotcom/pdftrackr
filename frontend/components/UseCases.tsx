@@ -3,7 +3,7 @@ import { Briefcase, Users, Laptop, GraduationCap } from "lucide-react";
 const useCases = [
   {
     title: "Sales Professionals",
-    description: "Share proposals and contracts securely with real-time tracking",
+    description: "Share proposals and contracts securely with live tracking",
     icon: "📊",
   },
   {

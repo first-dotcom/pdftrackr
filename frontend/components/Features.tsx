@@ -30,7 +30,7 @@ const featureGroups = [
   },
   {
     icon: BarChart3,
-    title: "Real Analytics",
+    title: "Live Analytics",
     features: [
       {
         title: "View Tracking",

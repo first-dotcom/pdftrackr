@@ -47,7 +47,7 @@ const plans = [
     href: "#",
     featured: false,
     available: false,
-    badge: "COMING Q3 2025",
+    badge: "COMING SOON",
     badgeColor: "bg-blue-100 text-blue-800",
   },
   {
@@ -67,7 +67,7 @@ const plans = [
     href: "#",
     featured: false,
     available: false,
-    badge: "COMING Q3 2025",
+    badge: "COMING Q4 2025",
     badgeColor: "bg-purple-100 text-purple-800",
   },
   {
@@ -87,7 +87,7 @@ const plans = [
     href: "#",
     featured: false,
     available: false,
-    badge: "COMING Q3 2025",
+    badge: "COMING Q4 2025",
     badgeColor: "bg-orange-100 text-orange-800",
   },
 ];

@@ -17,7 +17,7 @@ const steps = [
   {
     number: "3",
     title: "Share & Track",
-    description: "Send your secure link and watch real-time analytics roll in.",
+    description: "Send your secure link and watch live analytics roll in.",
     icon: BarChart,
   },
   {
