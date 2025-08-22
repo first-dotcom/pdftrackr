@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, Menu, X, Upload, BarChart3 } from "lucide-react";
+import { FileText, Menu, X, Upload } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
@@ -44,10 +44,6 @@ export default function Header() {
                 <Link href="/dashboard/files" className="text-gray-600 hover:text-gray-900 flex items-center space-x-1">
                   <Upload className="h-4 w-4" />
                   <span>Upload</span>
-                </Link>
-                <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 flex items-center space-x-1">
-                  <BarChart3 className="h-4 w-4" />
-                  <span>Analytics</span>
                 </Link>
                 <Link href="/dashboard/settings" className="text-gray-600 hover:text-gray-900">
                   Settings
@@ -115,14 +111,6 @@ export default function Header() {
                   >
                     <Upload className="h-4 w-4" />
                     <span>Upload</span>
-                  </Link>
-                  <Link
-                    href="/dashboard"
-                    className="text-gray-600 hover:text-gray-900 flex items-center space-x-1"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <BarChart3 className="h-4 w-4" />
-                    <span>Analytics</span>
                   </Link>
                   <Link
                     href="/dashboard/settings"

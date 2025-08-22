@@ -3,7 +3,7 @@
 import { UserButton } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
-import { Menu, FileText, LayoutDashboard, Shield } from "lucide-react";
+import { Menu, FileText, LayoutDashboard, Shield, Settings } from "lucide-react";
 import Link from "next/link";
 import { clsx } from "clsx";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -15,6 +15,7 @@ interface DashboardHeaderProps {
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Files", href: "/dashboard/files", icon: FileText },
+  { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderProps) {
@@ -71,7 +72,8 @@ export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderPr
             <nav className="hidden lg:flex space-x-8 ml-8">
               {[...navigation, ...(isAdmin ? [{ name: "Admin", href: "/dashboard/admin", icon: Shield }] : [])].map((item) => {
                 const isActive = pathname === item.href || 
-                  (item.href === "/dashboard/files" && pathname.startsWith("/dashboard/files"));
+                  (item.href === "/dashboard/files" && pathname.startsWith("/dashboard/files")) ||
+                  (item.href === "/dashboard/settings" && pathname.startsWith("/dashboard/settings"));
                 
                 return (
                   <Link
