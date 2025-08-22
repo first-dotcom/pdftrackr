@@ -8,6 +8,18 @@ import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 
+// Simple debounce utility
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+}
+
 // Set up PDF.js worker (same as test page)
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
@@ -227,6 +239,36 @@ export default function SecurePDFViewer({
   }, []);
 
   // 📊 ANALYTICS FUNCTIONS
+  const trackSessionStart = async () => {
+    // Check consent before tracking
+    if (typeof window !== 'undefined') {
+      const consent = localStorage.getItem('analytics-consent');
+      if (consent !== 'accepted') {
+        return; // Don't track without consent
+      }
+    }
+
+    try {
+      await apiClient.analytics.trackSessionStart({
+        shareId,
+        email,
+        sessionId,
+        timestamp: new Date().toISOString(),
+      });
+      console.log('Session start tracked');
+    } catch (error) {
+      console.warn('Session start tracking failed:', error);
+    }
+  };
+
+  // Debounced page view tracking for better performance
+  const debouncedTrackPageView = useCallback(
+    debounce(async (page: number, totalPages: number) => {
+      await trackPageView(page, totalPages);
+    }, 1000), // 1 second debounce
+    []
+  );
+
   const trackPageView = async (page: number, totalPages: number) => {
     // Validate parameters
     if (!page || page <= 0 || !totalPages || totalPages <= 0 || page > totalPages) {
@@ -282,6 +324,15 @@ export default function SecurePDFViewer({
   const trackSessionEnd = async (retryCount = 0) => {
     const rawDurationSeconds = Math.round((Date.now() - sessionData.startTime) / 1000);
     
+    // Quality filter: Only track sessions with meaningful engagement
+    const minEngagementTime = 3; // 3 seconds minimum
+    const minPagesViewed = 1; // At least 1 page viewed
+    
+    if (rawDurationSeconds < minEngagementTime || sessionData.pagesViewed.size < minPagesViewed) {
+      console.log(`Session too short (${rawDurationSeconds}s) or no pages viewed (${sessionData.pagesViewed.size}), skipping session end tracking`);
+      return;
+    }
+    
     // Cap duration to prevent unrealistic values (e.g., tab left open for hours)
     // 30 minutes max for single page, 2 hours max for multi-page
     const maxDuration = sessionData.totalPages === 1 ? 1800 : 7200; // 30min vs 2hr
@@ -315,36 +366,65 @@ export default function SecurePDFViewer({
     }
   };
 
-  // Single session end tracking with intelligent timing
+  // Track session start with a small delay to filter out immediate bounces
   useEffect(() => {
-    if (sessionData.totalPages > 0) {
-      // Intelligent timer based on document type and user behavior
-      let timerDuration: number;
-      
-      if (sessionData.totalPages === 1) {
-        // Single page: 8 seconds (most single-page PDFs are quick reads)
-        timerDuration = 8000;
-      } else if (sessionData.totalPages <= 5) {
-        // Short document: 15 seconds (quick multi-page reads)
-        timerDuration = 15000;
-      } else if (sessionData.totalPages <= 20) {
-        // Medium document: 25 seconds (normal reading time)
-        timerDuration = 25000;
-      } else {
-        // Long document: 35 seconds (allows for page navigation)
-        timerDuration = 35000;
-      }
-      
-      console.log(`Setting up ${timerDuration/1000}-second timer for session end (${sessionData.totalPages} pages)`);
-      
+    if (sessionId) {
       const timer = setTimeout(() => {
-        console.log(`${timerDuration/1000}-second timer triggered, calling trackSessionEnd`);
-        trackSessionEnd();
-      }, timerDuration);
+        trackSessionStart();
+      }, 2000); // 2 second delay to filter out immediate bounces
 
       return () => clearTimeout(timer);
     }
     return undefined; // Explicit return for TypeScript
+  }, [sessionId]);
+
+  // Track session end with optimized event handling
+  useEffect(() => {
+    let hasTrackedEnd = false;
+
+    const handleBeforeUnload = () => {
+      if (!hasTrackedEnd) {
+        hasTrackedEnd = true;
+        trackSessionEnd();
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden && !hasTrackedEnd) {
+        hasTrackedEnd = true;
+        trackSessionEnd();
+      }
+    };
+
+    // Debounced session end tracking for better performance
+    const debouncedSessionEnd = debounce(() => {
+      if (!hasTrackedEnd) {
+        hasTrackedEnd = true;
+        trackSessionEnd();
+      }
+    }, 2000); // 2 second debounce
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Set up periodic session end check (every 30 seconds)
+    const interval = setInterval(() => {
+      const currentDuration = Math.round((Date.now() - sessionData.startTime) / 1000);
+      if (currentDuration > 30) { // Only check after 30 seconds
+        debouncedSessionEnd();
+      }
+    }, 30000);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(interval);
+      
+      // Track session end when component unmounts (if not already tracked)
+      if (!hasTrackedEnd) {
+        trackSessionEnd();
+      }
+    };
   }, [sessionData.totalPages, sessionData.maxPageReached]);
 
   // Initialize PDF URL
@@ -399,7 +479,7 @@ export default function SecurePDFViewer({
     }));
 
     // Track initial page view
-    trackPageView(1, numPages);
+    debouncedTrackPageView(1, numPages);
     
     onLoadSuccess?.();
   };
@@ -416,22 +496,22 @@ export default function SecurePDFViewer({
     setPageNumber((prev) => {
       const newPage = Math.max(prev - 1, 1);
       if (newPage !== prev && numPages > 0) {
-        trackPageView(newPage, numPages);
+        debouncedTrackPageView(newPage, numPages);
       }
       return newPage;
     });
-  }, [numPages]);
+  }, [numPages, debouncedTrackPageView]);
 
   const goToNextPage = useCallback(() => {
     if (numPages === 0) return;
     setPageNumber((prev) => {
       const newPage = Math.min(prev + 1, numPages);
       if (newPage !== prev) {
-        trackPageView(newPage, numPages);
+        debouncedTrackPageView(newPage, numPages);
       }
       return newPage;
     });
-  }, [numPages]);
+  }, [numPages, debouncedTrackPageView]);
 
   const zoomIn = useCallback(() => {
     setScale((prev) => Math.min(prev + 0.2, 3.0));

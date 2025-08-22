@@ -16,6 +16,51 @@ const analyticsRateLimit = createRateLimit(
   "Too many analytics requests"
 );
 
+// 📊 SESSION START TRACKING
+router.post(
+  "/session-start",
+  analyticsRateLimit,
+  normalizeIp,
+  asyncHandler(async (req: Request, res: Response) => {
+    const { 
+      shareId, 
+      email, 
+      sessionId
+    } = req.body;
+
+    if (!shareId || !sessionId) {
+      res.status(400).json({
+        success: false,
+        error: "Missing required fields: shareId, sessionId",
+      });
+      return;
+    }
+
+    try {
+      await auditService.logSessionStart({
+        shareId,
+        email,
+        ip: req.ip,
+        userAgent: req.get('User-Agent') || '',
+        sessionId: sessionId,
+      });
+
+      logger.debug(`Session start tracked: ${shareId} - session: ${sessionId}`);
+
+      res.json({
+        success: true,
+        message: "Session start tracked",
+      });
+    } catch (error) {
+      logger.error("Failed to track session start:", error);
+      res.status(500).json({
+        success: false,
+        error: "Failed to track session start",
+      });
+    }
+  })
+);
+
 // 📊 PAGE VIEW TRACKING
 router.post(
   "/page-view",

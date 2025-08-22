@@ -917,9 +917,9 @@ router.get(
   })
 );
 
-// Optimized sessions endpoint with page details included
+// Individual analytics endpoint - averaged per page per session
 router.get(
-  "/files/:fileId/sessions",
+  "/files/:fileId/individual",
   authenticate,
   asyncHandler(async (req: Request, res: Response) => {
     const fileId = parseInt(req.params.fileId);
@@ -929,8 +929,8 @@ router.get(
       throw new CustomError("Invalid file ID", 400);
     }
 
-    // Check cache first
-    const cacheKey = `sessions:${fileId}:${userId}:${req.query.page || 1}:${req.query.limit || 20}:${req.query.email || ''}:${req.query.device || ''}:${req.query.country || ''}:${req.query.dateFrom || ''}:${req.query.dateTo || ''}`;
+    // Check cache first (simplified - no pagination needed for per-file analytics)
+    const cacheKey = `individual:${fileId}:${userId}:${req.query.email || ''}:${req.query.device || ''}:${req.query.country || ''}:${req.query.dateFrom || ''}:${req.query.dateTo || ''}`;
     const cachedData = await getCache<string>(cacheKey);
     if (cachedData) {
       res.json(JSON.parse(cachedData));
@@ -1043,21 +1043,22 @@ router.get(
       .limit(limit)
       .offset(offset);
 
-    // Get page views for each session
+    // Get averaged page views for each session (grouped by page number)
     const sessionIds = sessionsResult.map(s => s.sessionId);
     const pageViewsResult = await db
       .select({
         sessionId: pageViews.sessionId,
         pageNumber: pageViews.pageNumber,
-        duration: pageViews.duration,
-        scrollDepth: pageViews.scrollDepth,
-        viewedAt: pageViews.viewedAt
+        avgDuration: sql<number>`COALESCE(AVG(${pageViews.duration}), 0)`,
+        totalViews: sql<number>`COUNT(*)`,
+        avgScrollDepth: sql<number>`COALESCE(AVG(${pageViews.scrollDepth}), 0)`
       })
       .from(pageViews)
       .where(inArray(pageViews.sessionId, sessionIds))
+      .groupBy(pageViews.sessionId, pageViews.pageNumber)
       .orderBy(pageViews.pageNumber);
 
-    // Group page views by session
+    // Group averaged page views by session
     const pageViewsBySession = new Map<string, any[]>();
     pageViewsResult.forEach(pv => {
       if (!pageViewsBySession.has(pv.sessionId)) {
@@ -1065,9 +1066,9 @@ router.get(
       }
       pageViewsBySession.get(pv.sessionId)!.push({
         pageNumber: pv.pageNumber,
-        duration: pv.duration,
-        scrollDepth: pv.scrollDepth,
-        viewedAt: pv.viewedAt
+        avgDuration: Math.round(Number(pv.avgDuration) || 0),
+        totalViews: Number(pv.totalViews) || 0,
+        avgScrollDepth: Math.round(Number(pv.avgScrollDepth) || 0)
       });
     });
 
@@ -1114,6 +1115,264 @@ router.get(
     });
   })
 );
+
+// Original sessions endpoint with page details included
+router.get(
+  "/files/:fileId/sessions",
+  authenticate,
+  asyncHandler(async (req: Request, res: Response) => {
+    const fileId = parseInt(req.params.fileId);
+    const userId = req.user?.id;
+
+    if (!fileId || isNaN(fileId)) {
+      throw new CustomError("Invalid file ID", 400);
+    }
+
+    // Check cache first
+    const cacheKey = `sessions:${fileId}:${userId}:${req.query.page || 1}:${req.query.limit || 20}:${req.query.email || ''}:${req.query.device || ''}:${req.query.country || ''}:${req.query.dateFrom || ''}:${req.query.dateTo || ''}`;
+    const cachedData = await getCache<string>(cacheKey);
+    if (cachedData) {
+      res.json(JSON.parse(cachedData));
+      return;
+    }
+
+    // Get sessions with averaged page data (user behavior per file)
+    const result = await getSessionsWithPageData(fileId, userId, req.query, true); // true = averaged
+
+    // Cache the response
+    await setCache(cacheKey, JSON.stringify(result), 300);
+
+    res.json(result);
+  })
+);
+
+// Helper function to get sessions with page data (optimized)
+async function getSessionsWithPageData(
+  fileId: number, 
+  userId: number, 
+  query: any, 
+  averaged: boolean = false
+): Promise<{
+  success: boolean;
+  data: {
+    sessions: any[];
+    pagination: { page: number; limit: number; total: number; totalPages: number };
+    filters: { applied: any; available: any };
+  };
+}> {
+  // Verify file ownership
+  const file = await db
+    .select({ id: files.id, pageCount: files.pageCount })
+    .from(files)
+    .where(and(eq(files.id, fileId), eq(files.userId, userId)))
+    .limit(1);
+
+  if (file.length === 0) {
+    throw new CustomError("File not found", 404);
+  }
+
+  // Get all share IDs for this file
+  const shareLinksResult = await db
+    .select({ shareId: shareLinks.shareId })
+    .from(shareLinks)
+    .where(eq(shareLinks.fileId, fileId));
+
+  if (shareLinksResult.length === 0) {
+    return {
+      success: true,
+      data: {
+        sessions: [],
+        pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
+        filters: { applied: {}, available: {} }
+      }
+    };
+  }
+
+  const shareIds = shareLinksResult.map(sl => sl.shareId);
+
+  // Parse query parameters
+  const page = Math.max(1, parseInt(query.page as string) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(query.limit as string) || 20));
+  const offset = (page - 1) * limit;
+
+  // Parse filters
+  const emailSearch = query.email as string;
+  const device = query.device as string;
+  const country = query.country as string;
+  const dateFrom = query.dateFrom as string;
+  const dateTo = query.dateTo as string;
+
+  // Build where conditions
+  const whereConditions = [inArray(viewSessions.shareId, shareIds)];
+
+  if (emailSearch) {
+    whereConditions.push(sql`${viewSessions.viewerEmail} ILIKE ${`%${emailSearch}%`}`);
+  }
+  if (device) {
+    whereConditions.push(eq(viewSessions.device, device));
+  }
+  if (country) {
+    whereConditions.push(eq(viewSessions.country, country));
+  }
+  if (dateFrom) {
+    whereConditions.push(gte(viewSessions.startedAt, new Date(dateFrom)));
+  }
+  if (dateTo) {
+    whereConditions.push(lte(viewSessions.startedAt, new Date(dateTo)));
+  }
+
+  // Get total count for pagination
+  const totalCountResult = await db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(viewSessions)
+    .where(and(...whereConditions));
+
+  const total = totalCountResult[0]?.count || 0;
+  const totalPages = Math.ceil(total / limit);
+
+  // Get sessions with pagination
+  const sessionsResult = await db
+    .select({
+      sessionId: viewSessions.sessionId,
+      startedAt: viewSessions.startedAt,
+      totalDuration: viewSessions.totalDuration,
+      viewerEmail: viewSessions.viewerEmail,
+      viewerName: viewSessions.viewerName,
+      device: viewSessions.device,
+      country: viewSessions.country,
+      browser: viewSessions.browser,
+      os: viewSessions.os,
+      isUnique: viewSessions.isUnique,
+      referer: viewSessions.referer
+    })
+    .from(viewSessions)
+    .where(and(...whereConditions))
+    .orderBy(desc(viewSessions.startedAt))
+    .limit(limit)
+    .offset(offset);
+
+  // Get page views for each session
+  const sessionIds = sessionsResult.map(s => s.sessionId);
+  
+  if (averaged) {
+    // Get averaged page views (grouped by page number)
+    const pageViewsResult = await db
+      .select({
+        sessionId: pageViews.sessionId,
+        pageNumber: pageViews.pageNumber,
+        avgDuration: sql<number>`COALESCE(AVG(${pageViews.duration}), 0)`,
+        totalViews: sql<number>`COUNT(*)`,
+        avgScrollDepth: sql<number>`COALESCE(AVG(${pageViews.scrollDepth}), 0)`
+      })
+      .from(pageViews)
+      .where(inArray(pageViews.sessionId, sessionIds))
+      .groupBy(pageViews.sessionId, pageViews.pageNumber)
+      .orderBy(pageViews.pageNumber);
+
+    // Group averaged page views by session
+    const pageViewsBySession = new Map<string, any[]>();
+    pageViewsResult.forEach(pv => {
+      if (!pageViewsBySession.has(pv.sessionId)) {
+        pageViewsBySession.set(pv.sessionId, []);
+      }
+      pageViewsBySession.get(pv.sessionId)!.push({
+        pageNumber: pv.pageNumber,
+        avgDuration: Math.round(Number(pv.avgDuration) || 0),
+        totalViews: Number(pv.totalViews) || 0,
+        avgScrollDepth: Math.round(Number(pv.avgScrollDepth) || 0)
+      });
+    });
+
+    // Format sessions with their averaged page views
+    const sessions = sessionsResult.map(session => ({
+      sessionId: session.sessionId,
+      startedAt: session.startedAt,
+      totalDuration: session.totalDuration,
+      viewerEmail: session.viewerEmail,
+      viewerName: session.viewerName,
+      device: session.device,
+      country: session.country,
+      browser: session.browser,
+      os: session.os,
+      isUnique: session.isUnique,
+      referer: session.referer,
+      pages: pageViewsBySession.get(session.sessionId) || []
+    }));
+
+    // Get available filter options
+    const availableFilters = await getAvailableFilters(shareIds);
+
+    return {
+      success: true,
+      data: {
+        sessions,
+        pagination: { page, limit, total, totalPages },
+        filters: {
+          applied: { email: emailSearch, device, country, dateFrom, dateTo },
+          available: availableFilters
+        }
+      }
+    };
+  } else {
+    // Get individual page views
+    const pageViewsResult = await db
+      .select({
+        sessionId: pageViews.sessionId,
+        pageNumber: pageViews.pageNumber,
+        duration: pageViews.duration,
+        scrollDepth: pageViews.scrollDepth,
+        viewedAt: pageViews.viewedAt
+      })
+      .from(pageViews)
+      .where(inArray(pageViews.sessionId, sessionIds))
+      .orderBy(pageViews.pageNumber);
+
+    // Group individual page views by session
+    const pageViewsBySession = new Map<string, any[]>();
+    pageViewsResult.forEach(pv => {
+      if (!pageViewsBySession.has(pv.sessionId)) {
+        pageViewsBySession.set(pv.sessionId, []);
+      }
+      pageViewsBySession.get(pv.sessionId)!.push({
+        pageNumber: pv.pageNumber,
+        duration: pv.duration,
+        scrollDepth: pv.scrollDepth,
+        viewedAt: pv.viewedAt
+      });
+    });
+
+    // Format sessions with their individual page views
+    const sessions = sessionsResult.map(session => ({
+      sessionId: session.sessionId,
+      startedAt: session.startedAt,
+      totalDuration: session.totalDuration,
+      viewerEmail: session.viewerEmail,
+      viewerName: session.viewerName,
+      device: session.device,
+      country: session.country,
+      browser: session.browser,
+      os: session.os,
+      isUnique: session.isUnique,
+      referer: session.referer,
+      pages: pageViewsBySession.get(session.sessionId) || []
+    }));
+
+    // Get available filter options
+    const availableFilters = await getAvailableFilters(shareIds);
+
+    return {
+      success: true,
+      data: {
+        sessions,
+        pagination: { page, limit, total, totalPages },
+        filters: {
+          applied: { email: emailSearch, device, country, dateFrom, dateTo },
+          available: availableFilters
+        }
+      }
+    };
+  }
+}
 
 // Helper function to get available filter options
 async function getAvailableFilters(shareIds: string[]) {

@@ -261,10 +261,38 @@ class ApiClient {
       const query = searchParams.toString();
       return this.get(`/api/analytics/files/${fileId}/sessions${query ? `?${query}` : ''}`);
     },
+    
+    individual: (fileId: number, params?: {
+      page?: number;
+      limit?: number;
+      email?: string;
+      device?: string;
+      country?: string;
+      dateFrom?: string;
+      dateTo?: string;
+    }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.email) searchParams.append('email', params.email);
+      if (params?.device) searchParams.append('device', params.device);
+      if (params?.country) searchParams.append('country', params.country);
+      if (params?.dateFrom) searchParams.append('dateFrom', params.dateFrom);
+      if (params?.dateTo) searchParams.append('dateTo', params.dateTo);
+      const query = searchParams.toString();
+      return this.get(`/api/analytics/files/${fileId}/individual${query ? `?${query}` : ''}`);
+    },
     share: (shareId: string) => this.get(`/api/analytics/shares/${shareId}`),
     dashboard: () => this.get("/api/analytics/dashboard"),
     
     // 📊 HIGH-VALUE ANALYTICS TRACKING
+    trackSessionStart: (data: {
+      shareId: string;
+      email?: string;
+      sessionId?: string;
+      timestamp: string;
+    }) => this.post("/api/analytics/session-start", data, { skipCSRF: true, skipAuth: true }),
+    
     trackPageView: (data: {
       shareId: string;
       email?: string;

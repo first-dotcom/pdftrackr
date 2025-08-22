@@ -155,6 +155,61 @@ export class AuditService {
   }
 
   // 📊 NEW HIGH-VALUE ANALYTICS EVENTS
+  async logSessionStart(data: {
+    shareId: string;
+    fileId?: string;
+    ip: string;
+    userAgent: string;
+    email?: string;
+    sessionId: string;
+  }) {
+    // Create session immediately when user starts viewing
+    try {
+      // Check if session already exists
+      const existingSession = await db
+        .select({ sessionId: viewSessions.sessionId })
+        .from(viewSessions)
+        .where(eq(viewSessions.sessionId, data.sessionId))
+        .limit(1);
+      
+      if (existingSession.length === 0) {
+        // Create new session
+        await db.insert(viewSessions).values({
+          shareId: data.shareId,
+          sessionId: data.sessionId,
+          viewerEmail: data.email,
+          ipAddressHash: this.hashIP(data.ip),
+          userAgent: data.userAgent,
+          startedAt: new Date(),
+          lastActiveAt: new Date(),
+          totalDuration: 0,
+          isUnique: true, // We'll determine this later
+          consentGiven: true, // Assuming consent for analytics
+        });
+        
+        logger.info(`Session started: ${data.shareId} - session: ${data.sessionId}`);
+      }
+    } catch (error) {
+      logger.warn("Failed to create view session", { error, shareId: data.shareId });
+    }
+    
+    // Store in audit logs for compliance
+    const auditResult = await this.logEvent({
+      event: "session_start",
+      shareId: data.shareId,
+      fileId: data.fileId,
+      ip: data.ip,
+      userAgent: data.userAgent,
+      email: data.email,
+      success: true,
+      metadata: {
+        sessionId: data.sessionId,
+      },
+    });
+
+    return auditResult;
+  }
+
   async logPageView(data: {
     shareId: string;
     fileId?: string;

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { ChevronDownIcon, ChevronRightIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect, useCallback } from 'react';
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
@@ -10,7 +10,7 @@ import {
   PaginatedSessionsResponse, 
   IndividualSession, 
   AppliedFilters, 
-  AvailableFilters 
+  AvailableFilters
 } from '@/shared/types/api';
 import LoadingSpinner from './LoadingSpinner';
 import { formatViewTime } from '@/utils/formatters';
@@ -19,19 +19,10 @@ interface IndividualViewProps {
   fileId: number;
 }
 
-interface ExpandedRows {
-  [sessionId: string]: boolean;
-}
-
 export default function IndividualView({ fileId }: IndividualViewProps) {
   const [data, setData] = useState<PaginatedSessionsResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [expandedRows, setExpandedRows] = useState<ExpandedRows>({});
-  
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
   
   // Filter state
   const [filters, setFilters] = useState<AppliedFilters>({});
@@ -42,71 +33,149 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
       setLoading(true);
       setError(null);
       
-      const response = await apiClient.analytics.sessions(fileId, {
-        page: currentPage,
-        limit: pageSize,
-        ...filters
-      });
+      const response = await apiClient.analytics.individual(fileId, filters);
       
       if (response.success && response.data) {
         setData(response.data as PaginatedSessionsResponse);
       } else {
-        setError('Failed to load session data');
+        setError('Failed to load individual analytics data');
       }
     } catch (err) {
-      setError('Error loading session data');
+      setError('Error loading individual analytics data');
     } finally {
       setLoading(false);
     }
-  }, [fileId, currentPage, pageSize, filters]);
+  }, [fileId, filters]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  const toggleRowExpansion = useCallback((sessionId: string) => {
-    setExpandedRows(prev => ({
-      ...prev,
-      [sessionId]: !prev[sessionId]
-    }));
-  }, []);
 
   const handleFilterChange = useCallback((key: keyof AppliedFilters, value: string) => {
     setFilters(prev => ({
       ...prev,
       [key]: value || undefined
     }));
-    setCurrentPage(1); // Reset to first page when filtering
   }, []);
 
   const clearFilters = useCallback(() => {
     setFilters({});
-    setCurrentPage(1);
   }, []);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
-  };
-
-  const getViewerLabel = (session: IndividualSession) => {
-    if (session.viewerEmail) {
-      return session.viewerName ? `${session.viewerName} (${session.viewerEmail})` : session.viewerEmail;
+  // Calculate user stats from sessions data
+  const getUserStats = () => {
+    if (!data?.sessions || data.sessions.length === 0) {
+      return {
+        totalSessions: 0,
+        totalDuration: 0,
+        avgSessionTime: 0,
+        totalPageViews: 0
+      };
     }
-    return session.viewerName || 'Anonymous';
+
+    const totalSessions = data.sessions.length;
+    const totalDuration = data.sessions.reduce((sum, session) => sum + session.totalDuration, 0);
+    const avgSessionTime = totalSessions > 0 ? totalDuration / totalSessions : 0;
+    const totalPageViews = data.sessions.reduce((sum, session) => sum + session.pages.length, 0);
+
+    return {
+      totalSessions,
+      totalDuration,
+      avgSessionTime,
+      totalPageViews
+    };
   };
 
-  // Create chart data for individual session
-  const getSessionChartData = (session: IndividualSession) => {
-    if (!session.pages || session.pages.length === 0) return [];
+  // Create chart data from sessions - aggregate page data across all sessions
+  const getChartData = () => {
+    if (!data?.sessions || data.sessions.length === 0) return [];
     
-    return session.pages
-      .map(page => ({
-        page: `P${page.pageNumber}`,
-        time: Math.round(Number(page.duration) || 0),
-        pageNumber: page.pageNumber
+    // Create a map to aggregate page data across all sessions
+    const pageDataMap = new Map<number, {
+      totalDuration: number;
+      totalViews: number;
+      totalScrollDepth: number;
+      sessionCount: number;
+    }>();
+
+    // Aggregate data from all sessions
+    data.sessions.forEach(session => {
+      session.pages.forEach(page => {
+        const existing = pageDataMap.get(page.pageNumber) || {
+          totalDuration: 0,
+          totalViews: 0,
+          totalScrollDepth: 0,
+          sessionCount: 0
+        };
+
+        existing.totalDuration += page.avgDuration || 0;
+        existing.totalViews += page.totalViews || 0;
+        existing.totalScrollDepth += page.avgScrollDepth || 0;
+        existing.sessionCount += 1;
+
+        pageDataMap.set(page.pageNumber, existing);
+      });
+    });
+
+    // Convert to chart data format
+    return Array.from(pageDataMap.entries())
+      .map(([pageNumber, data]) => ({
+        page: `P${pageNumber}`,
+        time: data.sessionCount > 0 ? Math.round(data.totalDuration / data.sessionCount) : 0,
+        pageNumber
       }))
       .sort((a, b) => a.pageNumber - b.pageNumber);
   };
+
+  // Get aggregated page stats for the table
+  const getPageStats = () => {
+    if (!data?.sessions || data.sessions.length === 0) return [];
+    
+    const pageDataMap = new Map<number, {
+      totalDuration: number;
+      totalViews: number;
+      totalScrollDepth: number;
+      sessionCount: number;
+      durations: number[];
+    }>();
+
+    // Aggregate data from all sessions
+    data.sessions.forEach(session => {
+      session.pages.forEach(page => {
+        const existing = pageDataMap.get(page.pageNumber) || {
+          totalDuration: 0,
+          totalViews: 0,
+          totalScrollDepth: 0,
+          sessionCount: 0,
+          durations: []
+        };
+
+        existing.totalDuration += page.avgDuration || 0;
+        existing.totalViews += page.totalViews || 0;
+        existing.totalScrollDepth += page.avgScrollDepth || 0;
+        existing.sessionCount += 1;
+        existing.durations.push(page.avgDuration || 0);
+
+        pageDataMap.set(page.pageNumber, existing);
+      });
+    });
+
+    // Convert to page stats format
+    return Array.from(pageDataMap.entries())
+      .map(([pageNumber, data]) => ({
+        pageNumber,
+        avgDuration: data.sessionCount > 0 ? Math.round(data.totalDuration / data.sessionCount) : 0,
+        totalViews: data.totalViews,
+        avgScrollDepth: data.sessionCount > 0 ? Math.round(data.totalScrollDepth / data.sessionCount) : 0,
+        medianDuration: data.durations.length > 0 ? 
+          Math.round(data.durations.sort((a, b) => a - b)[Math.floor(data.durations.length / 2)]) : 0
+      }))
+      .sort((a, b) => a.pageNumber - b.pageNumber);
+  };
+
+  const userStats = getUserStats();
+  const chartData = getChartData();
+  const pageStats = getPageStats();
 
   if (loading && !data) {
     return (
@@ -141,7 +210,7 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
   if (!data.sessions || data.sessions.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-600">No session data available yet.</p>
+        <p className="text-gray-600">No individual analytics data available yet.</p>
       </div>
     );
   }
@@ -151,13 +220,33 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
       {/* Header with Search and Filters */}
       <div className="bg-white p-4 rounded-lg border">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Individual Sessions</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Individual Analytics (Per-File User Behavior)</h3>
           <button
             onClick={() => setShowFilters(!showFilters)}
             className="text-sm text-blue-600 hover:text-blue-800"
           >
             {showFilters ? 'Hide Filters' : 'Show Filters'}
           </button>
+        </div>
+
+        {/* User Statistics */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <div className="text-sm font-medium text-blue-600">Total Sessions</div>
+            <div className="text-2xl font-bold text-blue-900">{userStats.totalSessions}</div>
+          </div>
+          <div className="bg-green-50 p-4 rounded-lg">
+            <div className="text-sm font-medium text-green-600">Total Duration</div>
+            <div className="text-2xl font-bold text-green-900">{formatViewTime(userStats.totalDuration)}</div>
+          </div>
+          <div className="bg-purple-50 p-4 rounded-lg">
+            <div className="text-sm font-medium text-purple-600">Avg Session Time</div>
+            <div className="text-2xl font-bold text-purple-900">{formatViewTime(userStats.avgSessionTime)}</div>
+          </div>
+          <div className="bg-orange-50 p-4 rounded-lg">
+            <div className="text-sm font-medium text-orange-600">Total Page Views</div>
+            <div className="text-2xl font-bold text-orange-900">{userStats.totalPageViews}</div>
+          </div>
         </div>
 
         {/* Search Bar */}
@@ -246,173 +335,79 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
         )}
       </div>
 
-      {/* Sessions Table */}
+      {/* Analytics Chart */}
+      <div className="bg-white p-6 rounded-lg border">
+        <h4 className="text-lg font-semibold text-gray-900 mb-4">Page Engagement (Average Time per Page)</h4>
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="page" />
+              <YAxis />
+              <Tooltip 
+                formatter={(value: any) => [`${value} seconds`, 'Average Time']}
+                labelFormatter={(label) => `Page ${label}`}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="time" 
+                stroke="#3B82F6" 
+                strokeWidth={2}
+                dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Page Statistics Table */}
       <div className="bg-white rounded-lg border overflow-hidden">
+        <div className="px-6 py-4 border-b">
+          <h4 className="text-lg font-semibold text-gray-900">Page Statistics</h4>
+        </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Viewer
+                  Page
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Started
-                </th>
-
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Device
+                  Avg Duration
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Country
+                  Total Views
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  Avg Scroll Depth
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Median Duration
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {(data.sessions || []).map((session) => (
-                <React.Fragment key={session.sessionId}>
-                  <tr className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {getViewerLabel(session)}
-                      </div>
-                      {session.isUnique && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                          New
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatDate(session.startedAt)}
-                    </td>
-
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {session.device || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {session.country || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <button
-                        onClick={() => toggleRowExpansion(session.sessionId)}
-                        className="text-blue-600 hover:text-blue-800"
-                      >
-                        {expandedRows[session.sessionId] ? (
-                          <ChevronDownIcon className="h-4 w-4" />
-                        ) : (
-                          <ChevronRightIcon className="h-4 w-4" />
-                        )}
-                      </button>
-                    </td>
-                  </tr>
-                  
-                  {/* Expanded Row - Page Details with Chart */}
-                  {expandedRows[session.sessionId] && (
-                    <tr>
-                      <td colSpan={5} className="px-6 py-4 bg-gray-50">
-                        <div className="space-y-4">
-                          <h4 className="text-sm font-medium text-gray-900">
-                            {getViewerLabel(session)} - Reading Time by Page
-                          </h4>
-                          
-                          {/* Mini Chart */}
-                          {(() => {
-                            const chartData = getSessionChartData(session);
-                            if (chartData.length > 0) {
-                              return (
-                                <div className="bg-white p-4 rounded border">
-                                  <ResponsiveContainer width="100%" height={200}>
-                                    <LineChart data={chartData} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
-                                      <CartesianGrid strokeDasharray="3 3" />
-                                      <XAxis 
-                                        dataKey="page" 
-                                        tick={{ fontSize: 10 }}
-                                        interval={Math.max(1, Math.floor(chartData.length / 8))}
-                                      />
-                                      <YAxis 
-                                        tick={{ fontSize: 10 }}
-                                        label={{ value: 'Time (s)', angle: -90, position: 'insideLeft', fontSize: 10 }}
-                                      />
-                                      <Tooltip 
-                                        formatter={(value: any) => [formatViewTime(value), 'Time']}
-                                        labelFormatter={(label) => label}
-                                      />
-                                      <Line 
-                                        type="monotone" 
-                                        dataKey="time" 
-                                        stroke="#3B82F6" 
-                                        strokeWidth={2}
-                                        dot={{ fill: '#3B82F6', strokeWidth: 1, r: 3 }}
-                                        activeDot={{ r: 4, stroke: '#3B82F6', strokeWidth: 2 }}
-                                      />
-                                    </LineChart>
-                                  </ResponsiveContainer>
-                                </div>
-                              );
-                            }
-                            return null;
-                          })()}
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
+              {pageStats.map((page) => (
+                <tr key={page.pageNumber} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    Page {page.pageNumber}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {page.avgDuration}s
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {page.totalViews}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {page.avgScrollDepth}%
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {page.medianDuration}s
+                  </td>
+                </tr>
               ))}
             </tbody>
           </table>
-        </div>
-      </div>
-
-      {/* Pagination */}
-      <div className="flex items-center justify-between bg-white px-4 py-3 border rounded-lg">
-        <div className="flex items-center space-x-4">
-          <span className="text-sm text-gray-700">
-            {(() => {
-              const total = data.pagination?.total || data.sessions?.length || 0;
-              const start = total > 0 ? ((currentPage - 1) * pageSize) + 1 : 0;
-              const end = Math.min(currentPage * pageSize, total);
-              return `Showing ${start} to ${end} of ${total} results`;
-            })()}
-          </span>
-          
-          <select
-            id="page-size-select"
-            name="pageSize"
-            value={pageSize}
-            onChange={(e) => {
-              setPageSize(Number(e.target.value));
-              setCurrentPage(1);
-            }}
-            className="text-sm border border-gray-300 rounded px-2 py-1"
-          >
-            <option value={10}>10 per page</option>
-            <option value={20}>20 per page</option>
-            <option value={50}>50 per page</option>
-          </select>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setCurrentPage(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-3 py-1 text-sm border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-          >
-            Previous
-          </button>
-          
-          <span className="text-sm text-gray-700">
-            Page {currentPage} of {data.pagination?.totalPages || 1}
-          </span>
-          
-          <button
-            onClick={() => setCurrentPage(currentPage + 1)}
-            disabled={currentPage === (data.pagination?.totalPages || 1)}
-            className="px-3 py-1 text-sm border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-          >
-            Next
-          </button>
         </div>
       </div>
     </div>

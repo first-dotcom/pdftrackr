@@ -254,6 +254,10 @@ export interface SessionPageView {
   duration: number;
   scrollDepth: number;
   viewedAt: string;
+  // Averaged data fields (for individual analytics)
+  avgDuration?: number;
+  totalViews?: number;
+  avgScrollDepth?: number;
 }
 
 export interface IndividualSession {
@@ -299,5 +303,23 @@ export interface FilterState {
 export interface PaginatedSessionsResponse {
   sessions: IndividualSession[];
   pagination: PaginationInfo;
+  filters: FilterState;
+}
+
+// New interface for individual analytics (per-file user behavior)
+export interface IndividualAnalyticsResponse {
+  userStats: {
+    totalSessions: number;
+    totalDuration: number;
+    avgSessionTime: number;
+    totalPageViews: number;
+  };
+  pageStats: {
+    pageNumber: number;
+    avgDuration: number;
+    totalViews: number;
+    avgScrollDepth: number;
+    medianDuration: number;
+  }[];
   filters: FilterState;
 }
