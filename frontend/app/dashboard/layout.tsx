@@ -20,10 +20,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { isLoaded, userId } = useAuth();
   const pathname = usePathname();
 
-  // Check if we should show Quick Actions (only on main dashboard, files, or admin pages)
-  const shouldShowQuickActions = pathname === '/dashboard' || 
-                                pathname.startsWith('/dashboard/files') || 
-                                pathname.startsWith('/dashboard/admin');
+  // Check if we should show Quick Actions (only on settings page)
+  const shouldShowQuickActions = pathname === '/dashboard/settings';
 
   // Show loading while auth is loading
   if (!isLoaded) {
