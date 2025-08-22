@@ -67,17 +67,6 @@ router.post(
         }
       }
 
-      // Existing audit logging
-      await auditService.logPageView({
-        shareId,
-        email,
-        ip: req.ip,
-        userAgent: req.get('User-Agent') || '',
-        page: parseInt(page),
-        totalPages: parseInt(totalPages),
-        sessionId: sessionId,
-      });
-
       logger.debug(`Page view tracked: ${shareId} page ${page}/${totalPages}`);
 
       res.json({

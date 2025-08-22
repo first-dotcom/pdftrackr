@@ -271,7 +271,6 @@ export default function SecurePDFViewer({
         totalPages,
         sessionId,
         timestamp: new Date().toISOString(),
-        // NEW: Include scroll depth and duration with mobile adjustments
         duration: pageDuration,
         scrollDepth: Math.round(adjustedScrollDepth),
       });
@@ -316,37 +315,7 @@ export default function SecurePDFViewer({
     }
   };
 
-  // Simplified session end tracking for production reliability
-  useEffect(() => {
-    if (sessionData.totalPages > 0) {
-      // Simple timer-based tracking with intelligent timing
-      let timerDuration: number;
-      
-      if (sessionData.totalPages === 1) {
-        timerDuration = 8000; // 8s for single page
-      } else if (sessionData.totalPages <= 5) {
-        timerDuration = 15000; // 15s for short docs
-      } else if (sessionData.totalPages <= 20) {
-        timerDuration = 25000; // 25s for medium docs
-      } else {
-        timerDuration = 35000; // 35s for long docs
-      }
-      
-      const timer = setTimeout(() => {
-        trackSessionEnd();
-      }, timerDuration);
-
-      // Cleanup on unmount
-      return () => {
-        clearTimeout(timer);
-        trackSessionEnd(); // Final tracking on unmount
-      };
-    }
-    
-    return () => {};
-  }, [sessionData.totalPages]);
-
-  // Track session end with intelligent timing based on user behavior
+  // Single session end tracking with intelligent timing
   useEffect(() => {
     if (sessionData.totalPages > 0) {
       // Intelligent timer based on document type and user behavior
@@ -419,38 +388,18 @@ export default function SecurePDFViewer({
 
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-    // Validate page count
-    if (!numPages || numPages <= 0 || numPages > 10000) {
-      console.warn(`Invalid page count from PDF.js: ${numPages}`);
-      setLoading(false);
-      onError?.('Invalid PDF: Unable to determine page count');
-      return;
-    }
-
+    console.log(`PDF loaded successfully with ${numPages} pages`);
     setNumPages(numPages);
     setLoading(false);
-    
-    // Reset to page 1 if current page is out of bounds
-    if (pageNumber > numPages) {
-      setPageNumber(1);
-    }
 
-    // 📊 INITIALIZE SESSION ANALYTICS
-    setSessionData(prev => ({
+    // Update session data with total pages
+    setSessionData((prev) => ({
       ...prev,
       totalPages: numPages,
     }));
 
     // Track initial page view
     trackPageView(1, numPages);
-    
-    // For single-page PDFs, trigger session end after a short delay
-    if (numPages === 1) {
-      console.log('Single-page PDF detected, will trigger session end after 5 seconds');
-      setTimeout(() => {
-        trackSessionEnd();
-      }, 5000); // 5 seconds for single-page PDFs
-    }
     
     onLoadSuccess?.();
   };
@@ -479,22 +428,6 @@ export default function SecurePDFViewer({
       const newPage = Math.min(prev + 1, numPages);
       if (newPage !== prev) {
         trackPageView(newPage, numPages);
-        
-        // Track session end when user reaches the last page (completion)
-        if (newPage === numPages) {
-          console.log('Reached last page, triggering session end');
-          setTimeout(() => {
-            trackSessionEnd();
-          }, 1000); // Small delay to ensure page view is tracked first
-        }
-        
-        // Also track session end after viewing 2+ pages (engagement)
-        if (newPage >= 2) {
-          console.log('Viewed 2+ pages, triggering session end');
-          setTimeout(() => {
-            trackSessionEnd();
-          }, 2000);
-        }
       }
       return newPage;
     });

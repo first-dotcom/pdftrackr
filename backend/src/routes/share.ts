@@ -407,45 +407,6 @@ router.post(
   }),
 );
 
-// Track page view
-router.post(
-  "/:shareId/track",
-  createRateLimit(60 * 1000, 100, "Too many tracking requests"),
-  validateBody(trackPageViewSchema),
-  asyncHandler(async (req, res) => {
-    // const { shareId } = req.params;
-    const { sessionId, pageNumber, duration, scrollDepth } = req.body;
-
-    // Verify session exists
-    const session = await getSession(sessionId);
-    if (!session) {
-      throw new CustomError("Invalid session", 401);
-    }
-
-    // Record page view
-    await db.insert(pageViews).values({
-      sessionId,
-      pageNumber,
-      duration: duration || 0,
-      scrollDepth: scrollDepth || 0,
-    });
-
-    // Update session last active time
-    await db
-      .update(viewSessions)
-      .set({
-        lastActiveAt: new Date(),
-        totalDuration: duration || 0,
-      })
-      .where(eq(viewSessions.sessionId, sessionId));
-
-    res.json({
-      success: true,
-      message: "Page view tracked",
-    });
-  }),
-);
-
 // Update share link
 router.patch(
   "/:shareId",

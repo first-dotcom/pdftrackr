@@ -761,8 +761,9 @@ router.get(
       throw new CustomError("Invalid file ID", 400);
     }
 
-    // Check cache first
-    const cacheKey = `aggregate:${fileId}:${userId}:${req.query.days || 30}:${req.query.pageRange || 'all'}`;
+    // Check cache first (include cache buster if provided)
+    const cacheBuster = req.query._t as string;
+    const cacheKey = `aggregate:${fileId}:${userId}:${req.query.days || 30}:${req.query.pageRange || 'all'}:${cacheBuster || 'default'}`;
     const cachedData = await getCache<string>(cacheKey);
     if (cachedData) {
       res.json(JSON.parse(cachedData));
@@ -909,8 +910,8 @@ router.get(
       }
     };
 
-    // Cache the response for 5 minutes
-    await setCache(cacheKey, JSON.stringify(responseData), 300);
+    // Cache the response for 2 minutes (shorter TTL for analytics)
+    await setCache(cacheKey, JSON.stringify(responseData), 120);
 
     res.json(responseData);
   })

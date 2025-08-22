@@ -223,22 +223,6 @@ export class AuditService {
       },
     });
 
-    // ALSO store in analytics tables for dashboard queries
-    if (data.sessionId) {
-      try {
-        // Store page view in analytics table
-        await db.insert(pageViews).values({
-          sessionId: data.sessionId,
-          pageNumber: data.page,
-          viewedAt: new Date(),
-          duration: 0, // Will be updated on session end
-          scrollDepth: 0, // Will be updated if we implement scroll tracking
-        });
-      } catch (error) {
-        logger.warn("Failed to store page view in analytics table", { error, sessionId: data.sessionId });
-      }
-    }
-
     return auditResult;
   }
 

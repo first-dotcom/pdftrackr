@@ -262,13 +262,9 @@ class ApiClient {
       return this.get(`/api/analytics/files/${fileId}/sessions${query ? `?${query}` : ''}`);
     },
     share: (shareId: string) => this.get(`/api/analytics/shares/${shareId}`),
-    tracking: {
-      pageView: (data: any) => this.post("/api/analytics/tracking/page-view", data),
-      sessionEnd: (data: any) => this.post("/api/analytics/tracking/session-end", data),
-    },
     dashboard: () => this.get("/api/analytics/dashboard"),
     
-    // 📊 NEW HIGH-VALUE ANALYTICS TRACKING
+    // 📊 HIGH-VALUE ANALYTICS TRACKING
     trackPageView: (data: {
       shareId: string;
       email?: string;
