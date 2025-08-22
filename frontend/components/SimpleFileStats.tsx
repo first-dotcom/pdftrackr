@@ -118,7 +118,7 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
       iconColor: 'text-purple-600',
     },
     {
-      label: 'Avg View Time',
+      label: 'Avg Session Time',
       value: (Number(stats.avgViewTime) || 0) > 0 ? `${Number(stats.avgViewTime) || 0}s` : '-',
       icon: Clock,
       bgGradient: 'from-orange-50 to-orange-100',

@@ -4,6 +4,8 @@ import { asyncHandler } from "../middleware/errorHandler";
 import { createRateLimit, normalizeIp } from "../middleware/security";
 import { auditService } from "../services/auditService";
 import { logger } from "../utils/logger";
+import { db } from "../utils/database";
+import { pageViews } from "../models/schema";
 
 const router: Router = Router();
 
@@ -20,7 +22,16 @@ router.post(
   analyticsRateLimit,
   normalizeIp,
   asyncHandler(async (req: Request, res: Response) => {
-    const { shareId, email, page, totalPages, sessionId } = req.body;
+    const { 
+      shareId, 
+      email, 
+      page, 
+      totalPages, 
+      sessionId,
+      // NEW: Enhanced tracking data
+      duration,
+      scrollDepth 
+    } = req.body;
 
     if (!shareId || !page || !totalPages) {
       res.status(400).json({
@@ -38,6 +49,25 @@ router.post(
           logger.error('Failed to update file page count:', error);
         });
 
+      // Store enhanced data in pageViews table if sessionId is provided
+      if (sessionId) {
+        try {
+          await db.insert(pageViews).values({
+            sessionId,
+            pageNumber: parseInt(page),
+            duration: duration || 0,
+            scrollDepth: scrollDepth || 0,
+            viewedAt: new Date(),
+          });
+          
+          logger.debug(`Enhanced page view stored: ${shareId} page ${page} - duration: ${duration}s, scroll: ${scrollDepth}%`);
+        } catch (dbError) {
+          logger.warn('Failed to store enhanced page view data:', dbError);
+          // Continue with audit logging even if enhanced data fails
+        }
+      }
+
+      // Existing audit logging
       await auditService.logPageView({
         shareId,
         email,

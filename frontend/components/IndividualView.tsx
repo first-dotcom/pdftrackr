@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { ChevronDownIcon, ChevronRightIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
+} from 'recharts';
 import { apiClient } from '@/lib/api-client';
 import { 
   PaginatedSessionsResponse, 
@@ -46,21 +49,7 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
       });
       
       if (response.success && response.data) {
-        // Ensure all numeric values are safe
-        const responseData = response.data as PaginatedSessionsResponse;
-        const safeData: PaginatedSessionsResponse = {
-          ...responseData,
-          sessions: responseData.sessions?.map(session => ({
-            ...session,
-            totalDuration: Number(session.totalDuration) || 0,
-            pages: session.pages?.map(page => ({
-              ...page,
-              duration: Number(page.duration) || 0,
-              scrollDepth: Number(page.scrollDepth) || 0
-            })) || []
-          })) || []
-        };
-        setData(safeData);
+        setData(response.data as PaginatedSessionsResponse);
       } else {
         setError('Failed to load session data');
       }
@@ -106,6 +95,19 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
     return session.viewerName || 'Anonymous';
   };
 
+  // Create chart data for individual session
+  const getSessionChartData = (session: IndividualSession) => {
+    if (!session.pages || session.pages.length === 0) return [];
+    
+    return session.pages
+      .map(page => ({
+        page: `P${page.pageNumber}`,
+        time: Math.round(Number(page.duration) || 0),
+        pageNumber: page.pageNumber
+      }))
+      .sort((a, b) => a.pageNumber - b.pageNumber);
+  };
+
   if (loading && !data) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -146,7 +148,7 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
 
   return (
     <div className="space-y-6">
-      {/* Search and Filters */}
+      {/* Header with Search and Filters */}
       <div className="bg-white p-4 rounded-lg border">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">Individual Sessions</h3>
@@ -162,6 +164,8 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
         <div className="relative mb-4">
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
+            id="email-search"
+            name="emailSearch"
             type="text"
             placeholder="Search by email..."
             value={filters.email || ''}
@@ -254,12 +258,7 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Started
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Duration
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Pages
-                </th>
+
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Device
                 </th>
@@ -288,12 +287,7 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {formatDate(session.startedAt)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatViewTime(Number(session.totalDuration) || 0)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {session.pages.length} pages
-                    </td>
+
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {session.device || '-'}
                     </td>
@@ -314,30 +308,52 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
                     </td>
                   </tr>
                   
-                  {/* Expanded Row - Page Details */}
+                  {/* Expanded Row - Page Details with Chart */}
                   {expandedRows[session.sessionId] && (
                     <tr>
-                      <td colSpan={7} className="px-6 py-4 bg-gray-50">
-                        <div className="space-y-3">
-                          <h4 className="text-sm font-medium text-gray-900">Page-by-Page Breakdown</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {session.pages.map((page) => (
-                              <div key={page.pageNumber} className="bg-white p-3 rounded border">
-                                <div className="flex justify-between items-start mb-2">
-                                  <span className="text-sm font-medium text-gray-900">
-                                    Page {page.pageNumber}
-                                  </span>
-                                  <span className="text-xs text-gray-500">
-                                    {formatDate(page.viewedAt)}
-                                  </span>
+                      <td colSpan={5} className="px-6 py-4 bg-gray-50">
+                        <div className="space-y-4">
+                          <h4 className="text-sm font-medium text-gray-900">
+                            {getViewerLabel(session)} - Reading Time by Page
+                          </h4>
+                          
+                          {/* Mini Chart */}
+                          {(() => {
+                            const chartData = getSessionChartData(session);
+                            if (chartData.length > 0) {
+                              return (
+                                <div className="bg-white p-4 rounded border">
+                                  <ResponsiveContainer width="100%" height={200}>
+                                    <LineChart data={chartData} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
+                                      <CartesianGrid strokeDasharray="3 3" />
+                                      <XAxis 
+                                        dataKey="page" 
+                                        tick={{ fontSize: 10 }}
+                                        interval={Math.max(1, Math.floor(chartData.length / 8))}
+                                      />
+                                      <YAxis 
+                                        tick={{ fontSize: 10 }}
+                                        label={{ value: 'Time (s)', angle: -90, position: 'insideLeft', fontSize: 10 }}
+                                      />
+                                      <Tooltip 
+                                        formatter={(value: any) => [formatViewTime(value), 'Time']}
+                                        labelFormatter={(label) => label}
+                                      />
+                                      <Line 
+                                        type="monotone" 
+                                        dataKey="time" 
+                                        stroke="#3B82F6" 
+                                        strokeWidth={2}
+                                        dot={{ fill: '#3B82F6', strokeWidth: 1, r: 3 }}
+                                        activeDot={{ r: 4, stroke: '#3B82F6', strokeWidth: 2 }}
+                                      />
+                                    </LineChart>
+                                  </ResponsiveContainer>
                                 </div>
-                                <div className="space-y-1 text-xs text-gray-600">
-                                  <div>Duration: {formatViewTime(Number(page.duration) || 0)}</div>
-                                  <div>Scroll: {Number(page.scrollDepth) || 0}%</div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
+                              );
+                            }
+                            return null;
+                          })()}
                         </div>
                       </td>
                     </tr>
@@ -353,10 +369,17 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
       <div className="flex items-center justify-between bg-white px-4 py-3 border rounded-lg">
         <div className="flex items-center space-x-4">
           <span className="text-sm text-gray-700">
-            Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, data.pagination?.total || 0)} of {data.pagination?.total || 0} results
+            {(() => {
+              const total = data.pagination?.total || data.sessions?.length || 0;
+              const start = total > 0 ? ((currentPage - 1) * pageSize) + 1 : 0;
+              const end = Math.min(currentPage * pageSize, total);
+              return `Showing ${start} to ${end} of ${total} results`;
+            })()}
           </span>
           
           <select
+            id="page-size-select"
+            name="pageSize"
             value={pageSize}
             onChange={(e) => {
               setPageSize(Number(e.target.value));

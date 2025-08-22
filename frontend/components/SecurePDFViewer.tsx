@@ -31,6 +31,11 @@ interface SessionData {
   totalPages: number;
 }
 
+// Add new state for tracking
+interface PageTrackingData {
+  scrollDepth: number;
+  pageStartTime: number;
+}
 
 
 const WatermarkOverlay = ({ email, timestamp }: { email: string; timestamp: string }) => (
@@ -67,7 +72,159 @@ export default function SecurePDFViewer({
     totalPages: 0,
   });
 
+  // 📊 NEW: Page tracking state
+  const [pageTracking, setPageTracking] = useState<PageTrackingData>({
+    scrollDepth: 0,
+    pageStartTime: Date.now(),
+  });
 
+  // 📊 NEW: Mobile-friendly scroll tracking function
+  const handleScroll = useCallback((e: any) => {
+    const element = e.target;
+    if (!element) return;
+
+    // Get scroll metrics
+    const scrollTop = element.scrollTop || 0;
+    const scrollHeight = element.scrollHeight || 0;
+    const clientHeight = element.clientHeight || 0;
+
+    // Mobile-friendly validation
+    if (scrollHeight <= clientHeight) return;
+
+    // Calculate scroll depth with mobile considerations
+    let currentDepth = Math.round((scrollTop / (scrollHeight - clientHeight)) * 100);
+    
+    // Clamp to valid range (0-100)
+    currentDepth = Math.max(0, Math.min(100, currentDepth));
+    
+    // Debounce rapid scroll events on mobile
+    setPageTracking(prev => {
+      // Only update if significant change (prevents micro-updates)
+      if (Math.abs(currentDepth - prev.scrollDepth) >= 5) {
+        return {
+          ...prev,
+          scrollDepth: Math.max(prev.scrollDepth, currentDepth)
+        };
+      }
+      return prev;
+    });
+  }, []);
+
+  // 📊 NEW: Mobile-friendly scroll setup
+  useEffect(() => {
+    const setupScrollTracking = () => {
+      // Mobile-optimized selectors (order matters)
+      const selectors = [
+        '.react-pdf__Page__canvas', // Primary target for mobile
+        '.react-pdf__Page', 
+        '.react-pdf__Document',
+        '[data-testid="pdf-page"]', // Common PDF viewer wrapper
+        'body'
+      ];
+      
+      let element: Element | null = null;
+      let cleanup: (() => void) | undefined;
+
+      // Try to find scrollable element
+      for (const selector of selectors) {
+        element = document.querySelector(selector);
+        if (element) {
+          // Check if element is actually scrollable
+          const style = window.getComputedStyle(element);
+          const isScrollable = style.overflow === 'auto' || 
+                              style.overflow === 'scroll' || 
+                              style.overflowY === 'auto' || 
+                              style.overflowY === 'scroll';
+          
+          if (isScrollable || element.scrollHeight > element.clientHeight) {
+            break;
+          }
+        }
+      }
+
+      if (element) {
+        // Add both scroll and touch events for mobile
+        element.addEventListener('scroll', handleScroll, { passive: true });
+        element.addEventListener('touchmove', handleScroll, { passive: true });
+        
+        cleanup = () => {
+          element?.removeEventListener('scroll', handleScroll);
+          element?.removeEventListener('touchmove', handleScroll);
+        };
+      }
+
+      return cleanup;
+    };
+
+    // Mobile-friendly setup with retry logic
+    let cleanup: (() => void) | undefined;
+    let retryCount = 0;
+    const maxRetries = 3;
+
+    const attemptSetup = () => {
+      cleanup = setupScrollTracking();
+      
+      // If setup failed and we haven't exceeded retries, try again
+      if (!cleanup && retryCount < maxRetries) {
+        retryCount++;
+        setTimeout(attemptSetup, 500 * retryCount); // Exponential backoff
+      }
+    };
+
+    // Initial setup with delay for PDF rendering
+    const timer = setTimeout(attemptSetup, 1000);
+    
+    return () => {
+      clearTimeout(timer);
+      cleanup?.();
+    };
+  }, [handleScroll, pageNumber]);
+
+  // 📊 NEW: Reset tracking data on page change
+  useEffect(() => {
+    setPageTracking({
+      scrollDepth: 0,
+      pageStartTime: Date.now(),
+    });
+  }, [pageNumber]);
+
+  // 📊 NEW: Mobile-specific event handling
+  useEffect(() => {
+    const handleOrientationChange = () => {
+      // Reset scroll tracking when orientation changes
+      setTimeout(() => {
+        setPageTracking(prev => ({
+          ...prev,
+          scrollDepth: 0 // Reset scroll depth on orientation change
+        }));
+      }, 100); // Small delay to let layout settle
+    };
+
+    const handleResize = () => {
+      // Reset scroll tracking when viewport changes (keyboard, resize, etc.)
+      setPageTracking(prev => ({
+        ...prev,
+        scrollDepth: 0
+      }));
+    };
+
+    // Add mobile-specific event listeners
+    window.addEventListener('orientationchange', handleOrientationChange);
+    window.addEventListener('resize', handleResize);
+    
+    // iOS Safari specific events
+    if ('visualViewport' in window) {
+      (window as any).visualViewport?.addEventListener('resize', handleResize);
+    }
+
+    return () => {
+      window.removeEventListener('orientationchange', handleOrientationChange);
+      window.removeEventListener('resize', handleResize);
+      if ('visualViewport' in window) {
+        (window as any).visualViewport?.removeEventListener('resize', handleResize);
+      }
+    };
+  }, []);
 
   // 📊 ANALYTICS FUNCTIONS
   const trackPageView = async (page: number, totalPages: number) => {
@@ -85,6 +242,9 @@ export default function SecurePDFViewer({
       }
     }
 
+    // Calculate page duration
+    const pageDuration = Math.round((Date.now() - pageTracking.pageStartTime) / 1000);
+
     // Update session data
     setSessionData(prev => ({
       ...prev,
@@ -94,6 +254,16 @@ export default function SecurePDFViewer({
 
     // Send analytics to backend using custom API client
     try {
+      // Mobile-specific adjustments
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      // Adjust scroll depth for mobile (mobile users scroll less due to screen size)
+      let adjustedScrollDepth = pageTracking.scrollDepth;
+      if (isMobile) {
+        // Mobile users typically scroll less, so adjust expectations
+        adjustedScrollDepth = Math.min(100, pageTracking.scrollDepth * 1.2); // 20% boost
+      }
+
       await apiClient.analytics.trackPageView({
         shareId,
         email,
@@ -101,6 +271,9 @@ export default function SecurePDFViewer({
         totalPages,
         sessionId,
         timestamp: new Date().toISOString(),
+        // NEW: Include scroll depth and duration with mobile adjustments
+        duration: pageDuration,
+        scrollDepth: Math.round(adjustedScrollDepth),
       });
     } catch (error) {
       console.warn('Page view tracking failed:', error);

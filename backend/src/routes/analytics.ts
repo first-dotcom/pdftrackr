@@ -761,6 +761,14 @@ router.get(
       throw new CustomError("Invalid file ID", 400);
     }
 
+    // Check cache first
+    const cacheKey = `aggregate:${fileId}:${userId}:${req.query.days || 30}:${req.query.pageRange || 'all'}`;
+    const cachedData = await getCache<string>(cacheKey);
+    if (cachedData) {
+      res.json(JSON.parse(cachedData));
+      return;
+    }
+
     // Verify file ownership
     const file = await db
       .select({ id: files.id, pageCount: files.pageCount })
@@ -804,6 +812,19 @@ router.get(
     const start = new Date();
     start.setDate(start.getDate() - days);
 
+    // Page range filter for optimization (default: all pages)
+    const pageRange = req.query.pageRange as string;
+    let pageStart = 1;
+    let pageEnd = totalPages;
+    
+    if (pageRange) {
+      const [start, end] = pageRange.split('-').map(Number);
+      if (!isNaN(start) && !isNaN(end) && start > 0 && end <= totalPages) {
+        pageStart = start;
+        pageEnd = end;
+      }
+    }
+
     // Get file-level statistics
     const fileStatsResult = await db
       .select({
@@ -820,7 +841,7 @@ router.get(
 
     const fileStats = fileStatsResult[0];
 
-    // Get page-by-page statistics with efficient aggregation
+    // Get page-by-page statistics with efficient aggregation and page range filtering
     const pageStatsResult = await db
       .select({
         pageNumber: pageViews.pageNumber,
@@ -836,7 +857,9 @@ router.get(
       .innerJoin(viewSessions, eq(pageViews.sessionId, viewSessions.sessionId))
       .where(and(
         inArray(viewSessions.shareId, shareIds),
-        gte(viewSessions.startedAt, start)
+        gte(viewSessions.startedAt, start),
+        gte(pageViews.pageNumber, pageStart),
+        lte(pageViews.pageNumber, pageEnd)
       ))
       .groupBy(pageViews.pageNumber)
       .orderBy(pageViews.pageNumber);
@@ -872,7 +895,7 @@ router.get(
       skimRate: Math.round(Number(stat.skimRate) || 0)
     }));
 
-    res.json({
+    const responseData = {
       success: true,
       data: {
         fileStats: {
@@ -884,11 +907,16 @@ router.get(
         pageStats,
         dropoffFunnel
       }
-    });
+    };
+
+    // Cache the response for 5 minutes
+    await setCache(cacheKey, JSON.stringify(responseData), 300);
+
+    res.json(responseData);
   })
 );
 
-// Paginated sessions endpoint for individual view
+// Optimized sessions endpoint with page details included
 router.get(
   "/files/:fileId/sessions",
   authenticate,
@@ -898,6 +926,14 @@ router.get(
 
     if (!fileId || isNaN(fileId)) {
       throw new CustomError("Invalid file ID", 400);
+    }
+
+    // Check cache first
+    const cacheKey = `sessions:${fileId}:${userId}:${req.query.page || 1}:${req.query.limit || 20}:${req.query.email || ''}:${req.query.device || ''}:${req.query.country || ''}:${req.query.dateFrom || ''}:${req.query.dateTo || ''}`;
+    const cachedData = await getCache<string>(cacheKey);
+    if (cachedData) {
+      res.json(JSON.parse(cachedData));
+      return;
     }
 
     // Verify file ownership
@@ -918,7 +954,7 @@ router.get(
       .where(eq(shareLinks.fileId, fileId));
 
     if (shareLinksResult.length === 0) {
-      res.json({
+      const emptyResponse: any = {
         success: true,
         data: {
           sessions: [],
@@ -933,7 +969,9 @@ router.get(
             available: {}
           }
         }
-      });
+      };
+      await setCache(cacheKey, JSON.stringify(emptyResponse), 300);
+      res.json(emptyResponse);
       return;
     }
 

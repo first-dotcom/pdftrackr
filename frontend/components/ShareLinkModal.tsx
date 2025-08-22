@@ -238,6 +238,8 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
                 <label className="block text-sm font-medium text-gray-700 mb-1">Share URL</label>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <input
+                    id="share-url"
+                    name="shareUrl"
                     type="text"
                     value={`${window.location.origin}/view/${shareLink.shareId}`}
                     readOnly
@@ -319,6 +321,8 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
                   Title <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="share-title"
+                  name="title"
                   type="text"
                   value={form.title}
                   onChange={(e) => handleFieldChange("title", e.target.value)}
@@ -336,6 +340,8 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea
+                  id="share-description"
+                  name="description"
                   value={form.description}
                   onChange={(e) => handleFieldChange("description", e.target.value)}
                   className="input w-full"
@@ -360,6 +366,8 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
+                      id="download-enabled"
+                      name="downloadEnabled"
                       type="checkbox"
                       checked={form.downloadEnabled}
                       onChange={(e) => handleFieldChange("downloadEnabled", e.target.checked)}
@@ -376,6 +384,8 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
+                      id="email-gating-enabled"
+                      name="emailGatingEnabled"
                       type="checkbox"
                       checked={form.emailGatingEnabled}
                       onChange={(e) => handleFieldChange("emailGatingEnabled", e.target.checked)}

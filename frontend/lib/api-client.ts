@@ -233,9 +233,10 @@ class ApiClient {
 
   analytics = {
     file: (fileId: number) => this.get(`/api/analytics/files/${fileId}`),
-    aggregate: (fileId: number, days?: number) => {
+    aggregate: (fileId: number, days?: number, pageRange?: string) => {
       const searchParams = new URLSearchParams();
       if (days) searchParams.append('days', days.toString());
+      if (pageRange) searchParams.append('pageRange', pageRange);
       searchParams.append('_t', Date.now().toString()); // Cache buster
       const query = searchParams.toString();
       return this.get(`/api/analytics/files/${fileId}/aggregate?${query}`);
@@ -275,6 +276,8 @@ class ApiClient {
       totalPages: number;
       sessionId?: string;
       timestamp: string;
+      duration?: number;
+      scrollDepth?: number;
     }) => this.post("/api/analytics/page-view", data, { skipCSRF: true, skipAuth: true }),
     
     trackSessionEnd: (data: {

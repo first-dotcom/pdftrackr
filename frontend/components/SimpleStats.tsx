@@ -108,7 +108,7 @@ export default function SimpleStats({ userId }: SimpleStatsProps) {
       iconColor: 'text-purple-600',
     },
     {
-      label: 'Avg View Time',
+      label: 'Avg Session Time',
       value: stats.avgViewTime > 0 ? formatViewTime(stats.avgViewTime) : '-',
       icon: Clock,
       bgGradient: 'from-orange-50 to-orange-100',
