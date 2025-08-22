@@ -95,12 +95,21 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
     const dangerousPatterns = [
       // Keep ONLY clearly dangerous, high-confidence patterns to reduce false positives
       /\/JavaScript\b/gi,
-      /\/JS\b/gi,
       /\/Action\s*\/Launch/gi,
       /\/Launch\b/gi,
       /<script/gi,
       /javascript:/gi,
       /data:text\/html/gi,
+    ];
+
+    // More sophisticated JavaScript detection - look for actual execution contexts
+    const jsExecutionPatterns = [
+      /\/JS\s*\/\s*\/JavaScript/gi,
+      /\/JS\s*\/\s*\/Launch/gi,
+      /\/JS\s*\/\s*\/URI/gi,
+      /\/JS\s*\/\s*\/SubmitForm/gi,
+      /\/JS\s*\/\s*\/ImportData/gi,
+      /\/JS\s*\/\s*\/RichMedia/gi,
     ];
 
     for (const pattern of dangerousPatterns) {
@@ -111,6 +120,50 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
           ip: req.ip,
         });
         throw new CustomError("PDF contains potentially unsafe content", 400);
+      }
+    }
+
+    // Check for JavaScript execution patterns (more specific)
+    for (const pattern of jsExecutionPatterns) {
+      if (pattern.test(bufferStr)) {
+        logger.warn("JavaScript execution pattern detected in PDF", {
+          pattern: pattern.source,
+          filename: file.originalname,
+          ip: req.ip,
+        });
+        throw new CustomError("PDF contains potentially unsafe content", 400);
+      }
+    }
+
+    // Additional check: Look for standalone /JS patterns that might be false positives
+    // Only flag if they appear in suspicious contexts
+    const standaloneJSMatches = bufferStr.match(/\/JS\b/gi);
+    if (standaloneJSMatches && standaloneJSMatches.length > 5) {
+      // If there are many /JS references, check if they're in suspicious contexts
+      const suspiciousJSContexts = [
+        /\/JS\s*\/\s*\/JavaScript/gi,
+        /\/JS\s*\/\s*\/Launch/gi,
+        /\/JS\s*\/\s*\/URI/gi,
+        /\/JS\s*\/\s*\/SubmitForm/gi,
+        /\/JS\s*\/\s*\/ImportData/gi,
+        /\/JS\s*\/\s*\/RichMedia/gi,
+      ];
+      
+      const hasSuspiciousContext = suspiciousJSContexts.some(pattern => pattern.test(bufferStr));
+      
+      if (hasSuspiciousContext) {
+        logger.warn("Multiple /JS references with suspicious contexts detected in PDF", {
+          jsCount: standaloneJSMatches.length,
+          filename: file.originalname,
+          ip: req.ip,
+        });
+        throw new CustomError("PDF contains potentially unsafe content", 400);
+      } else {
+        logger.info("Multiple /JS references detected but no suspicious contexts found - allowing upload", {
+          jsCount: standaloneJSMatches.length,
+          filename: file.originalname,
+          ip: req.ip,
+        });
       }
     }
 

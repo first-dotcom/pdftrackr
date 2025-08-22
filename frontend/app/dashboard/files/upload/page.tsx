@@ -1,10 +1,10 @@
 "use client";
 
 import { generateCSRFToken } from "@/utils/security";
-import { AlertCircle, CheckCircle, FileText, Upload, X, HardDrive } from "lucide-react";
+import { AlertCircle, CheckCircle, FileText, Upload, X, HardDrive, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useApi } from "@/hooks/useApi";
 import { formatFileSize, getProgressColor, calculatePercentage } from "@/utils/formatters";
 import type { UserProfile } from "@/shared/types";
@@ -27,6 +27,7 @@ export default function UploadPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -117,6 +118,11 @@ export default function UploadPage() {
         }
         setFiles((prev) => [...prev, ...newFiles]);
       }
+
+      // Reset file input to allow selecting the same file again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     },
     [generateId, validateFile],
   );
@@ -153,6 +159,16 @@ export default function UploadPage() {
 
   const removeFile = (id: string) => {
     setFiles((prev) => prev.filter((file) => file.id !== id));
+  };
+
+  const retryFile = (id: string) => {
+    setFiles((prev) =>
+      prev.map((file) =>
+        file.id === id
+          ? { ...file, status: "pending", progress: 0, error: null }
+          : file
+      )
+    );
   };
 
   const uploadFile = async (uploadFile: UploadFile) => {
@@ -285,8 +301,6 @@ export default function UploadPage() {
     }
   };
 
-
-
   const getStatusIcon = (status: UploadFile["status"]) => {
     switch (status) {
       case "success":
@@ -302,10 +316,9 @@ export default function UploadPage() {
     }
   };
 
-
-
   const pendingFiles = files.filter((f) => f.status === "pending").length;
   const successFiles = files.filter((f) => f.status === "success").length;
+  const errorFiles = files.filter((f) => f.status === "error").length;
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -418,6 +431,7 @@ export default function UploadPage() {
                   <span className="text-gray-500 text-sm sm:text-base"> or drag and drop</span>
                 </label>
                 <input
+                  ref={fileInputRef}
                   id="file-upload"
                   name="file-upload"
                   type="file"
@@ -510,6 +524,17 @@ export default function UploadPage() {
                         <div className="mt-4 sm:mt-0 sm:ml-4">
                           {/* Mobile: Always visible actions */}
                           <div className="sm:hidden flex space-x-2">
+                            {file.status === "error" && (
+                              <button
+                                type="button"
+                                onClick={() => retryFile(file.id)}
+                                disabled={isUploading}
+                                className="flex items-center justify-center w-10 h-10 text-primary-600 hover:text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                aria-label="Retry upload"
+                              >
+                                <RefreshCw className="h-5 w-5" />
+                              </button>
+                            )}
                             {file.status !== "uploading" && (
                               <button
                                 type="button"
@@ -525,6 +550,17 @@ export default function UploadPage() {
                           {/* Desktop: Hover-visible actions */}
                           <div className="hidden sm:block">
                             <div className={`flex space-x-2 transition-opacity duration-200 ${file.status !== "uploading" ? 'opacity-0 group-hover:opacity-100' : 'opacity-0'}`}>
+                              {file.status === "error" && (
+                                <button
+                                  type="button"
+                                  onClick={() => retryFile(file.id)}
+                                  disabled={isUploading}
+                                  className="flex items-center justify-center w-8 h-8 text-primary-600 hover:text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  aria-label="Retry upload"
+                                >
+                                  <RefreshCw className="h-4 w-4" />
+                                </button>
+                              )}
                               <button
                                 type="button"
                                 onClick={() => removeFile(file.id)}
@@ -552,6 +588,9 @@ export default function UploadPage() {
           <div className="text-sm text-gray-600 text-center sm:text-left">
             {successFiles > 0 && (
               <span className="text-green-600 mr-4 font-medium">✓ {successFiles} uploaded successfully</span>
+            )}
+            {errorFiles > 0 && (
+              <span className="text-red-600 mr-4 font-medium">✗ {errorFiles} failed</span>
             )}
             {pendingFiles > 0 && <span className="font-medium">{pendingFiles} files ready to upload</span>}
           </div>
