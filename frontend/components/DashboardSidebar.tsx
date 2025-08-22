@@ -1,7 +1,7 @@
 "use client";
 
 import { clsx } from "clsx";
-import { FileText, LayoutDashboard, X, Shield } from "lucide-react";
+import { FileText, LayoutDashboard, X, Shield, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
@@ -148,9 +148,25 @@ export default function DashboardSidebar({ isMobileOpen = false, onMobileClose }
           </ul>
         </nav>
 
-        {/* Footer spacer */}
-        <div className="p-4 border-t border-gray-200 text-xs text-gray-500">
-          {/* Removed footer text for cleaner desktop experience */}
+        {/* Settings Link - Bottom of sidebar */}
+        <div className="p-4 border-t border-gray-200">
+          <Link
+            href="/dashboard/settings"
+            className={clsx(
+              "group flex items-center px-4 py-3 text-base font-medium rounded-lg transition-colors touch-manipulation",
+              pathname === "/dashboard/settings"
+                ? "bg-primary-100 text-primary-700"
+                : "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
+            )}
+          >
+            <Settings
+              className={clsx(
+                "mr-4 h-6 w-6 flex-shrink-0",
+                pathname === "/dashboard/settings" ? "text-primary-500" : "text-gray-400 group-hover:text-gray-500",
+              )}
+            />
+            <span className="truncate">Settings</span>
+          </Link>
         </div>
       </div>
     </>
