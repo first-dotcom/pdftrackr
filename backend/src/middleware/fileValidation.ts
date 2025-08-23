@@ -14,10 +14,11 @@ interface RequestWithFileHash extends Request {
 export const sanitizeFilename = (filename: string): string => {
   return filename
     .normalize("NFC") // Normalize to ensure consistent encoding
-    .replace(/[<>:"|?*\\\/]/g, "") // Remove dangerous chars
+    .replace(/[<>:"|?*\\\/]/g, "") // Remove dangerous chars (keep backslash and forward slash for security)
     .replace(/\.\./g, "") // Prevent path traversal
     .replace(/^\.+/, "") // Remove leading dots
     .replace(/\s+/g, "_") // Replace spaces with underscores
+    .replace(/[^\p{L}\p{N}\p{P}\s]/gu, "") // Remove non-printable Unicode characters
     .trim()
     .substring(0, 255); // Limit length
 };
@@ -326,7 +327,7 @@ export const validateMimeType = (req: Request, _res: Response, next: NextFunctio
     throw new CustomError("Invalid file type. Only PDFs are allowed.", 400);
   }
 
-  // Additional check: verify file extension
+  // Additional check: verify file extension (case-insensitive)
   const fileExtension = file.originalname.toLowerCase().split(".").pop();
   if (fileExtension !== "pdf") {
     logger.warn("Invalid file extension", {

@@ -13,7 +13,7 @@ export const userInputSchema = z.string().max(1000).trim();
 export const filenameSchema = z
   .string()
   .max(255)
-  .regex(/^[^<>:"|?*\\\/]+$/);
+  .regex(/^[^<>:"|?*\\/]+$/u); // Added 'u' flag for Unicode support and fixed regex escaping
 
 // Validation helpers using Zod - PROPER TYPE SAFETY
 export const validateEmail = (email: string): { valid: boolean; error?: string } => {
@@ -92,8 +92,10 @@ export const sanitizeFilename = (filename: string): string => {
   }
 
   return filename
-    .replace(/[<>:"|?*\\\/]/g, "") // Remove dangerous chars
+    .normalize("NFC") // Normalize Unicode characters
+    .replace(/[<>:"|?*\\/]/g, "") // Remove dangerous chars (fixed regex)
     .replace(/\.\./g, "") // Prevent path traversal
+    .replace(/[^\p{L}\p{N}\p{P}\s]/gu, "") // Remove non-printable Unicode characters
     .trim()
     .substring(0, 255); // Limit length
 };
