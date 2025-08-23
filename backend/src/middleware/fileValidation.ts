@@ -4,6 +4,7 @@ import { auditService } from "../services/auditService";
 import { pdfScanner } from "../services/virusScanning";
 import { logger } from "../utils/logger";
 import { CustomError } from "./errorHandler";
+import { config } from "../config";
 
 // Extend Request interface to include fileHash
 interface RequestWithFileHash extends Request {
@@ -31,8 +32,6 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
 
   const file = req.file;
   const fileSizeBytes = file.size;
-  const SMALL_FILE_BYTES = 100 * 1024; // 100KB
-  const LIGHT_VALIDATION_BYTES = 1 * 1024 * 1024; // 1MB
 
   try {
     // 1. Validate PDF magic number (header) - strict check
@@ -66,33 +65,16 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
       throw new CustomError("File size mismatch - potential tampering", 400);
     }
 
-    // Early return optimizations for small files
-    // - Files under 100KB: perform only the basic checks above and return
-    if (fileSizeBytes < SMALL_FILE_BYTES) {
-      // Sanitize filename only; skip heavy scanning and hashing
-      const originalName = file.originalname;
-      file.originalname = sanitizeFilename(originalName);
-      if (originalName !== file.originalname) {
-        logger.info("Filename sanitized", { original: originalName, sanitized: file.originalname });
-      }
-      return next();
+    // 4. Sanitize filename for all files
+    const originalName = file.originalname;
+    file.originalname = sanitizeFilename(originalName);
+    if (originalName !== file.originalname) {
+      logger.info("Filename sanitized", { original: originalName, sanitized: file.originalname });
     }
 
-    // - Files under 1MB: perform light validation only (basic checks + filename sanitize)
-    if (fileSizeBytes < LIGHT_VALIDATION_BYTES) {
-      const originalName = file.originalname;
-      file.originalname = sanitizeFilename(originalName);
-      if (originalName !== file.originalname) {
-        logger.info("Filename sanitized", { original: originalName, sanitized: file.originalname });
-      }
-      // Skip heavy regex scanning, hashing and virus scanning for small PDFs
-      return next();
-    }
-
-    // From here on, perform heavy validation (large files >= 1MB)
+    // 5. Enhanced security scanning - comprehensive dangerous content detection
     const bufferStr = file.buffer.toString("ascii");
 
-    // 4. Enhanced security scanning - comprehensive dangerous content detection
     const dangerousPatterns = [
       // Keep ONLY clearly dangerous, high-confidence patterns to reduce false positives
       /\/JavaScript\b/gi,
@@ -168,8 +150,6 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
       }
     }
 
-
-
     // 6. Check for embedded files - security risk
     const embeddedFilePatterns = [/\/EmbeddedFile/gi, /\/Filespec/gi, /\/EF/gi];
 
@@ -204,22 +184,11 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
       throw new CustomError("PDF contains excessive object references", 400);
     }
 
-    // 9. Sanitize filename
-    const originalName = file.originalname;
-    file.originalname = sanitizeFilename(originalName);
-
-    if (originalName !== file.originalname) {
-      logger.info("Filename sanitized", {
-        original: originalName,
-        sanitized: file.originalname,
-      });
-    }
-
-    // 10. Add file hash for integrity checking (only for large files)
+    // 9. Add file hash for integrity checking (for all files)
     const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
     (req as RequestWithFileHash).fileHash = hash;
 
-    // 11. Virus scanning (only for large files)
+    // 10. Virus scanning (MANDATORY for all files)
     const fileId = `temp_${Date.now()}_${Math.random().toString(36).substring(7)}`;
     logger.info("Starting virus scan for PDF", {
       filename: file.originalname,
@@ -265,8 +234,6 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
         riskLevel: scanResult.riskLevel,
       });
     } catch (scanError) {
-      // If scanning fails, log but don't block upload in development
-      // In production, you might want to block uploads when scanner is down
       const errorMessage = scanError instanceof Error ? scanError.message : String(scanError);
 
       logger.error("Virus scanning failed", {
@@ -284,12 +251,24 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
         error: errorMessage,
       });
 
-      // For now, allow upload if ClamAV is unavailable (development friendly)
-      // In production, you might want to throw an error here
-      if (process.env.NODE_ENV === "production") {
-        throw new CustomError("Security scanning is temporarily unavailable", 503);
-      }
-      logger.warn("Allowing upload without virus scan in development mode");
+      // Virus scanning is REQUIRED for security - never skip it
+      logger.error("Virus scanning failed - blocking upload for security", {
+        filename: file.originalname,
+        fileId,
+        error: errorMessage,
+      });
+
+      // Log the scan failure for monitoring
+      await auditService.logVirusScan({
+        fileId,
+        isClean: false,
+        threats: [],
+        scanners: [],
+        error: errorMessage,
+      });
+
+      // Always block upload if virus scanning fails - security first
+      throw new CustomError("Security scanning is temporarily unavailable - please try again later", 503);
     }
 
     next();

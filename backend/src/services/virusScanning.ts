@@ -1,5 +1,7 @@
-import fs from "fs";
-import net from "net";
+import fs from "node:fs";
+import net from "node:net";
+import path from "node:path";
+import os from "node:os";
 import { logger } from "../utils/logger";
 
 export interface ScanResult {
@@ -20,11 +22,6 @@ class ClamAVScanner {
 
   async scanFile(filePath: string): Promise<ScanResult> {
     try {
-      // Check if file exists
-      if (!fs.existsSync(filePath)) {
-        throw new Error(`File not found: ${filePath}`);
-      }
-
       logger.info(`Starting virus scan for file: ${filePath}`);
 
       return new Promise((resolve, reject) => {
@@ -84,34 +81,50 @@ class ClamAVScanner {
   }
 
   async isAvailable(): Promise<boolean> {
-    try {
-      return new Promise((resolve) => {
-        const socket = net.createConnection(this.port, this.host);
+    // Try multiple times with increasing delays
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const result = await new Promise<boolean>((resolve) => {
+          const socket = net.createConnection(this.port, this.host);
+          
+          // Increase timeout for each attempt
+          const timeout = attempt * 10000; // 10s, 20s, 30s
+          socket.setTimeout(timeout);
 
-        socket.setTimeout(5000); // 5 second timeout for availability check
+          socket.on("connect", () => {
+            socket.write("PING\n");
+          });
 
-        socket.on("connect", () => {
-          socket.write("PING\n");
+          socket.on("data", (data) => {
+            const response = data.toString().trim();
+            socket.end();
+            resolve(response === "PONG");
+          });
+
+          socket.on("error", () => {
+            resolve(false);
+          });
+
+          socket.on("timeout", () => {
+            socket.destroy();
+            resolve(false);
+          });
         });
 
-        socket.on("data", (data) => {
-          const response = data.toString().trim();
-          socket.end();
-          resolve(response === "PONG");
-        });
+        if (result) {
+          return true;
+        }
 
-        socket.on("error", () => {
-          resolve(false);
-        });
-
-        socket.on("timeout", () => {
-          socket.destroy();
-          resolve(false);
-        });
-      });
-    } catch {
-      return false;
+        // Wait before retry (except on last attempt)
+        if (attempt < 3) {
+          await new Promise(resolve => setTimeout(resolve, 5000 * attempt)); // 5s, 10s delays
+        }
+      } catch {
+        // Continue to next attempt
+      }
     }
+    
+    return false;
   }
 }
 
@@ -167,12 +180,81 @@ export const validatePDFStructure = (input: string | Buffer) => {
 // Main scanning service
 class PDFScanningService {
   private clamAV: ClamAVScanner;
+  private tempDir: string;
+  private initialized: boolean = false;
 
   constructor() {
     this.clamAV = new ClamAVScanner();
+    
+    // Use a single, consistent path that both containers can access
+    this.tempDir = '/tmp/temp_uploads';
+    
+    // Ensure temp directory exists with proper error handling
+    this.ensureTempDirectory();
+  }
+
+  private ensureTempDirectory() {
+    try {
+      if (!fs.existsSync(this.tempDir)) {
+        fs.mkdirSync(this.tempDir, { recursive: true, mode: 0o700 }); // Secure permissions
+        logger.info(`Created secure temporary directory: ${this.tempDir}`);
+      }
+      
+      // Verify we can write to the directory
+      const testFile = path.join(this.tempDir, '.test_write');
+      fs.writeFileSync(testFile, 'test');
+      fs.unlinkSync(testFile);
+      
+      logger.info(`Temporary directory is writable: ${this.tempDir}`);
+    } catch (error) {
+      logger.error(`Failed to setup temp directory ${this.tempDir}: ${error}`);
+      
+      // Final fallback: use a subdirectory of the current working directory
+      this.tempDir = path.join(process.cwd(), 'temp_uploads');
+      try {
+        if (!fs.existsSync(this.tempDir)) {
+          fs.mkdirSync(this.tempDir, { recursive: true, mode: 0o700 });
+        }
+        logger.info(`Using fallback temp directory: ${this.tempDir}`);
+      } catch (fallbackError) {
+        logger.error(`All temp directory fallbacks failed: ${fallbackError}`);
+        // Don't throw here - let the service continue and handle errors gracefully
+      }
+    }
+  }
+
+  private async initialize() {
+    if (!this.initialized) {
+      // Clean up old temporary files on startup
+      await this.cleanupOldTempFiles();
+      this.initialized = true;
+    }
+  }
+
+  private async cleanupOldTempFiles() {
+    try {
+      const files = await fs.promises.readdir(this.tempDir);
+      const now = Date.now();
+      const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+
+      for (const file of files) {
+        const filePath = path.join(this.tempDir, file);
+        const stats = await fs.promises.stat(filePath);
+        
+        if (now - stats.mtime.getTime() > maxAge) {
+          await fs.promises.unlink(filePath);
+          logger.debug(`Cleaned up old temporary file: ${file}`);
+        }
+      }
+    } catch (error) {
+      logger.warn(`Failed to cleanup old temporary files: ${error}`);
+    }
   }
 
   async scanPDF(input: string | Buffer, fileId: string) {
+    // Initialize on first scan
+    await this.initialize();
+
     const scanResult = {
       fileId,
       scannedAt: new Date(),
@@ -182,6 +264,8 @@ class PDFScanningService {
       riskLevel: "unknown" as "low" | "medium" | "high" | "unknown",
       error: undefined as string | undefined,
     };
+
+    let tempFilePath: string | null = null;
 
     try {
       logger.info(`Starting comprehensive scan for file: ${fileId}`);
@@ -202,27 +286,47 @@ class PDFScanningService {
         );
       }
 
-      // Step 2: ClamAV virus scan (only if we have a file path)
+      // Step 2: Prepare file for ClamAV scanning
       if (typeof input === 'string') {
-        const isAvailable = await this.clamAV.isAvailable();
+        tempFilePath = input; // Use existing file path
+      } else {
+        // Create temporary file for buffer input with secure permissions
+        const timestamp = Date.now();
+        const randomSuffix = Math.random().toString(36).substring(2, 8);
+        tempFilePath = path.join(this.tempDir, `${fileId}_${timestamp}_${randomSuffix}.pdf`);
+        
+        try {
+          await fs.promises.writeFile(tempFilePath, input);
+          
+          // Set file permissions that allow ClamAV to read the file
+          await fs.promises.chmod(tempFilePath, 0o644);
+          
+          logger.debug(`Created temporary file for ClamAV scan: ${tempFilePath}`);
+          
+          // No path conversion needed - using consistent path
+        } catch (writeError) {
+          logger.error(`Failed to create temporary file: ${writeError}`);
+          throw new Error('Unable to prepare file for security scanning');
+        }
+      }
 
-        if (isAvailable) {
-          const clamResult = await this.clamAV.scanFile(input);
-          scanResult.scanners.push("ClamAV");
+      // Step 3: ClamAV virus scan (now works with both file paths and buffers)
+      const isAvailable = await this.clamAV.isAvailable();
 
-          if (!clamResult.isClean) {
-            scanResult.threats.push(`ClamAV: ${clamResult.virusName || "Unknown threat"}`);
-            return scanResult;
-          }
-        } else {
-          logger.warn("ClamAV is not available - file uploaded without virus scan");
-          scanResult.scanners.push("Structure-only");
-          scanResult.error = "ClamAV unavailable";
+      if (isAvailable) {
+        const clamResult = await this.clamAV.scanFile(tempFilePath);
+        scanResult.scanners.push("ClamAV");
+
+        if (!clamResult.isClean) {
+          scanResult.threats.push(`ClamAV: ${clamResult.virusName || "Unknown threat"}`);
+          return scanResult;
         }
       } else {
-        // Buffer input - skip ClamAV scan
-        logger.info("Buffer input detected - skipping ClamAV scan");
+        logger.error("ClamAV is not available - blocking upload for security");
         scanResult.scanners.push("Structure-only");
+        scanResult.error = "ClamAV unavailable";
+        scanResult.isClean = false; // Block upload if ClamAV is down
+        return scanResult;
       }
 
       // All checks passed
@@ -235,6 +339,16 @@ class PDFScanningService {
       scanResult.error = errorMessage;
       scanResult.isClean = false; // Fail-safe
       return scanResult;
+    } finally {
+      // Clean up temporary file if we created one
+      if (tempFilePath && typeof input === 'object' && Buffer.isBuffer(input)) {
+        try {
+          await fs.promises.unlink(tempFilePath);
+          logger.debug(`Cleaned up temporary file: ${tempFilePath}`);
+        } catch (cleanupError) {
+          logger.warn(`Failed to clean up temporary file ${tempFilePath}: ${cleanupError}`);
+        }
+      }
     }
   }
 }

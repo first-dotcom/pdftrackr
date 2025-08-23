@@ -94,6 +94,7 @@ services:
       - "3310:3310"
     volumes:
       - clamav_data:/var/lib/clamav
+      - temp_uploads:/tmp/temp_uploads:ro
     networks:
       - pdftrackr-network
     restart: unless-stopped
@@ -125,7 +126,8 @@ services:
       - NODE_OPTIONS=--max-old-space-size=400
     ports:
       - "${BACKEND_PORT:-3001}:3001"
-    # No volume mounts for production - use built files in container
+    volumes:
+      - temp_uploads:/tmp/temp_uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -182,6 +184,7 @@ volumes:
   postgres_data:
   redis_data:
   clamav_data:
+  temp_uploads:
   nginx_logs:
 
 networks:

@@ -2,6 +2,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import type React from "react";
 import "./globals.css";
 import ConsentBanner from "@/components/ConsentBanner";
+import AnalyticsPageTracker from "@/components/AnalyticsPageTracker";
 
 // Use Tailwind's font-sans (configured to prefer Inter if available, then system fonts)
 
@@ -106,9 +107,32 @@ export default function RootLayout({
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
           />
+          {/* Google tag (gtag.js) */}
+          <script async src="https://www.googletagmanager.com/gtag/js?id=G-0D0FQG4352"></script>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                
+                // Initialize with consent mode - analytics disabled by default
+                gtag('consent', 'default', {
+                  'analytics_storage': 'denied',
+                  'ad_storage': 'denied'
+                });
+                
+                // Configure GA4 with consent mode
+                gtag('config', 'G-0D0FQG4352', {
+                  'consent_mode': 'advanced'
+                });
+              `,
+            }}
+          />
         </head>
         <body className="font-sans">
           <div className="min-h-screen bg-gray-50">{children}</div>
+          <AnalyticsPageTracker />
           <ConsentBanner />
         </body>
       </html>

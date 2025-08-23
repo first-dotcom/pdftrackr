@@ -1,10 +1,11 @@
 "use client";
 
-import { Bell, Download, Shield, Trash2, User, HardDrive, TrendingUp } from "lucide-react";
+import { Bell, Download, Shield, Trash2, User, HardDrive, TrendingUp, Cookie } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useApi } from "@/hooks/useApi";
 import { formatFileSize, getProgressColor, calculatePercentage } from "@/utils/formatters";
 import { planQuotas } from "@/shared/types";
+import { useAnalyticsConsent } from "@/hooks/useAnalyticsConsent";
 
 interface UserSettings {
   email: string;
@@ -33,6 +34,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
 
   const api = useApi();
+  const { consent, grantConsent, denyConsent, resetConsent, hasConsent, needsConsent } = useAnalyticsConsent();
 
   useEffect(() => {
     fetchSettings();
@@ -310,6 +312,91 @@ export default function SettingsPage() {
               <option value={730}>2 years</option>
             </select>
             <p className="text-xs text-gray-500 mt-1">How long to keep viewer analytics data</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Cookie & Analytics Consent */}
+      <div className="card">
+        <div className="card-header">
+          <h3 className="text-base sm:text-lg font-medium text-gray-900 flex items-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg flex items-center justify-center border border-blue-200 mr-3">
+              <Cookie className="h-4 w-4 text-blue-600" />
+            </div>
+            Cookie & Analytics Consent
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">Manage your cookie preferences and analytics consent</p>
+        </div>
+        <div className="card-body p-4 sm:p-6 space-y-4">
+          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <Shield className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="ml-3">
+                <h4 className="text-sm font-medium text-blue-800">GDPR Compliance</h4>
+                <p className="text-sm text-blue-700 mt-1">
+                  We respect your privacy and comply with GDPR regulations. You can control how we use cookies and analytics to improve our service.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-700">Google Analytics</p>
+                <p className="text-xs text-gray-500">Help us improve by allowing analytics cookies</p>
+              </div>
+              <div className="flex items-center space-x-2">
+                {needsConsent ? (
+                  <>
+                    <button
+                      onClick={denyConsent}
+                      className="px-3 py-1 text-xs text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                    >
+                      Decline
+                    </button>
+                    <button
+                      onClick={grantConsent}
+                      className="px-3 py-1 text-xs bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+                    >
+                      Accept
+                    </button>
+                  </>
+                ) : hasConsent ? (
+                  <span className="px-3 py-1 text-xs bg-green-100 text-green-800 rounded-md">
+                    Accepted
+                  </span>
+                ) : (
+                  <span className="px-3 py-1 text-xs bg-red-100 text-red-800 rounded-md">
+                    Declined
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {!needsConsent && (
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-700">Reset Consent</p>
+                  <p className="text-xs text-gray-500">Clear your current consent preferences</p>
+                </div>
+                <button
+                  onClick={resetConsent}
+                  className="px-3 py-1 text-xs text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Reset
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="text-xs text-gray-500 space-y-1">
+            <p><strong>What we collect:</strong> Page views, user interactions, and performance data to improve our service.</p>
+            <p><strong>How we use it:</strong> To understand how users interact with our platform and make improvements.</p>
+            <p><strong>Data retention:</strong> Analytics data is retained for up to 26 months as per Google Analytics policy.</p>
+            <p><strong>Your rights:</strong> You can change your consent at any time in these settings.</p>
           </div>
         </div>
       </div>
