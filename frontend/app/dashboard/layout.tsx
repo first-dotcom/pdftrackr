@@ -4,7 +4,6 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import DashboardHeader from "@/components/DashboardHeader";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import FloatingUploadButton from "@/components/FloatingUploadButton";
 import WaitlistModal from "@/components/WaitlistModal";
 
 import { useAuth } from "@clerk/nextjs";

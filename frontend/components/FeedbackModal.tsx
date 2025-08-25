@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { X, Star, MessageCircle, AlertCircle, CheckCircle } from "lucide-react";
+import { useApi } from "@/hooks/useApi";
 
 interface FeedbackData {
   message: string;
@@ -19,6 +20,7 @@ interface RateLimitStatus {
 
 export default function FeedbackModal() {
   const { isSignedIn } = useAuth();
+  const api = useApi();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [rateLimitStatus, setRateLimitStatus] = useState<RateLimitStatus | null>(null);
@@ -33,12 +35,9 @@ export default function FeedbackModal() {
   // Check rate limit status
   const checkRateLimit = async () => {
     try {
-      const response = await fetch("/api/feedback/rate-limit", {
-        credentials: "include",
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setRateLimitStatus(data);
+      const response = await api.feedback.getRateLimit();
+      if (response.success) {
+        setRateLimitStatus(response.data as RateLimitStatus);
       }
     } catch (error) {
       console.error("Error checking rate limit:", error);
@@ -76,24 +75,18 @@ export default function FeedbackModal() {
     setError("");
 
     try {
-      const response = await fetch("/api/feedback", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(feedback),
-      });
+      const response = await api.feedback.submit(feedback);
 
-      const data = await response.json();
-
-      if (response.ok) {
+      if (response.success) {
         setSuccess(true);
         setError("");
         // Update rate limit status
         await checkRateLimit();
       } else {
-        setError(data.message || "Failed to submit feedback");
+        const errorMessage = typeof response.error === 'string' 
+          ? response.error 
+          : response.error?.message || "Failed to submit feedback";
+        setError(errorMessage);
       }
     } catch (error) {
       setError("Network error. Please try again.");

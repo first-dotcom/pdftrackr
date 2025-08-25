@@ -231,6 +231,19 @@ class ApiClient {
       this.post("/api/waitlist", data, { skipAuth: true }),
   };
 
+  feedback = {
+    submit: (data: { message: string; rating?: number; category?: string }) => 
+      this.post("/api/feedback", data),
+    getHistory: (params?: { page?: number; limit?: number }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      const query = searchParams.toString();
+      return this.get(`/api/feedback${query ? `?${query}` : ''}`);
+    },
+    getRateLimit: () => this.get("/api/feedback/rate-limit"),
+  };
+
   analytics = {
     file: (fileId: number) => this.get(`/api/analytics/files/${fileId}`),
     aggregate: (fileId: number, days?: number, pageRange?: string) => {
