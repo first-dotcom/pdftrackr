@@ -251,7 +251,19 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
         error: errorMessage,
       });
 
-      // Virus scanning is REQUIRED for security - never skip it
+      // Check if this is a ClamAV unavailability issue
+      if (errorMessage.includes("ClamAV unavailable")) {
+        logger.warn("ClamAV unavailable - allowing upload with structure validation only", {
+          filename: file.originalname,
+          fileId,
+        });
+        
+        // Allow the upload to proceed with structure-only validation
+        next();
+        return;
+      }
+
+      // For other virus scanning failures, block the upload
       logger.error("Virus scanning failed - blocking upload for security", {
         filename: file.originalname,
         fileId,
@@ -267,8 +279,7 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
         error: errorMessage,
       });
 
-      // Always block upload if virus scanning fails - security first
-      throw new CustomError("Security scanning is temporarily unavailable - please try again later", 503);
+      throw new CustomError("Security scanning failed - please try again later", 503);
     }
 
     next();

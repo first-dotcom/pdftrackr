@@ -224,8 +224,8 @@ const checkSuspiciousActivity = async (req: Request, userId: string) => {
     const attempts = await getCache<string>(key);
     const attemptCount = attempts ? parseInt(attempts) : 0;
 
-    // Log unusual patterns
-    if (attemptCount > 10) {
+    // Only log warnings for very high frequency (reduced from 10 to 50)
+    if (attemptCount > 50) {
       logger.warn("High authentication frequency detected", {
         userId,
         ip,
@@ -234,8 +234,8 @@ const checkSuspiciousActivity = async (req: Request, userId: string) => {
       });
     }
 
-    // Increment counter
-    await setCache(key, (attemptCount + 1).toString(), 3600); // 1 hour TTL
+    // Increment counter with shorter TTL to reduce false positives
+    await setCache(key, (attemptCount + 1).toString(), 1800); // 30 minutes TTL (reduced from 1 hour)
 
     // Check for multiple IPs per user (potential account sharing/compromise)
     const userIpKey = `user_ips:${userId}`;

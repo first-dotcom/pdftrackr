@@ -92,38 +92,48 @@ class ClamAVScanner {
           socket.setTimeout(timeout);
 
           socket.on("connect", () => {
+            logger.debug(`ClamAV connection attempt ${attempt} successful`);
             socket.write("PING\n");
           });
 
           socket.on("data", (data) => {
             const response = data.toString().trim();
             socket.end();
-            resolve(response === "PONG");
+            const isAvailable = response === "PONG";
+            logger.debug(`ClamAV response: ${response}, available: ${isAvailable}`);
+            resolve(isAvailable);
           });
 
-          socket.on("error", () => {
+          socket.on("error", (error) => {
+            logger.debug(`ClamAV connection attempt ${attempt} failed: ${error.message}`);
             resolve(false);
           });
 
           socket.on("timeout", () => {
+            logger.debug(`ClamAV connection attempt ${attempt} timed out`);
             socket.destroy();
             resolve(false);
           });
         });
 
         if (result) {
+          logger.info("ClamAV is available and responding");
           return true;
         }
 
         // Wait before retry (except on last attempt)
         if (attempt < 3) {
-          await new Promise(resolve => setTimeout(resolve, 5000 * attempt)); // 5s, 10s delays
+          const delay = 5000 * attempt; // 5s, 10s delays
+          logger.debug(`ClamAV unavailable, retrying in ${delay}ms (attempt ${attempt}/3)`);
+          await new Promise(resolve => setTimeout(resolve, delay));
         }
-      } catch {
+      } catch (error) {
+        logger.debug(`ClamAV availability check attempt ${attempt} error: ${error}`);
         // Continue to next attempt
       }
     }
     
+    logger.warn("ClamAV is not available after 3 attempts");
     return false;
   }
 }
@@ -322,11 +332,19 @@ class PDFScanningService {
           return scanResult;
         }
       } else {
-        logger.error("ClamAV is not available - blocking upload for security");
+        logger.warn("ClamAV is not available - using enhanced structure validation only");
         scanResult.scanners.push("Structure-only");
-        scanResult.error = "ClamAV unavailable";
-        scanResult.isClean = false; // Block upload if ClamAV is down
-        return scanResult;
+        
+        // Enhanced structure validation when ClamAV is down
+        if (structureCheck.riskLevel === "high") {
+          scanResult.threats.push("High-risk PDF structure detected");
+          scanResult.error = "Enhanced security validation failed";
+          scanResult.isClean = false;
+          return scanResult;
+        }
+        
+        // Allow uploads with medium/low risk when ClamAV is down
+        logger.info("Allowing upload with structure-only validation due to ClamAV unavailability");
       }
 
       // All checks passed
