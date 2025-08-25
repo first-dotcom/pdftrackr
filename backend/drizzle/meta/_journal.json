@@ -26,29 +26,8 @@
     {
       "idx": 3,
       "version": "5",
-      "when": 1703123456792,
-      "tag": "0003_add_page_count",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "5",
-      "when": 1703123456793,
-      "tag": "0004_analytics_indexes",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "5",
-      "when": 1703123456794,
-      "tag": "0005_feedback_system",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "5",
-      "when": 1703123456795,
-      "tag": "0006_comprehensive_tracking_cleanup",
+      "when": 1703123456796,
+      "tag": "0003_final_schema_updates",
       "breakpoints": true
     }
   ]
