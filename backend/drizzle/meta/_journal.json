@@ -43,6 +43,13 @@
       "when": 1703123456794,
       "tag": "0005_feedback_system",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1703123456795,
+      "tag": "0006_comprehensive_tracking_cleanup",
+      "breakpoints": true
     }
   ]
 }
