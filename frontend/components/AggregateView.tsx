@@ -54,7 +54,7 @@ export default function AggregateView({ fileId, totalPages, days = 30 }: Aggrega
     
     return data.pageStats.map(stat => ({
       page: `Page ${stat.pageNumber}`,
-      avgTime: Math.round(Number(stat.avgDuration) || 0),
+      avgTime: Number(stat.avgDuration) || 0,
       pageNumber: stat.pageNumber
     })).sort((a, b) => a.pageNumber - b.pageNumber);
   }, [data]);

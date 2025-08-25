@@ -5,7 +5,8 @@ import { createRateLimit, normalizeIp } from "../middleware/security";
 import { auditService } from "../services/auditService";
 import { logger } from "../utils/logger";
 import { db } from "../utils/database";
-import { pageViews } from "../models/schema";
+import { pageViews, viewSessions } from "../models/schema";
+import { eq } from "drizzle-orm";
 
 const router: Router = Router();
 
@@ -17,49 +18,8 @@ const analyticsRateLimit = createRateLimit(
 );
 
 // 📊 SESSION START TRACKING
-router.post(
-  "/session-start",
-  analyticsRateLimit,
-  normalizeIp,
-  asyncHandler(async (req: Request, res: Response) => {
-    const { 
-      shareId, 
-      email, 
-      sessionId
-    } = req.body;
-
-    if (!shareId || !sessionId) {
-      res.status(400).json({
-        success: false,
-        error: "Missing required fields: shareId, sessionId",
-      });
-      return;
-    }
-
-    try {
-      await auditService.logSessionStart({
-        shareId,
-        email,
-        ip: req.ip,
-        userAgent: req.get('User-Agent') || '',
-        sessionId: sessionId,
-      });
-
-      logger.debug(`Session start tracked: ${shareId} - session: ${sessionId}`);
-
-      res.json({
-        success: true,
-        message: "Session start tracked",
-      });
-    } catch (error) {
-      logger.error("Failed to track session start:", error);
-      res.status(500).json({
-        success: false,
-        error: "Failed to track session start",
-      });
-    }
-  })
-);
+// Sessions are now created in share.ts when accessing share links
+// This endpoint is no longer needed
 
 // 📊 PAGE VIEW TRACKING
 router.post(
@@ -100,8 +60,8 @@ router.post(
           await db.insert(pageViews).values({
             sessionId,
             pageNumber: parseInt(page),
-            duration: duration || 0,
-            scrollDepth: scrollDepth || 0,
+            // duration now sent in milliseconds; store as milliseconds
+            duration: duration ? Math.max(0, Math.round(Number(duration))) : 0,
             viewedAt: new Date(),
           });
           
@@ -176,6 +136,53 @@ router.post(
       res.status(500).json({
         success: false,
         error: "Failed to track session end",
+      });
+    }
+  })
+);
+
+// 📊 SESSION ACTIVITY TRACKING (Heartbeat)
+router.post(
+  "/session-activity",
+  analyticsRateLimit,
+  normalizeIp,
+  asyncHandler(async (req: Request, res: Response) => {
+    const { 
+      sessionId, 
+      lastActiveAt, 
+      currentPage, 
+      scrollDepth 
+    } = req.body;
+
+    if (!sessionId || !lastActiveAt) {
+      res.status(400).json({
+        success: false,
+        error: "Missing required fields: sessionId, lastActiveAt",
+      });
+      return;
+    }
+
+    try {
+      // Update session activity
+      await db
+        .update(viewSessions)
+        .set({
+          lastActiveAt: new Date(lastActiveAt),
+          isActive: true,
+        })
+        .where(eq(viewSessions.sessionId, sessionId));
+
+      logger.debug(`Session activity updated: ${sessionId} - page ${currentPage}, scroll ${scrollDepth}%`);
+
+      res.json({
+        success: true,
+        message: "Session activity updated",
+      });
+    } catch (error) {
+      logger.error("Failed to update session activity:", error);
+      res.status(500).json({
+        success: false,
+        error: "Failed to update session activity",
       });
     }
   })

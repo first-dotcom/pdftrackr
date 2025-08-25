@@ -163,37 +163,8 @@ export class AuditService {
     email?: string;
     sessionId: string;
   }) {
-    // Create session immediately when user starts viewing
-    try {
-      // Check if session already exists
-      const existingSession = await db
-        .select({ sessionId: viewSessions.sessionId })
-        .from(viewSessions)
-        .where(eq(viewSessions.sessionId, data.sessionId))
-        .limit(1);
-      
-      if (existingSession.length === 0) {
-        // Create new session
-        await db.insert(viewSessions).values({
-          shareId: data.shareId,
-          sessionId: data.sessionId,
-          viewerEmail: data.email,
-          ipAddressHash: this.hashIP(data.ip),
-          userAgent: data.userAgent,
-          startedAt: new Date(),
-          lastActiveAt: new Date(),
-          totalDuration: 0,
-          isUnique: true, // We'll determine this later
-          consentGiven: true, // Assuming consent for analytics
-        });
-        
-        logger.info(`Session started: ${data.shareId} - session: ${data.sessionId}`);
-      }
-    } catch (error) {
-      logger.warn("Failed to create view session", { error, shareId: data.shareId });
-    }
-    
-    // Store in audit logs for compliance
+    // Session is already created in share.ts when accessing the link
+    // Just log the event for audit purposes
     const auditResult = await this.logEvent({
       event: "session_start",
       shareId: data.shareId,
@@ -281,7 +252,7 @@ export class AuditService {
     return auditResult;
   }
 
-  async logSessionEnd(data: {
+    async logSessionEnd(data: {
     shareId: string;
     fileId?: string;
     ip: string;
@@ -293,22 +264,9 @@ export class AuditService {
     maxPageReached: number;
     sessionId?: string;
   }) {
-    // Validate and cap duration to prevent unrealistic values
-    const maxDuration = data.totalPages === 1 ? 1800 : 7200; // 30min vs 2hr
-    const cappedDuration = Math.min(data.durationSeconds, maxDuration);
-    
-    if (data.durationSeconds > maxDuration) {
-      logger.warn(`Session duration capped from ${data.durationSeconds}s to ${cappedDuration}s for ${data.totalPages} pages`, {
-        shareId: data.shareId,
-        originalDuration: data.durationSeconds,
-        cappedDuration,
-        totalPages: data.totalPages
-      });
-    }
-    
     const completionRate = Math.round((data.maxPageReached / data.totalPages) * 100);
     const engagementScore = this.calculateEngagementScore(
-      cappedDuration, // Use capped duration for calculations
+      data.durationSeconds,
       data.maxPageReached, 
       data.totalPages
     );
@@ -322,16 +280,16 @@ export class AuditService {
       userAgent: data.userAgent,
       email: data.email,
       success: true,
-              metadata: {
-          durationSeconds: cappedDuration, // Store capped duration
-          durationMinutes: Math.round(cappedDuration / 60),
-          pagesViewed: data.pagesViewed,
-          totalPages: data.totalPages,
-          maxPageReached: data.maxPageReached,
-          completionRate,
-          engagementScore,
-          readingSpeed: cappedDuration > 0 ? Math.round(data.pagesViewed / (cappedDuration / 60)) : 0, // pages per minute
-        },
+      metadata: {
+        durationSeconds: data.durationSeconds,
+        durationMinutes: Math.round(data.durationSeconds / 60),
+        pagesViewed: data.pagesViewed,
+        totalPages: data.totalPages,
+        maxPageReached: data.maxPageReached,
+        completionRate,
+        engagementScore,
+        readingSpeed: data.durationSeconds > 0 ? Math.round(data.pagesViewed / (data.durationSeconds / 60)) : 0, // pages per minute
+      },
     });
 
     // ALSO update analytics tables for dashboard queries
@@ -341,19 +299,12 @@ export class AuditService {
         await db
           .update(viewSessions)
           .set({
-            totalDuration: cappedDuration, // Use capped duration
+            totalDuration: data.durationSeconds,
             lastActiveAt: new Date(),
           })
           .where(eq(viewSessions.sessionId, data.sessionId));
 
-        // Update page view durations (distribute total duration across pages)
-        const avgDurationPerPage = Math.round(cappedDuration / data.pagesViewed);
-        await db
-          .update(pageViews)
-          .set({
-            duration: avgDurationPerPage,
-          })
-          .where(eq(pageViews.sessionId, data.sessionId));
+        // Do not overwrite per-page durations; they are tracked on page exit
       } catch (error) {
         logger.warn("Failed to update analytics tables for session end", { error, sessionId: data.sessionId });
       }

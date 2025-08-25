@@ -90,6 +90,26 @@ export default function SecurePDFViewer({
     pageStartTime: Date.now(),
   });
 
+  // 📊 NEW: Activity tracking state
+  const [lastActivityTime, setLastActivityTime] = useState<number>(Date.now());
+
+  // 📊 NEW: Activity tracking function
+  const trackUserActivity = useCallback(() => {
+    setLastActivityTime(Date.now());
+    
+    // Send activity heartbeat
+    if (sessionId) {
+      apiClient.analytics.updateSessionActivity({
+        sessionId,
+        lastActiveAt: new Date().toISOString(),
+        currentPage: pageNumber,
+        scrollDepth: pageTracking.scrollDepth,
+      }).catch(error => {
+        console.warn('Activity heartbeat failed:', error);
+      });
+    }
+  }, [sessionId, pageNumber, pageTracking.scrollDepth]);
+
   // 📊 NEW: Mobile-friendly scroll tracking function
   const handleScroll = useCallback((e: any) => {
     const element = e.target;
@@ -120,7 +140,10 @@ export default function SecurePDFViewer({
       }
       return prev;
     });
-  }, []);
+
+    // Track user activity on scroll
+    trackUserActivity();
+  }, [trackUserActivity]);
 
   // 📊 NEW: Mobile-friendly scroll setup
   useEffect(() => {
@@ -200,6 +223,21 @@ export default function SecurePDFViewer({
     });
   }, [pageNumber]);
 
+  // 📊 NEW: Activity tracking setup
+  useEffect(() => {
+    const events = ['scroll', 'mousemove', 'click', 'keypress'];
+    
+    events.forEach(event => {
+      document.addEventListener(event, trackUserActivity, { passive: true });
+    });
+    
+    return () => {
+      events.forEach(event => {
+        document.removeEventListener(event, trackUserActivity);
+      });
+    };
+  }, [trackUserActivity]);
+
   // 📊 NEW: Mobile-specific event handling
   useEffect(() => {
     const handleOrientationChange = () => {
@@ -239,37 +277,10 @@ export default function SecurePDFViewer({
   }, []);
 
   // 📊 ANALYTICS FUNCTIONS
-  const trackSessionStart = async () => {
-    // Check consent before tracking
-    if (typeof window !== 'undefined') {
-      const consent = localStorage.getItem('analytics-consent');
-      if (consent !== 'accepted') {
-        return; // Don't track without consent
-      }
-    }
+  // Session is already created on backend when share link is accessed
+  // No need to create another session here
 
-    try {
-      await apiClient.analytics.trackSessionStart({
-        shareId,
-        email,
-        sessionId,
-        timestamp: new Date().toISOString(),
-      });
-      console.log('Session start tracked');
-    } catch (error) {
-      console.warn('Session start tracking failed:', error);
-    }
-  };
-
-  // Debounced page view tracking for better performance
-  const debouncedTrackPageView = useCallback(
-    debounce(async (page: number, totalPages: number) => {
-      await trackPageView(page, totalPages);
-    }, 1000), // 1 second debounce
-    []
-  );
-
-  const trackPageView = async (page: number, totalPages: number) => {
+  const trackPageView = async (page: number, totalPages: number, isPageExit: boolean = false) => {
     // Validate parameters
     if (!page || page <= 0 || !totalPages || totalPages <= 0 || page > totalPages) {
       console.warn(`Invalid page view tracking parameters: page=${page}, totalPages=${totalPages}`);
@@ -284,8 +295,11 @@ export default function SecurePDFViewer({
       }
     }
 
-    // Calculate page duration
-    const pageDuration = Math.round((Date.now() - pageTracking.pageStartTime) / 1000);
+    // Calculate page duration in milliseconds for sub-second precision
+    const now = Date.now();
+    const pageDuration = isPageExit 
+      ? Math.max(1, now - pageTracking.pageStartTime) // Exit: ms precision, min 1ms
+      : 0; // Entry: 0ms duration
 
     // Update session data
     setSessionData(prev => ({
@@ -296,16 +310,6 @@ export default function SecurePDFViewer({
 
     // Send analytics to backend using custom API client
     try {
-      // Mobile-specific adjustments
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      
-      // Adjust scroll depth for mobile (mobile users scroll less due to screen size)
-      let adjustedScrollDepth = pageTracking.scrollDepth;
-      if (isMobile) {
-        // Mobile users typically scroll less, so adjust expectations
-        adjustedScrollDepth = Math.min(100, pageTracking.scrollDepth * 1.2); // 20% boost
-      }
-
       await apiClient.analytics.trackPageView({
         shareId,
         email,
@@ -314,7 +318,7 @@ export default function SecurePDFViewer({
         sessionId,
         timestamp: new Date().toISOString(),
         duration: pageDuration,
-        scrollDepth: Math.round(adjustedScrollDepth),
+        isPageExit, // Mark if this is a page exit
       });
     } catch (error) {
       console.warn('Page view tracking failed:', error);
@@ -333,14 +337,9 @@ export default function SecurePDFViewer({
       return;
     }
     
-    // Cap duration to prevent unrealistic values (e.g., tab left open for hours)
-    // 30 minutes max for single page, 2 hours max for multi-page
-    const maxDuration = sessionData.totalPages === 1 ? 1800 : 7200; // 30min vs 2hr
-    const durationSeconds = Math.min(rawDurationSeconds, maxDuration);
-    
-    // Log if we're capping the duration
-    if (rawDurationSeconds > maxDuration) {
-      console.warn(`Session duration capped from ${rawDurationSeconds}s to ${maxDuration}s (${sessionData.totalPages} pages)`);
+    // Track exit from current page before ending session
+    if (pageNumber > 0 && numPages > 0) {
+      trackPageView(pageNumber, numPages, true);
     }
     
     try {
@@ -348,7 +347,7 @@ export default function SecurePDFViewer({
         shareId,
         email,
         sessionId,
-        durationSeconds,
+        durationSeconds: rawDurationSeconds, // Use actual duration
         pagesViewed: sessionData.pagesViewed.size,
         totalPages: sessionData.totalPages,
         maxPageReached: sessionData.maxPageReached,
@@ -366,16 +365,12 @@ export default function SecurePDFViewer({
     }
   };
 
-  // Track session start with a small delay to filter out immediate bounces
+  // Session is already created on backend when share link is accessed
+  // No need to create another session here
   useEffect(() => {
     if (sessionId) {
-      const timer = setTimeout(() => {
-        trackSessionStart();
-      }, 2000); // 2 second delay to filter out immediate bounces
-
-      return () => clearTimeout(timer);
+      console.log('Session ready for tracking:', sessionId);
     }
-    return undefined; // Explicit return for TypeScript
   }, [sessionId]);
 
   // Track session end with optimized event handling
@@ -479,7 +474,7 @@ export default function SecurePDFViewer({
     }));
 
     // Track initial page view
-    debouncedTrackPageView(1, numPages);
+    trackPageView(1, numPages, false);
     
     onLoadSuccess?.();
   };
@@ -496,22 +491,24 @@ export default function SecurePDFViewer({
     setPageNumber((prev) => {
       const newPage = Math.max(prev - 1, 1);
       if (newPage !== prev && numPages > 0) {
-        debouncedTrackPageView(newPage, numPages);
+        // Track exit from current page with actual duration
+        trackPageView(prev, numPages, true);
       }
       return newPage;
     });
-  }, [numPages, debouncedTrackPageView]);
+  }, [numPages, trackPageView]);
 
   const goToNextPage = useCallback(() => {
     if (numPages === 0) return;
     setPageNumber((prev) => {
       const newPage = Math.min(prev + 1, numPages);
       if (newPage !== prev) {
-        debouncedTrackPageView(newPage, numPages);
+        // Track exit from current page with actual duration
+        trackPageView(prev, numPages, true);
       }
       return newPage;
     });
-  }, [numPages, debouncedTrackPageView]);
+  }, [numPages, trackPageView]);
 
   const zoomIn = useCallback(() => {
     setScale((prev) => Math.min(prev + 0.2, 3.0));

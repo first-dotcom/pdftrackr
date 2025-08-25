@@ -299,12 +299,7 @@ class ApiClient {
     dashboard: () => this.get("/api/analytics/dashboard"),
     
     // 📊 HIGH-VALUE ANALYTICS TRACKING
-    trackSessionStart: (data: {
-      shareId: string;
-      email?: string;
-      sessionId?: string;
-      timestamp: string;
-    }) => this.post("/api/analytics/session-start", data, { skipCSRF: true, skipAuth: true }),
+    // Session start is handled on backend when share link is accessed
     
     trackPageView: (data: {
       shareId: string;
@@ -314,7 +309,7 @@ class ApiClient {
       sessionId?: string;
       timestamp: string;
       duration?: number;
-      scrollDepth?: number;
+      isPageExit?: boolean;
     }) => this.post("/api/analytics/page-view", data, { skipCSRF: true, skipAuth: true }),
     
     trackSessionEnd: (data: {
@@ -327,6 +322,13 @@ class ApiClient {
       maxPageReached: number;
       timestamp: string;
     }) => this.post("/api/analytics/session-end", data, { skipCSRF: true, skipAuth: true }),
+    
+    updateSessionActivity: (data: {
+      sessionId: string;
+      lastActiveAt: string;
+      currentPage?: number;
+      scrollDepth?: number;
+    }) => this.post("/api/analytics/session-activity", data, { skipCSRF: true, skipAuth: true }),
     
     trackReturnVisit: (data: {
       shareId: string;

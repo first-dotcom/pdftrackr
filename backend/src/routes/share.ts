@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql, gte } from "drizzle-orm";
 import { Router } from "express";
 import type { Request, Response } from "express";
 import { nanoid } from "nanoid";
@@ -21,6 +21,7 @@ import {
 import { db } from "../utils/database";
 import { getCountryFromIP, hashIPAddress } from "../utils/privacy";
 import { deleteCache, getCache, getSession, setCache, setSession } from "../utils/redis";
+import { logger } from "../utils/logger";
 import {
   createShareLinkSchema,
   shareAccessSchema,
@@ -316,6 +317,7 @@ router.post(
     };
 
     // Check if this is a unique view (same IP hash + email in last 24 hours)
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const recentSessions = await db
       .select()
       .from(viewSessions)
@@ -324,6 +326,7 @@ router.post(
           eq(viewSessions.shareId, shareId),
           eq(viewSessions.ipAddressHash, ipHash),
           viewerInfo.email ? eq(viewSessions.viewerEmail, viewerInfo.email) : undefined,
+          gte(viewSessions.startedAt, twentyFourHoursAgo), // Only check last 24 hours
         ),
       )
       .limit(1);
@@ -331,19 +334,41 @@ router.post(
     const isUnique = recentSessions.length === 0;
 
     // Create view session with GDPR compliance
-    await db.insert(viewSessions).values({
-      shareId,
-      sessionId,
-      viewerEmail: viewerInfo.email,
-      viewerName: viewerInfo.name,
-      ipAddressHash: viewerInfo.ipAddressHash,
-      ipAddressCountry: viewerInfo.ipAddressCountry,
-      userAgent: viewerInfo.userAgent,
-      referer: viewerInfo.referer,
-      isUnique,
-      consentGiven: true, // User consented by accessing the link
-      dataRetentionDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year retention
-    });
+    // Use upsert to handle race conditions gracefully
+    try {
+      await db.insert(viewSessions).values({
+        shareId,
+        sessionId,
+        viewerEmail: viewerInfo.email,
+        viewerName: viewerInfo.name,
+        ipAddressHash: viewerInfo.ipAddressHash,
+        ipAddressCountry: viewerInfo.ipAddressCountry,
+        userAgent: viewerInfo.userAgent,
+        referer: viewerInfo.referer,
+        isUnique,
+        consentGiven: true, // User consented by accessing the link
+        dataRetentionDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year retention
+        isActive: true, // Session is active
+      });
+    } catch (error) {
+      // Handle unique constraint violation (race condition)
+      if (error instanceof Error && (
+        error.message.includes('unique_session_detection') ||
+        error.message.includes('duplicate key value') ||
+        error.message.includes('UNIQUE constraint')
+      )) {
+        logger.warn('Session creation race condition detected, using existing session', {
+          shareId,
+          sessionId,
+          ipHash: viewerInfo.ipAddressHash.substring(0, 8),
+          error: error.message
+        });
+        // Continue with existing session
+      } else {
+        logger.error('Session creation failed:', error);
+        throw error; // Re-throw other errors
+      }
+    }
 
     // Update view counts
     await db

@@ -162,8 +162,8 @@ router.get(
       .select({
         pageNumber: pageViews.pageNumber,
         views: sql<number>`COUNT(*)`,
-        avgDuration: sql<number>`COALESCE(AVG(${pageViews.duration}), 0)`,
-        avgScrollDepth: sql<number>`COALESCE(AVG(${pageViews.scrollDepth}), 0)`,
+        avgDuration: sql<number>`COALESCE(AVG(${pageViews.duration}) / 1000.0, 0)`,
+
       })
       .from(pageViews)
       .innerJoin(viewSessions, eq(pageViews.sessionId, viewSessions.sessionId))
@@ -208,7 +208,7 @@ router.get(
           pageNumber: row.pageNumber,
           views: row.views,
           avgDuration: Math.round(row.avgDuration || 0),
-          avgScrollDepth: Math.round(row.avgScrollDepth || 0),
+
         })),
       },
     });
@@ -272,7 +272,7 @@ router.get(
         isUnique: viewSessions.isUnique,
         pageNumber: pageViews.pageNumber,
         pageDuration: pageViews.duration,
-        pageScrollDepth: pageViews.scrollDepth,
+
       })
       .from(viewSessions)
       .leftJoin(pageViews, eq(viewSessions.sessionId, pageViews.sessionId))
@@ -299,7 +299,7 @@ router.get(
         sessionsMap.get(row.sessionId).pages.push({
           pageNumber: row.pageNumber,
           duration: row.pageDuration,
-          scrollDepth: row.pageScrollDepth,
+
         });
       }
     });
@@ -842,17 +842,12 @@ router.get(
 
     const fileStats = fileStatsResult[0];
 
-    // Get page-by-page statistics with efficient aggregation and page range filtering
+    // Get page-by-page statistics - simplified to essential metrics only
     const pageStatsResult = await db
       .select({
         pageNumber: pageViews.pageNumber,
         totalViews: sql<number>`COUNT(*)`,
-        avgDuration: sql<number>`COALESCE(AVG(${pageViews.duration}), 0)`,
-        medianDuration: sql<number>`COALESCE(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY ${pageViews.duration}), 0)`,
-        p25Duration: sql<number>`COALESCE(PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY ${pageViews.duration}), 0)`,
-        p75Duration: sql<number>`COALESCE(PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY ${pageViews.duration}), 0)`,
-        skimRate: sql<number>`COALESCE(COUNT(CASE WHEN ${pageViews.duration} < 5 THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0), 0)`,
-        completionRate: sql<number>`COALESCE(COUNT(CASE WHEN ${pageViews.scrollDepth} >= 80 THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0), 0)`
+        avgDuration: sql<number>`COALESCE(AVG(${pageViews.duration}) / 1000.0, 0)`
       })
       .from(pageViews)
       .innerJoin(viewSessions, eq(pageViews.sessionId, viewSessions.sessionId))
@@ -865,35 +860,11 @@ router.get(
       .groupBy(pageViews.pageNumber)
       .orderBy(pageViews.pageNumber);
 
-    // Calculate drop-off funnel with safety checks
-    const dropoffFunnel = [];
-    const totalSessions = Number(fileStats.totalSessions) || 0;
-    for (let page = 1; page <= totalPages; page++) {
-      const pageStat = pageStatsResult.find(p => p.pageNumber === page);
-      if (pageStat && totalSessions > 0) {
-        const reachPercentage = (Number(pageStat.totalViews) / totalSessions) * 100;
-        dropoffFunnel.push({
-          page,
-          reachPercentage: Math.round(reachPercentage * 100) / 100
-        });
-      } else {
-        dropoffFunnel.push({
-          page,
-          reachPercentage: 0
-        });
-      }
-    }
-
-    // Format page stats with additional safety checks
+    // Format page stats - simplified to essential metrics only
     const pageStats = pageStatsResult.map(stat => ({
       pageNumber: stat.pageNumber,
       totalViews: Number(stat.totalViews) || 0,
-      medianDuration: Math.round(Number(stat.medianDuration) || 0),
-      avgDuration: Math.round(Number(stat.avgDuration) || 0),
-      p25Duration: Math.round(Number(stat.p25Duration) || 0),
-      p75Duration: Math.round(Number(stat.p75Duration) || 0),
-      completionRate: Math.round(Number(stat.completionRate) || 0),
-      skimRate: Math.round(Number(stat.skimRate) || 0)
+      avgDuration: Math.max(0.001, Number(stat.avgDuration) || 0)
     }));
 
     const responseData = {
@@ -902,11 +873,9 @@ router.get(
         fileStats: {
           totalSessions: Number(fileStats.totalSessions) || 0,
           uniqueSessions: Number(fileStats.uniqueSessions) || 0,
-          avgSessionTime: Math.round(Number(fileStats.avgSessionTime) || 0),
-          completionRate: totalPages > 0 ? Math.round((dropoffFunnel[totalPages - 1]?.reachPercentage || 0) * 100) / 100 : 0
+          avgSessionTime: Math.round(Number(fileStats.avgSessionTime) || 0)
         },
-        pageStats,
-        dropoffFunnel
+        pageStats
       }
     };
 
@@ -1049,9 +1018,8 @@ router.get(
       .select({
         sessionId: pageViews.sessionId,
         pageNumber: pageViews.pageNumber,
-        avgDuration: sql<number>`COALESCE(AVG(${pageViews.duration}), 0)`,
-        totalViews: sql<number>`COUNT(*)`,
-        avgScrollDepth: sql<number>`COALESCE(AVG(${pageViews.scrollDepth}), 0)`
+        avgDuration: sql<number>`COALESCE(AVG(${pageViews.duration}) / 1000.0, 0)`,
+        totalViews: sql<number>`COUNT(*)`
       })
       .from(pageViews)
       .where(inArray(pageViews.sessionId, sessionIds))
@@ -1066,9 +1034,8 @@ router.get(
       }
       pageViewsBySession.get(pv.sessionId)!.push({
         pageNumber: pv.pageNumber,
-        avgDuration: Math.round(Number(pv.avgDuration) || 0),
-        totalViews: Number(pv.totalViews) || 0,
-        avgScrollDepth: Math.round(Number(pv.avgScrollDepth) || 0)
+        avgDuration: Number(pv.avgDuration) || 0,
+        totalViews: Number(pv.totalViews) || 0
       });
     });
 
@@ -1260,9 +1227,9 @@ async function getSessionsWithPageData(
       .select({
         sessionId: pageViews.sessionId,
         pageNumber: pageViews.pageNumber,
-        avgDuration: sql<number>`COALESCE(AVG(${pageViews.duration}), 0)`,
+        avgDuration: sql<number>`COALESCE(AVG(${pageViews.duration}) / 1000.0, 0)`,
         totalViews: sql<number>`COUNT(*)`,
-        avgScrollDepth: sql<number>`COALESCE(AVG(${pageViews.scrollDepth}), 0)`
+
       })
       .from(pageViews)
       .where(inArray(pageViews.sessionId, sessionIds))
@@ -1279,7 +1246,7 @@ async function getSessionsWithPageData(
         pageNumber: pv.pageNumber,
         avgDuration: Math.round(Number(pv.avgDuration) || 0),
         totalViews: Number(pv.totalViews) || 0,
-        avgScrollDepth: Math.round(Number(pv.avgScrollDepth) || 0)
+
       });
     });
 
@@ -1320,7 +1287,7 @@ async function getSessionsWithPageData(
         sessionId: pageViews.sessionId,
         pageNumber: pageViews.pageNumber,
         duration: pageViews.duration,
-        scrollDepth: pageViews.scrollDepth,
+
         viewedAt: pageViews.viewedAt
       })
       .from(pageViews)
@@ -1336,7 +1303,7 @@ async function getSessionsWithPageData(
       pageViewsBySession.get(pv.sessionId)!.push({
         pageNumber: pv.pageNumber,
         duration: pv.duration,
-        scrollDepth: pv.scrollDepth,
+
         viewedAt: pv.viewedAt
       });
     });

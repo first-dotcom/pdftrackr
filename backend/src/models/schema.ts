@@ -134,6 +134,8 @@ export const viewSessions = pgTable(
     // Security tracking
     suspiciousFlags: json("suspicious_flags").$type<string[]>(), // Security warnings
     riskScore: integer("risk_score").default(0), // 0-100 risk assessment
+    // Session activity tracking
+    isActive: boolean("is_active").notNull().default(true), // Track if session is active
   },
   (table) => ({
     shareIdIdx: index("view_sessions_share_id_idx").on(table.shareId),
