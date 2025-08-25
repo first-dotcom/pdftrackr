@@ -1,49 +1,31 @@
--- Migration: 0010_comprehensive_tracking_cleanup.sql
--- Comprehensive cleanup and improvements for PDF tracking system
--- Combines all recent changes into one migration
-
--- 1. Add unique session detection indexes (from 0005)
-CREATE UNIQUE INDEX IF NOT EXISTS unique_session_detection_idx 
-ON view_sessions (share_id, ip_address_hash, viewer_email) 
-WHERE viewer_email IS NOT NULL;
-
-CREATE UNIQUE INDEX IF NOT EXISTS unique_session_detection_no_email_idx 
-ON view_sessions (share_id, ip_address_hash) 
-WHERE viewer_email IS NULL;
-
--- 2. Add data validation constraints (from 0006)
+CREATE UNIQUE INDEX IF NOT EXISTS "unique_session_detection_idx" ON "view_sessions" ("share_id","ip_address_hash","viewer_email") WHERE "viewer_email" IS NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "unique_session_detection_no_email_idx" ON "view_sessions" ("share_id","ip_address_hash") WHERE "viewer_email" IS NULL;--> statement-breakpoint
 DO $$ 
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'page_number_check') THEN
-        ALTER TABLE page_views ADD CONSTRAINT page_number_check 
-        CHECK (page_number > 0);
+        ALTER TABLE "page_views" ADD CONSTRAINT "page_number_check" 
+        CHECK ("page_number" > 0);
     END IF;
-END $$;
-
+END $$;--> statement-breakpoint
 DO $$ 
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'duration_check') THEN
-        ALTER TABLE page_views ADD CONSTRAINT duration_check 
-        CHECK (duration >= 0);
+        ALTER TABLE "page_views" ADD CONSTRAINT "duration_check" 
+        CHECK ("duration" >= 0);
     END IF;
-END $$;
-
+END $$;--> statement-breakpoint
 DO $$ 
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'session_duration_check') THEN
-        ALTER TABLE view_sessions ADD CONSTRAINT session_duration_check 
-        CHECK (total_duration >= 0);
+        ALTER TABLE "view_sessions" ADD CONSTRAINT "session_duration_check" 
+        CHECK ("total_duration" >= 0);
     END IF;
-END $$;
-
--- 3. Add session activity tracking (from 0007)
-ALTER TABLE view_sessions ADD COLUMN IF NOT EXISTS is_active boolean DEFAULT true NOT NULL;
-CREATE INDEX IF NOT EXISTS view_sessions_active_idx ON view_sessions (is_active, last_active_at);
-
--- 4. Remove over-engineered metrics (from 0009)
-ALTER TABLE page_views DROP COLUMN IF EXISTS scroll_depth;
-ALTER TABLE page_views DROP CONSTRAINT IF EXISTS scroll_depth_check;
-DROP INDEX IF EXISTS idx_pageviews_scroll_depth;
+END $$;--> statement-breakpoint
+ALTER TABLE "view_sessions" ADD COLUMN IF NOT EXISTS "is_active" boolean DEFAULT true NOT NULL;--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "view_sessions_active_idx" ON "view_sessions" ("is_active","last_active_at");--> statement-breakpoint
+ALTER TABLE "page_views" DROP COLUMN IF EXISTS "scroll_depth";--> statement-breakpoint
+ALTER TABLE "page_views" DROP CONSTRAINT IF EXISTS "scroll_depth_check";--> statement-breakpoint
+DROP INDEX IF EXISTS "idx_pageviews_scroll_depth";
 
 -- Clean up any existing scroll_depth data (if column exists)
 -- Note: This will fail if scroll_depth column doesn't exist, which is expected
