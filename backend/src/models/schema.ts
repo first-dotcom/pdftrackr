@@ -216,6 +216,7 @@ export const analyticsSummary = pgTable(
 // Define relations
 export const usersRelations = relations(users, ({ many }) => ({
   files: many(files),
+  feedback: many(feedback),
 }));
 
 export const filesRelations = relations(files, ({ one, many }) => ({
@@ -285,6 +286,38 @@ export const waitlist = pgTable(
     createdAtIdx: index("waitlist_created_at_idx").on(table.createdAt),
   }),
 );
+
+// Feedback table
+export const feedback = pgTable(
+  "feedback",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    message: text("message").notNull(),
+    rating: integer("rating"), // 1-5 stars
+    category: varchar("category", { length: 50 }), // bug, feature, general, etc.
+    status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, reviewed, resolved, closed
+    adminNotes: text("admin_notes"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    userIdIdx: index("feedback_user_id_idx").on(table.userId),
+    createdAtIdx: index("feedback_created_at_idx").on(table.createdAt),
+    statusIdx: index("feedback_status_idx").on(table.status),
+    categoryIdx: index("feedback_category_idx").on(table.category),
+    userCreatedIdx: index("feedback_user_created_idx").on(table.userId, table.createdAt), // For rate limiting
+  }),
+);
+
+export const feedbackRelations = relations(feedback, ({ one }) => ({
+  user: one(users, {
+    fields: [feedback.userId],
+    references: [users.id],
+  }),
+}));
 
 // Audit Logs table
 export const auditLogs = pgTable(

@@ -19,6 +19,7 @@ import analyticsTrackingRoutes from "./routes/analyticsTracking";
 import authRoutes from "./routes/auth";
 import filesRoutes from "./routes/files";
 import adminRoutes from "./routes/admin";
+import feedbackRoutes from "./routes/feedback";
 
 import shareRoutes from "./routes/share";
 import upgradeRoutes from "./routes/upgrade";
@@ -214,16 +215,17 @@ app.use(metricsMiddleware);
 
 // CSRF Protection (applied selectively)
 app.use("/api", (req, res, next) => {
-  // Skip CSRF for webhooks, public endpoints, share access, and analytics tracking
+  // Skip CSRF for webhooks, public endpoints, share access, analytics tracking, and feedback
   if (
     req.path.includes("/webhook") ||
     req.path.includes("/public") ||
     req.path.includes("/health") ||
     req.path.includes("/metrics") ||
     req.path.includes("/share/") ||
-    req.path.includes("/analytics/")
+    req.path.includes("/analytics/") ||
+    req.path.includes("/feedback")
   ) {
-    // Allow public access for tracking and sharing
+    // Allow public access for tracking, sharing, and feedback
     return next();
   }
   return csrfProtection(req, res, next);
@@ -242,6 +244,7 @@ app.get("/health", (_req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/files", filesRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/feedback", feedbackRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/analytics", analyticsTrackingRoutes); // New real-time tracking endpoints
 app.use("/api/users", usersRoutes);

@@ -3,6 +3,7 @@ import type React from "react";
 import "./globals.css";
 import ConsentBanner from "@/components/ConsentBanner";
 import AnalyticsPageTracker from "@/components/AnalyticsPageTracker";
+import FeedbackModal from "@/components/FeedbackModal";
 
 // Use Tailwind's font-sans (configured to prefer Inter if available, then system fonts)
 
@@ -126,6 +127,9 @@ export default function RootLayout({
                 gtag('config', 'G-0D0FQG4352', {
                   'consent_mode': 'advanced'
                 });
+                
+                // Configure Google Ads
+                gtag('config', 'AW-17505541054');
               `,
             }}
           />
@@ -134,6 +138,7 @@ export default function RootLayout({
           <div className="min-h-screen bg-gray-50">{children}</div>
           <AnalyticsPageTracker />
           <ConsentBanner />
+          <FeedbackModal />
         </body>
       </html>
     </ClerkProvider>
