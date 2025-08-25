@@ -149,21 +149,22 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
   const userStats = getUserStats();
 
   return (
-    <div className="space-y-6">
-      {/* Header with Search and Filters */}
-      <div className="bg-white p-4 rounded-lg border">
-        <div className="flex items-center justify-between mb-4">
+    <div className="bg-white rounded-lg border overflow-hidden">
+      {/* Unified Header */}
+      <div className="px-6 py-4 border-b bg-gray-50">
+        <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900">Individual Analytics (Per-File User Behavior)</h3>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="text-sm text-blue-600 hover:text-blue-800"
+            className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
           >
-            {showFilters ? 'Hide Filters' : 'Show Filters'}
+            <span>{showFilters ? 'Hide' : 'Show'} Filters</span>
           </button>
         </div>
+      </div>
 
-
-
+      {/* Search and Filters Section */}
+      <div className="px-6 py-4 border-b bg-gray-50">
         {/* Search Bar */}
         <div className="relative mb-4">
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -250,165 +251,160 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
         )}
       </div>
 
-      {/* Users/Sessions Table */}
-      <div className="bg-white rounded-lg border overflow-hidden">
-        <div className="px-6 py-4 border-b">
-          <h4 className="text-lg font-semibold text-gray-900">User Sessions</h4>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  User
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Session Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Duration
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Device
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Country
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Pages Viewed
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {data.sessions.map((session) => (
-                <React.Fragment key={session.sessionId}>
-                  <tr className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                            <span className="text-sm font-medium text-gray-700">
-                              {session.viewerEmail ? session.viewerEmail.charAt(0).toUpperCase() : 'U'}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {session.viewerEmail || 'Anonymous User'}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {session.viewerName || 'No name provided'}
-                          </div>
+      {/* Results Section */}
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                User
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Session Date
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Duration
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Device
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Country
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Pages Viewed
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {data.sessions.map((session) => (
+              <React.Fragment key={session.sessionId}>
+                <tr className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-10 w-10">
+                        <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                          <span className="text-sm font-medium text-gray-700">
+                            {session.viewerEmail ? session.viewerEmail.charAt(0).toUpperCase() : 'U'}
+                          </span>
                         </div>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(session.startedAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatViewTime(session.totalDuration)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {session.device || 'Unknown'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {session.country || 'Unknown'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {session.pages.length} pages
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => toggleRowExpansion(session.sessionId)}
-                        className="text-blue-600 hover:text-blue-900 flex items-center"
-                      >
-                        {expandedRows.has(session.sessionId) ? (
-                          <ChevronDownIcon className="h-4 w-4" />
-                        ) : (
-                          <ChevronRightIcon className="h-4 w-4" />
-                        )}
-                        <span className="ml-1">
-                          {expandedRows.has(session.sessionId) ? 'Hide' : 'Show'} Analytics
-                        </span>
-                      </button>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900">
+                          {session.viewerEmail || 'Anonymous User'}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {session.viewerName || 'No name provided'}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {new Date(session.startedAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {formatViewTime(session.totalDuration)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {session.device || 'Unknown'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {session.country || 'Unknown'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {session.pages.length} pages
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <button
+                      onClick={() => toggleRowExpansion(session.sessionId)}
+                      className="text-blue-600 hover:text-blue-900 flex items-center"
+                    >
+                      {expandedRows.has(session.sessionId) ? (
+                        <ChevronDownIcon className="h-4 w-4" />
+                      ) : (
+                        <ChevronRightIcon className="h-4 w-4" />
+                      )}
+                      <span className="ml-1">
+                        {expandedRows.has(session.sessionId) ? 'Hide' : 'Show'} Analytics
+                      </span>
+                    </button>
+                  </td>
+                </tr>
+                
+                {/* Expanded Row - User's Page Analytics */}
+                {expandedRows.has(session.sessionId) && (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-4 bg-gray-50">
+                      {session.pages.length > 0 ? (
+                        <ResponsiveContainer width="100%" height={320}>
+                          <LineChart data={getUserChartData(session)} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis 
+                              dataKey="page" 
+                              tick={{ fontSize: 12 }}
+                              interval={Math.max(1, Math.floor(getUserChartData(session).length / 10))}
+                            />
+                            <YAxis 
+                              tick={{ fontSize: 12 }}
+                              label={{ value: 'Time (seconds)', angle: -90, position: 'insideLeft' }}
+                            />
+                            <Tooltip 
+                              formatter={(value: any) => [`${value} seconds`, 'Average Time']}
+                              labelFormatter={(label) => `Page ${label}`}
+                            />
+                            <Line 
+                              type="monotone" 
+                              dataKey="avgTime" 
+                              stroke="#3B82F6" 
+                              strokeWidth={2}
+                              dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      ) : null}
                     </td>
                   </tr>
-                  
-                  {/* Expanded Row - User's Page Analytics */}
-                  {expandedRows.has(session.sessionId) && (
-                    <tr>
-                      <td colSpan={7} className="px-6 py-4 bg-gray-50">
-                        {session.pages.length > 0 ? (
-                          <ResponsiveContainer width="100%" height={320}>
-                            <LineChart data={getUserChartData(session)} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis 
-                                dataKey="page" 
-                                tick={{ fontSize: 12 }}
-                                interval={Math.max(1, Math.floor(getUserChartData(session).length / 10))}
-                              />
-                              <YAxis 
-                                tick={{ fontSize: 12 }}
-                                label={{ value: 'Time (seconds)', angle: -90, position: 'insideLeft' }}
-                              />
-                              <Tooltip 
-                                formatter={(value: any) => [`${value} seconds`, 'Average Time']}
-                                labelFormatter={(label) => `Page ${label}`}
-                              />
-                              <Line 
-                                type="monotone" 
-                                dataKey="avgTime" 
-                                stroke="#3B82F6" 
-                                strokeWidth={2}
-                                dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
-                              />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        ) : null}
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        
-        {/* Pagination */}
-        {data.pagination && data.pagination.totalPages > 1 && (
-          <div className="px-6 py-4 border-t bg-gray-50">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-700">
-                Showing {((data.pagination.page - 1) * data.pagination.limit) + 1} to{' '}
-                {Math.min(data.pagination.page * data.pagination.limit, data.pagination.total)} of{' '}
-                {data.pagination.total} results
-              </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => setCurrentPage(data.pagination.page - 1)}
-                  disabled={data.pagination.page <= 1}
-                  className="px-3 py-1 text-sm border rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Previous
-                </button>
-                <span className="px-3 py-1 text-sm">
-                  Page {data.pagination.page} of {data.pagination.totalPages}
-                </span>
-                <button
-                  onClick={() => setCurrentPage(data.pagination.page + 1)}
-                  disabled={data.pagination.page >= data.pagination.totalPages}
-                  className="px-3 py-1 text-sm border rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
-              </div>
+                )}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      
+      {/* Pagination */}
+      {data.pagination && data.pagination.totalPages > 1 && (
+        <div className="px-6 py-4 border-t bg-gray-50">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-700">
+              Showing {((data.pagination.page - 1) * data.pagination.limit) + 1} to{' '}
+              {Math.min(data.pagination.page * data.pagination.limit, data.pagination.total)} of{' '}
+              {data.pagination.total} results
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setCurrentPage(data.pagination.page - 1)}
+                disabled={data.pagination.page <= 1}
+                className="px-3 py-1 text-sm border rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <span className="px-3 py-1 text-sm">
+                Page {data.pagination.page} of {data.pagination.totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage(data.pagination.page + 1)}
+                disabled={data.pagination.page >= data.pagination.totalPages}
+                className="px-3 py-1 text-sm border rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

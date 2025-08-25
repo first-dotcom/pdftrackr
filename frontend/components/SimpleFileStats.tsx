@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Eye, Clock, CheckCircle, Users } from 'lucide-react';
+import { Eye, Clock, Users } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 
 interface SimpleFileStats {
   totalViews: number;
   uniqueViewers: number;
-  completionRate: number; // percentage
   avgViewTime: number; // in minutes
 }
 
@@ -35,7 +34,6 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
         setStats({
           totalViews: Number(data.totalViews) || 0,
           uniqueViewers: Number(data.uniqueViewers) || 0,
-          completionRate: Number(data.completionRate) || 0,
           avgViewTime: Number(data.avgSessionDuration) || 0, // Keep in seconds for better precision
         });
       } else {
@@ -108,14 +106,6 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
       bgGradient: 'from-green-50 to-green-100',
       borderColor: 'border-green-200',
       iconColor: 'text-green-600',
-    },
-    {
-      label: 'Completion Rate',
-      value: `${Number(stats.completionRate) || 0}%`,
-      icon: CheckCircle,
-      bgGradient: 'from-purple-50 to-purple-100',
-      borderColor: 'border-purple-200',
-      iconColor: 'text-purple-600',
     },
     {
       label: 'Avg Session Time',
