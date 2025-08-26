@@ -6,6 +6,9 @@ export default authMiddleware({
     "/",
     "/sign-in",
     "/sign-up", 
+    "/privacy",
+    "/terms",
+    "/cookies",
     "/view/(.*)", // Allow public access to shared files
     "/api/public/(.*)",
     "/api/health",

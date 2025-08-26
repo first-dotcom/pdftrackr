@@ -3,10 +3,11 @@
 import { UserButton } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
-import { Menu, FileText, LayoutDashboard, Shield, Settings } from "lucide-react";
+import { Menu, Shield, Settings, LayoutDashboard, FileText } from "lucide-react";
 import Link from "next/link";
 import { clsx } from "clsx";
 import { useAdmin } from "@/hooks/useAdmin";
+import Logo from "./Logo";
 
 interface DashboardHeaderProps {
   onMobileMenuClick?: () => void;
@@ -62,10 +63,8 @@ export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderPr
             </button>
 
             {/* PDFTrackr Logo - Responsive */}
-            <Link href="/dashboard" className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
-              <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-primary-600" />
-              <span className="text-lg sm:text-xl font-bold text-gray-900 hidden sm:block">PDFTrackr</span>
-              <span className="text-lg font-bold text-gray-900 sm:hidden">PDF</span>
+            <Link href="/" className="flex-shrink-0">
+              <Logo size="lg" />
             </Link>
 
             {/* Desktop Navigation Tabs */}

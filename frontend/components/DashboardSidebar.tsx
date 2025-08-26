@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useAdmin } from "@/hooks/useAdmin";
+import Logo from "./Logo";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -76,8 +77,8 @@ export default function DashboardSidebar({ isMobileOpen = false, onMobileClose }
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 min-h-[4rem]">
           {/* PDFTrackr Logo */}
-          <Link href="/dashboard" className="text-xl font-bold text-gray-900 truncate">
-            PDFTrackr
+          <Link href="/">
+            <Logo size="md" />
           </Link>
           
           {/* Close button */}

@@ -215,8 +215,12 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
           <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
             <div className="text-center mb-6">
-              <div className="w-12 h-12 mx-auto bg-primary-100 rounded-full flex items-center justify-center mb-4">
-                <Eye className="h-6 w-6 text-primary-600" />
+              <div className="w-16 h-16 mx-auto mb-4">
+                <img
+                  src="/logo.png"
+                  alt="PDFTrackr Logo"
+                  className="w-16 h-16 mx-auto"
+                />
               </div>
               <h1 className="text-2xl font-semibold text-gray-900">{shareData.shareLink.title}</h1>
               {shareData.shareLink.description && (

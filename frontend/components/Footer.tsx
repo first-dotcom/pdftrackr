@@ -1,15 +1,19 @@
-import { FileText } from "lucide-react";
+"use client";
+
 import Link from "next/link";
+import Logo from "./Logo";
+import { useAuth } from "@clerk/nextjs";
 
 export default function Footer() {
+  const { isSignedIn } = useAuth();
+  
   return (
     <footer className="bg-gray-900">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="xl:grid xl:grid-cols-3 xl:gap-8">
           <div className="space-y-8 xl:col-span-1">
-            <Link href="/" className="flex items-center space-x-2">
-              <FileText className="h-8 w-8 text-primary-400" />
-              <span className="text-xl font-bold text-white">PDFTrackr</span>
+            <Link href="/">
+              <Logo size="lg" variant="white" />
             </Link>
             <p className="text-gray-400 text-base">
               Secure PDF sharing and analytics platform for professionals and businesses.
@@ -23,16 +27,33 @@ export default function Footer() {
                   Product
                 </h3>
                 <ul className="mt-4 space-y-4">
-                  <li>
-                    <Link href="#features" className="text-base text-gray-300 hover:text-white">
-                      Features
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="#pricing" className="text-base text-gray-300 hover:text-white">
-                      Pricing
-                    </Link>
-                  </li>
+                  {!isSignedIn ? (
+                    <>
+                      <li>
+                        <Link href="/#features" className="text-base text-gray-300 hover:text-white">
+                          Features
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/#pricing" className="text-base text-gray-300 hover:text-white">
+                          Pricing
+                        </Link>
+                      </li>
+                    </>
+                  ) : (
+                    <>
+                      <li>
+                        <Link href="/dashboard" className="text-base text-gray-300 hover:text-white">
+                          Dashboard
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/dashboard/files" className="text-base text-gray-300 hover:text-white">
+                          My Files
+                        </Link>
+                      </li>
+                    </>
+                  )}
                 </ul>
               </div>
 

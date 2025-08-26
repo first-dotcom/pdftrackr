@@ -1,5 +1,6 @@
 import { SignIn } from "@clerk/nextjs";
 import type { Metadata } from "next";
+import Logo from "@/components/Logo";
 
 export const metadata: Metadata = {
   title: "Sign In - PDFTrackr",
@@ -15,10 +16,8 @@ export default function Page() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center mb-6 shadow-lg">
-            <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
-            </svg>
+          <div className="mx-auto mb-6">
+            <Logo size="xl" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
             PDFTrackr

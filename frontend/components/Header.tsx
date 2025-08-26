@@ -1,9 +1,10 @@
 "use client";
 
-import { FileText, Menu, X, Upload } from "lucide-react";
+import { Menu, X, Upload } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
+import Logo from "./Logo";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -15,9 +16,8 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <FileText className="h-8 w-8 text-primary-600" />
-            <span className="text-xl font-bold text-gray-900">PDFTrackr</span>
+          <Link href="/">
+            <Logo size="lg" />
           </Link>
 
           {/* Desktop Navigation */}

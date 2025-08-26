@@ -14,6 +14,14 @@ export const metadata = {
   description: "Share PDFs securely and track who views them. Get page-by-page analytics, capture emails, control downloads. 500MB free storage. No credit card required.",
   keywords: "secure PDF sharing, PDF link analytics, track PDF views, password-protected PDFs, share PDFs with analytics, email-gated PDF access, watermarked PDF viewing, link expiration for PDFs, document engagement analytics, GDPR compliant PDF sharing",
   author: "PDFTrackr",
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/logo.png', type: 'image/png', sizes: '32x32' }
+    ],
+    apple: '/logo.png',
+    shortcut: '/favicon.ico'
+  },
   robots: {
     index: true,
     follow: true,

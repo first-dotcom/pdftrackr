@@ -625,8 +625,14 @@ export default function SecurePDFViewer({
                 onLoadError={onDocumentLoadError}
                 loading={
                   <div className="flex items-center justify-center p-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
-                    <span className="ml-2">Loading PDF...</span>
+                    <div className="flex items-center space-x-3">
+                      <img
+                        src="/logo.png"
+                        alt="PDFTrackr Logo"
+                        className="w-8 h-8 animate-pulse"
+                      />
+                      <span className="text-gray-600">Loading PDF...</span>
+                    </div>
                   </div>
                 }
                 error={
