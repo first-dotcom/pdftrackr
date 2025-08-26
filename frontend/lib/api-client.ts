@@ -244,6 +244,20 @@ class ApiClient {
     getRateLimit: () => this.get("/api/feedback/rate-limit"),
   };
 
+  dataRights = {
+    request: (data: {
+      requestType: "access" | "deletion" | "rectification" | "portability";
+      description?: string;
+      email?: string;
+      fields?: {
+        firstName?: string;
+        lastName?: string;
+        email?: string;
+      };
+    }) => this.post("/api/data-rights", data),
+    getStatus: () => this.get("/api/data-rights/status"),
+  };
+
   analytics = {
     file: (fileId: number) => this.get(`/api/analytics/files/${fileId}`),
     aggregate: (fileId: number, days?: number, pageRange?: string) => {

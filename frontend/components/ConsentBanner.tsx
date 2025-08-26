@@ -61,10 +61,15 @@ export default function ConsentBanner() {
             <strong>We value your privacy</strong>
           </p>
           <p>
-            We use cookies and similar technologies to analyze site usage and improve our service. 
-            This helps us provide a better experience for you. You can choose to accept or decline these cookies.{" "}
+            We use Google Analytics and other cookies to analyze site usage and improve our service. 
+            This includes collecting data about page views, time spent, and geographic location. 
+            You can choose to accept or decline these cookies.{" "}
             <a href="/privacy" className="underline hover:text-gray-300">
-              Learn more in our Privacy Policy
+              Privacy Policy
+            </a>{" "}
+            •{" "}
+            <a href="/cookies" className="underline hover:text-gray-300">
+              Cookie Policy
             </a>
           </p>
         </div>

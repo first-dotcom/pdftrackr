@@ -12,6 +12,7 @@ import { addRequestId, csrfProtection, securityHeaders } from "./middleware/secu
 import { initializeDatabase } from "./utils/database";
 import { logger } from "./utils/logger";
 import { connectRedis } from "./utils/redis";
+import { scheduleDataRetentionCleanup } from "./jobs/dataRetentionCleanup";
 
 import analyticsRoutes from "./routes/analytics";
 import analyticsTrackingRoutes from "./routes/analyticsTracking";
@@ -20,6 +21,7 @@ import authRoutes from "./routes/auth";
 import filesRoutes from "./routes/files";
 import adminRoutes from "./routes/admin";
 import feedbackRoutes from "./routes/feedback";
+import dataRightsRoutes from "./routes/dataRights";
 
 import shareRoutes from "./routes/share";
 import upgradeRoutes from "./routes/upgrade";
@@ -245,6 +247,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/files", filesRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/feedback", feedbackRoutes);
+app.use("/api/data-rights", dataRightsRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/analytics", analyticsTrackingRoutes); // New real-time tracking endpoints
 app.use("/api/users", usersRoutes);
@@ -266,6 +269,9 @@ async function startServer() {
     // Initialize database (connect and run migrations)
     await initializeDatabase();
     await connectRedis();
+
+    // Schedule data retention cleanup job
+    scheduleDataRetentionCleanup();
 
     const port = config.server.port;
     app.listen(port, () => {

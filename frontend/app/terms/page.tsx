@@ -50,7 +50,7 @@ export default function TermsPage() {
             
             <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4">Contact Information</h2>
             <p className="text-gray-600 mb-4">
-              If you have any questions about these Terms of Service, please contact us at legal@pdftrackr.com
+              If you have any questions about these Terms of Service, please see our <a href="/privacy" className="underline">Privacy Policy</a> or use our <a href="/data-rights" className="underline">Data Rights form</a>.
             </p>
           </div>
         </div>
