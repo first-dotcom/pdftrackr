@@ -473,8 +473,8 @@ export default function FilesPage() {
     showSuccess(title, message);
   }, [showSuccess]);
 
-  // Fetch files with pagination - FIXED: Remove from dependencies to prevent infinite loop
-  const fetchFiles = useCallback(async (page = 1, search = searchTerm) => {
+  // Fetch files with pagination - FIXED: Remove searchTerm from dependencies to prevent infinite loop
+  const fetchFiles = useCallback(async (page = 1) => {
     if (page === 1) {
       setLoading(true);
     } else {
@@ -485,7 +485,7 @@ export default function FilesPage() {
     try {
       const response = await api.files.list({ 
         page: page, 
-        limit: FILES_PER_PAGE 
+        limit: FILES_PER_PAGE
       });
       
       if (response.success && response.data) {
@@ -505,14 +505,28 @@ export default function FilesPage() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [api, stableShowError]); // FIXED: Remove searchTerm and showError from dependencies
+  }, [api, stableShowError]); // ✅ FIXED: Remove searchTerm from dependencies to prevent infinite loop
 
-  // FIXED: Remove fetchFiles from dependencies to prevent infinite loop
+  // FIXED: Separate useEffect for initial load and page changes
   useEffect(() => {
     if (isReady && user) {
       fetchFiles(currentPage);
     }
-  }, [isReady, user, currentPage]); // FIXED: Removed fetchFiles from dependencies
+  }, [isReady, user, currentPage, fetchFiles]); // ✅ FIXED: Include fetchFiles but it's now stable
+
+  // FIXED: Separate useEffect for search changes to prevent infinite loops
+  useEffect(() => {
+    if (isReady && user) {
+      // Reset to page 1 when search changes
+      setCurrentPage(1);
+      // Use debounced search to prevent excessive API calls
+      const timeoutId = setTimeout(() => {
+        fetchFiles(1);
+      }, 300);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [searchTerm, isReady, user, fetchFiles]); // ✅ FIXED: Separate from main fetch effect
 
   // Flash success toast after redirect from upload
   useEffect(() => {
@@ -528,30 +542,10 @@ export default function FilesPage() {
     } catch {}
   }, []); // Empty dependency array - only run once on mount
 
-  // FIXED: Create stable debounced search function
-  const debouncedSearch = useMemo(
-    () => {
-      const debouncedFn = (search: string) => {
-        setCurrentPage(1);
-        fetchFiles(1, search);
-      };
-      
-      let timeoutId: NodeJS.Timeout;
-      return (search: string) => {
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
-        timeoutId = setTimeout(() => debouncedFn(search), 300);
-      };
-    },
-    [fetchFiles] // Only depend on fetchFiles, not searchTerm
-  );
-
-  // FIXED: Handle search term changes directly in onChange, not in useEffect
+  // FIXED: Simplified search handling - no need for complex debouncing since we handle it in useEffect
   const handleSearchChange = useCallback((value: string) => {
     setSearchTerm(value);
-    debouncedSearch(value);
-  }, [debouncedSearch]);
+  }, []); // ✅ FIXED: No dependencies needed
 
   const handleShareClick = useCallback(async (file: File) => {
     setSharingFiles(prev => new Set(prev).add(file.id));
@@ -625,6 +619,7 @@ export default function FilesPage() {
     fetchFiles(currentPage);
   }, [fetchFiles, currentPage]);
 
+  // FIXED: Client-side filtering since server doesn't support search yet
   const filteredFiles = useMemo(() => 
     files.filter((file) =>
       file.title?.toLowerCase().includes(searchTerm.toLowerCase()),

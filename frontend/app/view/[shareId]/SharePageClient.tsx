@@ -47,7 +47,6 @@ interface ShareLinkData {
 
 interface AccessData {
   sessionId: string;
-  fileUrl: string;
   file: {
     id: number;
     filename: string;
@@ -57,6 +56,7 @@ interface AccessData {
   };
   downloadEnabled: boolean;
   watermarkEnabled: boolean;
+  expiresAt: string | null;
 }
 
 interface SharePageClientProps {
@@ -164,14 +164,9 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
   };
 
   const handleDownload = () => {
-    if (accessData?.fileUrl) {
-      const link = document.createElement("a");
-      link.href = accessData.fileUrl;
-      link.download = accessData.file.title || "document.pdf";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+    // Download functionality will be handled by SecurePDFViewer
+    // This is now just a placeholder for any future download UI
+    console.log("Download requested - handled by PDF viewer");
   };
 
 

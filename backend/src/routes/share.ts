@@ -92,30 +92,35 @@ router.post(
     // Hash password if provided
     const hashedPassword = password ? await bcrypt.hash(password, 12) : null;
 
-    const newShareLink = await db
-      .insert(shareLinks)
-      .values({
-        fileId,
-        shareId,
-        title,
-        description,
-        password: hashedPassword,
-        emailGatingEnabled: emailGatingEnabled || false,
-        downloadEnabled: downloadEnabled !== false, // default true
-        watermarkEnabled: watermarkEnabled || false,
-        expiresAt: expiresAt ? new Date(expiresAt) : null,
-        maxViews: maxViews || null,
-      })
-      .returning();
+    // Use transaction for share link creation
+    const newShareLink = await db.transaction(async (tx) => {
+      const result = await tx
+        .insert(shareLinks)
+        .values({
+          fileId,
+          shareId,
+          title,
+          description,
+          password: hashedPassword,
+          emailGatingEnabled: emailGatingEnabled || false,
+          downloadEnabled: downloadEnabled !== false, // default true
+          watermarkEnabled: watermarkEnabled || false,
+          expiresAt: expiresAt ? new Date(expiresAt) : null,
+          maxViews: maxViews || null,
+        })
+        .returning();
 
-    // Invalidate caches for this user
+      return result[0];
+    });
+
+    // Invalidate caches for this user after transaction commits
     await invalidateUserDashboardCache(req.user?.id);
     await deleteCache(`user_profile:${req.user?.id}`);
 
     res.json({
       success: true,
       data: {
-        shareLink: newShareLink[0],
+        shareLink: newShareLink,
         url: `${config.app.url}/view/${shareId}`,
       },
     });
@@ -395,16 +400,17 @@ router.post(
     // Record metrics
     pdfViews.labels(link.fileId.toString(), isUnique.toString()).inc();
 
-    // Generate signed URL for PDF viewing (with proper headers)
-    const signedUrl = await getSignedViewUrl(link.file.storageKey, 3600, true); // 1 hour
-
-    // Cache session info for analytics tracking
+    // Cache session info for analytics tracking with permissions
     await setSession(
       sessionId,
       {
         shareId,
         fileId: link.fileId,
         viewerInfo,
+        permissions: {
+          downloadEnabled: link.downloadEnabled,
+          watermarkEnabled: link.watermarkEnabled,
+        },
         accessedAt: new Date(),
       },
       3600, // 1 hour
@@ -417,7 +423,6 @@ router.post(
       success: true,
       data: {
         sessionId,
-        fileUrl: signedUrl,
         file: {
           id: link.fileId,
           filename: link.file.filename,
@@ -427,6 +432,7 @@ router.post(
         },
         downloadEnabled: link.downloadEnabled,
         watermarkEnabled: link.watermarkEnabled,
+        expiresAt: link.expiresAt,
       },
     });
   }),
@@ -573,15 +579,21 @@ router.get(
     // Validate access through session or direct authentication
     let hasAccess = false;
     let viewerEmail: string | null = null;
+    let sessionPermissions: { downloadEnabled: boolean; watermarkEnabled: boolean } | null = null;
 
     if (session) {
       // Check if session exists and is valid
       const sessionData = await getSession(session as string);
       if (sessionData && typeof sessionData === "object" && "shareId" in sessionData) {
-        const sessionObj = sessionData as { shareId: string; viewerInfo?: { email?: string } };
+        const sessionObj = sessionData as { 
+          shareId: string; 
+          viewerInfo?: { email?: string };
+          permissions?: { downloadEnabled: boolean; watermarkEnabled: boolean };
+        };
         if (sessionObj.shareId === shareId) {
           hasAccess = true;
           viewerEmail = sessionObj.viewerInfo?.email || null;
+          sessionPermissions = sessionObj.permissions || null;
         }
       }
     }
@@ -635,6 +647,11 @@ router.get(
 
       hasAccess = true;
       viewerEmail = email || null;
+      // For direct access, use current link settings as permissions
+      sessionPermissions = {
+        downloadEnabled: link.downloadEnabled,
+        watermarkEnabled: link.watermarkEnabled,
+      };
     }
 
     if (!hasAccess) {
@@ -672,10 +689,13 @@ router.get(
     });
 
     try {
-      // Generate a signed URL for the PDF instead of streaming
-      const signedUrl = await getSignedViewUrl(link.file.storageKey, 3600, link.downloadEnabled);
+      // Use session permissions if available, otherwise fall back to current link settings
+      const downloadEnabled = sessionPermissions?.downloadEnabled ?? link.downloadEnabled;
       
-      console.log("Generated signed URL for PDF viewing");
+      // Generate a signed URL for the PDF instead of streaming
+      const signedUrl = await getSignedViewUrl(link.file.storageKey, 3600, downloadEnabled);
+      
+      console.log("Generated signed URL for PDF viewing with downloadEnabled:", downloadEnabled);
 
       // Return the signed URL instead of streaming
       res.json({
@@ -685,6 +705,8 @@ router.get(
           filename: link.file.originalName,
           contentType: "application/pdf",
           contentLength: 0, // We don't know the exact size from signed URL
+          downloadEnabled: downloadEnabled,
+          watermarkEnabled: sessionPermissions?.watermarkEnabled ?? link.watermarkEnabled,
         }
       });
     } catch (error) {

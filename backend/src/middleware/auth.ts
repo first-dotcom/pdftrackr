@@ -100,27 +100,49 @@ export const authenticate = async (req: Request, _res: Response, next: NextFunct
           };
           logger.info("Existing user logged in (race condition)", { email, userId: payload.sub });
         } else {
-          // Create new user
-          const newUser = await db
-            .insert(users)
-            .values({
-              clerkId: payload.sub,
-              email,
-              firstName: firstName || null,
-              lastName: lastName || null,
-              plan: "free",
-            })
-            .returning();
+          // Create new user with transaction
+          try {
+            const newUser = await db.transaction(async (tx) => {
+              const result = await tx
+                .insert(users)
+                .values({
+                  clerkId: payload.sub,
+                  email,
+                  firstName: firstName || null,
+                  lastName: lastName || null,
+                  plan: "free",
+                })
+                .returning();
 
-          if (newUser.length > 0) {
+              return result[0];
+            });
+
             req.user = {
-              ...newUser[0],
-              plan: newUser[0].plan as UserPlan,
-              isAdmin: config.admin.emails.includes(newUser[0].email),
+              ...newUser,
+              plan: newUser.plan as UserPlan,
+              isAdmin: config.admin.emails.includes(newUser.email),
             };
             logger.info("New user created", { email, userId: payload.sub });
-          } else {
-            throw new CustomError("Failed to create user account", 500);
+          } catch (dbError) {
+            // Handle potential unique constraint violation (race condition)
+            if (dbError instanceof Error && 
+                (dbError.message.includes('unique constraint') || 
+                 dbError.message.includes('duplicate key'))) {
+              // User was created by another request, fetch the existing user
+              const existingUser = await db.select().from(users).where(eq(users.clerkId, payload.sub)).limit(1);
+              if (existingUser.length > 0) {
+                req.user = {
+                  ...existingUser[0],
+                  plan: existingUser[0].plan as UserPlan,
+                  isAdmin: config.admin.emails.includes(existingUser[0].email),
+                };
+                logger.info("User created by another request (race condition handled)", { email, userId: payload.sub });
+              } else {
+                throw new CustomError("Failed to create user account", 500);
+              }
+            } else {
+              throw dbError;
+            }
           }
         }
       } catch (clerkError) {

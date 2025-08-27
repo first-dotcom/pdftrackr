@@ -1,4 +1,4 @@
-import { and, desc, eq, gt, gte, inArray, isNotNull, isNull, lt, lte, or, sql } from "drizzle-orm";
+import { and, desc, eq, gt, gte, inArray, isNotNull, isNull, lt, lte, or, sql, ilike } from "drizzle-orm";
 import { Router } from "express";
 import type { Request, Response } from "express";
 import { z } from "zod";
@@ -963,7 +963,7 @@ router.get(
     const whereConditions = [inArray(viewSessions.shareId, shareIds)];
 
     if (emailSearch) {
-      whereConditions.push(sql`${viewSessions.viewerEmail} ILIKE ${`%${emailSearch}%`}`);
+      whereConditions.push(ilike(viewSessions.viewerEmail, `%${emailSearch}%`));
     }
 
     if (device) {
@@ -1173,7 +1173,7 @@ async function getSessionsWithPageData(
   const whereConditions = [inArray(viewSessions.shareId, shareIds)];
 
   if (emailSearch) {
-    whereConditions.push(sql`${viewSessions.viewerEmail} ILIKE ${`%${emailSearch}%`}`);
+    whereConditions.push(ilike(viewSessions.viewerEmail, `%${emailSearch}%`));
   }
   if (device) {
     whereConditions.push(eq(viewSessions.device, device));

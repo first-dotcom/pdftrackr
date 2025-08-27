@@ -69,12 +69,15 @@ router.post(
           .limit(1);
 
         if (existingUser.length === 0) {
-          await db.insert(users).values({
-            clerkId: data.id,
-            email: data.email_addresses[0]?.email_address,
-            firstName: data.first_name,
-            lastName: data.last_name,
-            plan: "free",
+          // Use transaction for user creation
+          await db.transaction(async (tx) => {
+            await tx.insert(users).values({
+              clerkId: data.id,
+              email: data.email_addresses[0]?.email_address,
+              firstName: data.first_name,
+              lastName: data.last_name,
+              plan: "free",
+            });
           });
 
           userRegistrations.labels("free").inc();

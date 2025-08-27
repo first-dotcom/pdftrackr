@@ -117,38 +117,51 @@ router.post(
         );
       }
 
-      // Upload to S3
+      // Use database transaction for all database operations
+      const result = await db.transaction(async (tx) => {
+        // Save file record to database with security metadata
+        const newFile = await tx
+          .insert(files)
+          .values({
+            userId: user.id,
+            filename,
+            originalName: file.originalname,
+            size: file.size,
+            mimeType: file.mimetype,
+            storageKey,
+            storageUrl: "", // Will be updated after S3 upload
+            title: title || file.originalname,
+            description,
+            // Add security tracking
+            ipAddress: (req as RequestWithExtensions).normalizedIp || req.ip || null,
+            userAgent: req.get("User-Agent") || null,
+            fileHash: (req as RequestWithExtensions).fileHash || null, // From PDF validation
+          })
+          .returning();
+
+        // Update user storage and file count
+        await tx
+          .update(users)
+          .set({
+            storageUsed: user.storageUsed + file.size,
+            filesCount: user.filesCount + 1,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, user.id));
+
+        return newFile[0];
+      });
+
+      // Upload to S3 after database transaction commits
       const uploadResult = await uploadToS3(storageKey, file.buffer, file.mimetype);
 
-      // Save file record to database with security metadata
-      const newFile = await db
-        .insert(files)
-        .values({
-          userId: user.id,
-          filename,
-          originalName: file.originalname,
-          size: file.size,
-          mimeType: file.mimetype,
-          storageKey,
-          storageUrl: uploadResult.url,
-          title: title || file.originalname,
-          description,
-          // Add security tracking
-          ipAddress: (req as RequestWithExtensions).normalizedIp || req.ip || null,
-          userAgent: req.get("User-Agent") || null,
-          fileHash: (req as RequestWithExtensions).fileHash || null, // From PDF validation
-        })
-        .returning();
-
-      // Update user storage and file count
+      // Update file record with S3 URL
       await db
-        .update(users)
+        .update(files)
         .set({
-          storageUsed: user.storageUsed + file.size,
-          filesCount: user.filesCount + 1,
-          updatedAt: new Date(),
+          storageUrl: uploadResult.url,
         })
-        .where(eq(users.id, user.id));
+        .where(eq(files.id, result.id));
 
       fileUploads.labels("success", user.plan).inc();
 
@@ -156,7 +169,7 @@ router.post(
       await invalidateUserDashboardCache(user.id);
       await deleteCache(`user_profile:${user.id}`);
 
-      successResponse(res, { file: newFile[0] }, "File uploaded successfully");
+      successResponse(res, { file: { ...result, storageUrl: uploadResult.url } }, "File uploaded successfully");
     } catch (error) {
       fileUploads.labels("error", user.plan).inc();
       logger.error("File upload failed", {
@@ -306,6 +319,17 @@ router.patch(
     const fileId = parseInt(req.params["id"], 10);
     const { title, description, downloadEnabled, watermarkEnabled } = req.body;
 
+    // First verify file exists and belongs to user (prevents race conditions)
+    const fileCheck = await db
+      .select()
+      .from(files)
+      .where(and(eq(files.id, fileId), eq(files.userId, req.user?.id)))
+      .limit(1);
+
+    if (fileCheck.length === 0) {
+      return errorResponse(res, "File not found or access denied", 404);
+    }
+
     const updatedFile = await db
       .update(files)
       .set({
@@ -319,7 +343,7 @@ router.patch(
       .returning();
 
     if (updatedFile.length === 0) {
-      return errorResponse(res, "File not found", 404);
+      return errorResponse(res, "File update failed", 500);
     }
 
     successResponse(res, { file: updatedFile[0] }, "File updated successfully");
@@ -346,23 +370,53 @@ router.delete(
     }
 
     try {
-      // Delete from S3
-      if (file[0]) {
-        await deleteFromS3(file[0].storageKey);
+      // Use database transaction for all database operations with proper existence check
+      const deletionResult = await db.transaction(async (tx) => {
+        // First, verify file still exists and belongs to user (prevents race conditions)
+        const fileCheck = await tx
+          .select()
+          .from(files)
+          .where(and(eq(files.id, fileId), eq(files.userId, req.user?.id)))
+          .limit(1);
+
+        if (fileCheck.length === 0) {
+          throw new CustomError("File not found or access denied", 404);
+        }
+
+        const fileToDelete = fileCheck[0];
+
+        // Delete from database
+        const deletedFiles = await tx.delete(files).where(eq(files.id, fileId)).returning();
+        
+        if (deletedFiles.length === 0) {
+          throw new CustomError("File deletion failed", 500);
+        }
+
+        // Update user storage and file count
+        await tx
+          .update(users)
+          .set({
+            storageUsed: Math.max(0, req.user?.storageUsed - fileToDelete.size),
+            filesCount: Math.max(0, req.user?.filesCount - 1),
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, req.user?.id));
+
+        return fileToDelete;
+      });
+
+      // Delete from S3 after database transaction commits
+      try {
+        await deleteFromS3(deletionResult.storageKey);
+      } catch (s3Error) {
+        // Log S3 deletion failure but don't fail the request
+        // The file is already deleted from database
+        logger.warn("Failed to delete file from S3", {
+          fileId,
+          storageKey: deletionResult.storageKey,
+          error: s3Error instanceof Error ? s3Error.message : String(s3Error),
+        });
       }
-
-      // Delete from database
-      await db.delete(files).where(eq(files.id, fileId));
-
-      // Update user storage and file count
-      await db
-        .update(users)
-        .set({
-          storageUsed: Math.max(0, req.user?.storageUsed - (file[0]?.size || 0)),
-          filesCount: Math.max(0, req.user?.filesCount - 1),
-          updatedAt: new Date(),
-        })
-        .where(eq(users.id, req.user?.id));
 
       // Invalidate user profile cache
       await deleteCache(`user_profile:${req.user?.id}`);

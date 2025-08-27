@@ -115,6 +115,7 @@ export default function RootLayout({
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+            // Safe: structuredData contains only static, hardcoded values for SEO
           />
           {/* Google tag (gtag.js) */}
           <script async src="https://www.googletagmanager.com/gtag/js?id=G-0D0FQG4352"></script>
@@ -139,6 +140,7 @@ export default function RootLayout({
                 // Configure Google Ads
                 gtag('config', 'AW-17505541054');
               `,
+              // Safe: Static Google Analytics script template, no user input
             }}
           />
         </head>

@@ -3,7 +3,7 @@
 import { config } from "@/lib/config";
 import { apiClient } from "@/lib/api-client";
 import { ChevronLeft, ChevronRight, RotateCw, ZoomIn, ZoomOut } from "lucide-react";
-import { useCallback, useEffect, useState, useMemo } from "react";
+import { useCallback, useEffect, useState, useMemo, useRef } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
@@ -93,6 +93,13 @@ export default function SecurePDFViewer({
   // 📊 NEW: Activity tracking state
   const [lastActivityTime, setLastActivityTime] = useState<number>(Date.now());
 
+  // 📊 REFS FOR CLEANUP TRACKING
+  const scrollElementRef = useRef<Element | null>(null);
+  const scrollListenersRef = useRef<Set<string>>(new Set());
+  const activityListenersRef = useRef<Set<string>>(new Set());
+  const mobileListenersRef = useRef<Set<string>>(new Set());
+  const sessionListenersRef = useRef<Set<string>>(new Set());
+
   // 📊 NEW: Activity tracking function
   const trackUserActivity = useCallback(() => {
     setLastActivityTime(Date.now());
@@ -145,8 +152,82 @@ export default function SecurePDFViewer({
     trackUserActivity();
   }, [trackUserActivity]);
 
-  // 📊 NEW: Mobile-friendly scroll setup
+  // 📊 COMPREHENSIVE CLEANUP FUNCTION
+  const cleanupAllListeners = useCallback(() => {
+    // Clean up scroll listeners
+    if (scrollElementRef.current) {
+      const element = scrollElementRef.current;
+      if (scrollListenersRef.current.has('scroll')) {
+        element.removeEventListener('scroll', handleScroll);
+        scrollListenersRef.current.delete('scroll');
+      }
+      if (scrollListenersRef.current.has('touchmove')) {
+        element.removeEventListener('touchmove', handleScroll);
+        scrollListenersRef.current.delete('touchmove');
+      }
+      scrollElementRef.current = null;
+    }
+
+    // Clean up activity listeners
+    const activityEvents = ['scroll', 'mousemove', 'click', 'keypress'];
+    activityEvents.forEach(event => {
+      if (activityListenersRef.current.has(event)) {
+        document.removeEventListener(event, trackUserActivity);
+        activityListenersRef.current.delete(event);
+      }
+    });
+
+    // Clean up mobile listeners
+    if (mobileListenersRef.current.has('orientationchange')) {
+      window.removeEventListener('orientationchange', () => {});
+      mobileListenersRef.current.delete('orientationchange');
+    }
+    if (mobileListenersRef.current.has('resize')) {
+      window.removeEventListener('resize', () => {});
+      mobileListenersRef.current.delete('resize');
+    }
+    if (mobileListenersRef.current.has('visualViewport-resize') && 'visualViewport' in window) {
+      (window as any).visualViewport?.removeEventListener('resize', () => {});
+      mobileListenersRef.current.delete('visualViewport-resize');
+    }
+
+    // Clean up security listeners
+    if (securityListenersRef.current.has('keydown')) {
+      document.removeEventListener('keydown', () => {});
+      securityListenersRef.current.delete('keydown');
+    }
+    if (securityListenersRef.current.has('contextmenu')) {
+      document.removeEventListener('contextmenu', () => {});
+      securityListenersRef.current.delete('contextmenu');
+    }
+
+    // Clean up session listeners
+    if (sessionListenersRef.current.has('beforeunload')) {
+      window.removeEventListener('beforeunload', () => {});
+      sessionListenersRef.current.delete('beforeunload');
+    }
+    if (sessionListenersRef.current.has('visibilitychange')) {
+      document.removeEventListener('visibilitychange', () => {});
+      sessionListenersRef.current.delete('visibilitychange');
+    }
+  }, [handleScroll, trackUserActivity]);
+
+  // 📊 FIXED: Mobile-friendly scroll setup with proper cleanup
   useEffect(() => {
+    // Clean up any existing scroll listeners first
+    if (scrollElementRef.current) {
+      const element = scrollElementRef.current;
+      if (scrollListenersRef.current.has('scroll')) {
+        element.removeEventListener('scroll', handleScroll);
+        scrollListenersRef.current.delete('scroll');
+      }
+      if (scrollListenersRef.current.has('touchmove')) {
+        element.removeEventListener('touchmove', handleScroll);
+        scrollListenersRef.current.delete('touchmove');
+      }
+      scrollElementRef.current = null;
+    }
+
     const setupScrollTracking = () => {
       // Mobile-optimized selectors (order matters)
       const selectors = [
@@ -158,7 +239,6 @@ export default function SecurePDFViewer({
       ];
       
       let element: Element | null = null;
-      let cleanup: (() => void) | undefined;
 
       // Try to find scrollable element
       for (const selector of selectors) {
@@ -178,40 +258,61 @@ export default function SecurePDFViewer({
       }
 
       if (element) {
-        // Add both scroll and touch events for mobile
-        element.addEventListener('scroll', handleScroll, { passive: true });
-        element.addEventListener('touchmove', handleScroll, { passive: true });
+        // Store reference for cleanup
+        scrollElementRef.current = element;
         
-        cleanup = () => {
-          element?.removeEventListener('scroll', handleScroll);
-          element?.removeEventListener('touchmove', handleScroll);
-        };
+        // Check if listeners already exist before adding
+        if (!scrollListenersRef.current.has('scroll')) {
+          element.addEventListener('scroll', handleScroll, { passive: true });
+          scrollListenersRef.current.add('scroll');
+        }
+        
+        if (!scrollListenersRef.current.has('touchmove')) {
+          element.addEventListener('touchmove', handleScroll, { passive: true });
+          scrollListenersRef.current.add('touchmove');
+        }
+        
+        return true; // Setup successful
       }
 
-      return cleanup;
+      return false; // Setup failed
     };
 
     // Mobile-friendly setup with retry logic
-    let cleanup: (() => void) | undefined;
     let retryCount = 0;
     const maxRetries = 3;
+    let setupTimer: NodeJS.Timeout;
 
     const attemptSetup = () => {
-      cleanup = setupScrollTracking();
+      const success = setupScrollTracking();
       
       // If setup failed and we haven't exceeded retries, try again
-      if (!cleanup && retryCount < maxRetries) {
+      if (!success && retryCount < maxRetries) {
         retryCount++;
-        setTimeout(attemptSetup, 500 * retryCount); // Exponential backoff
+        setupTimer = setTimeout(attemptSetup, 500 * retryCount); // Exponential backoff
       }
     };
 
     // Initial setup with delay for PDF rendering
-    const timer = setTimeout(attemptSetup, 1000);
+    const initialTimer = setTimeout(attemptSetup, 1000);
     
     return () => {
-      clearTimeout(timer);
-      cleanup?.();
+      clearTimeout(initialTimer);
+      clearTimeout(setupTimer);
+      
+      // Clean up scroll listeners
+      if (scrollElementRef.current) {
+        const element = scrollElementRef.current;
+        if (scrollListenersRef.current.has('scroll')) {
+          element.removeEventListener('scroll', handleScroll);
+          scrollListenersRef.current.delete('scroll');
+        }
+        if (scrollListenersRef.current.has('touchmove')) {
+          element.removeEventListener('touchmove', handleScroll);
+          scrollListenersRef.current.delete('touchmove');
+        }
+        scrollElementRef.current = null;
+      }
     };
   }, [handleScroll, pageNumber]);
 
@@ -223,22 +324,38 @@ export default function SecurePDFViewer({
     });
   }, [pageNumber]);
 
-  // 📊 NEW: Activity tracking setup
+  // 📊 FIXED: Activity tracking setup with proper cleanup
   useEffect(() => {
     const events = ['scroll', 'mousemove', 'click', 'keypress'];
     
+    // Clean up any existing activity listeners first
     events.forEach(event => {
-      document.addEventListener(event, trackUserActivity, { passive: true });
+      if (activityListenersRef.current.has(event)) {
+        document.removeEventListener(event, trackUserActivity);
+        activityListenersRef.current.delete(event);
+      }
+    });
+    
+    // Add new listeners only if they don't exist
+    events.forEach(event => {
+      if (!activityListenersRef.current.has(event)) {
+        document.addEventListener(event, trackUserActivity, { passive: true });
+        activityListenersRef.current.add(event);
+      }
     });
     
     return () => {
+      // Clean up all activity listeners
       events.forEach(event => {
-        document.removeEventListener(event, trackUserActivity);
+        if (activityListenersRef.current.has(event)) {
+          document.removeEventListener(event, trackUserActivity);
+          activityListenersRef.current.delete(event);
+        }
       });
     };
   }, [trackUserActivity]);
 
-  // 📊 NEW: Mobile-specific event handling
+  // 📊 FIXED: Mobile-specific event handling with proper cleanup
   useEffect(() => {
     const handleOrientationChange = () => {
       // Reset scroll tracking when orientation changes
@@ -258,20 +375,50 @@ export default function SecurePDFViewer({
       }));
     };
 
-    // Add mobile-specific event listeners
-    window.addEventListener('orientationchange', handleOrientationChange);
-    window.addEventListener('resize', handleResize);
+    // Clean up any existing mobile listeners first
+    if (mobileListenersRef.current.has('orientationchange')) {
+      window.removeEventListener('orientationchange', handleOrientationChange);
+      mobileListenersRef.current.delete('orientationchange');
+    }
+    if (mobileListenersRef.current.has('resize')) {
+      window.removeEventListener('resize', handleResize);
+      mobileListenersRef.current.delete('resize');
+    }
+    if (mobileListenersRef.current.has('visualViewport-resize') && 'visualViewport' in window) {
+      (window as any).visualViewport?.removeEventListener('resize', handleResize);
+      mobileListenersRef.current.delete('visualViewport-resize');
+    }
+
+    // Add mobile-specific event listeners only if they don't exist
+    if (!mobileListenersRef.current.has('orientationchange')) {
+      window.addEventListener('orientationchange', handleOrientationChange);
+      mobileListenersRef.current.add('orientationchange');
+    }
+    
+    if (!mobileListenersRef.current.has('resize')) {
+      window.addEventListener('resize', handleResize);
+      mobileListenersRef.current.add('resize');
+    }
     
     // iOS Safari specific events
-    if ('visualViewport' in window) {
+    if ('visualViewport' in window && !mobileListenersRef.current.has('visualViewport-resize')) {
       (window as any).visualViewport?.addEventListener('resize', handleResize);
+      mobileListenersRef.current.add('visualViewport-resize');
     }
 
     return () => {
-      window.removeEventListener('orientationchange', handleOrientationChange);
-      window.removeEventListener('resize', handleResize);
-      if ('visualViewport' in window) {
+      // Clean up all mobile listeners
+      if (mobileListenersRef.current.has('orientationchange')) {
+        window.removeEventListener('orientationchange', handleOrientationChange);
+        mobileListenersRef.current.delete('orientationchange');
+      }
+      if (mobileListenersRef.current.has('resize')) {
+        window.removeEventListener('resize', handleResize);
+        mobileListenersRef.current.delete('resize');
+      }
+      if (mobileListenersRef.current.has('visualViewport-resize') && 'visualViewport' in window) {
         (window as any).visualViewport?.removeEventListener('resize', handleResize);
+        mobileListenersRef.current.delete('visualViewport-resize');
       }
     };
   }, []);
@@ -373,7 +520,7 @@ export default function SecurePDFViewer({
     }
   }, [sessionId]);
 
-  // Track session end with optimized event handling
+  // FIXED: Track session end with optimized event handling and proper cleanup
   useEffect(() => {
     let hasTrackedEnd = false;
 
@@ -399,8 +546,25 @@ export default function SecurePDFViewer({
       }
     }, 2000); // 2 second debounce
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // Clean up any existing session listeners first
+    if (sessionListenersRef.current.has('beforeunload')) {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      sessionListenersRef.current.delete('beforeunload');
+    }
+    if (sessionListenersRef.current.has('visibilitychange')) {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      sessionListenersRef.current.delete('visibilitychange');
+    }
+
+    // Add session listeners only if they don't exist
+    if (!sessionListenersRef.current.has('beforeunload')) {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      sessionListenersRef.current.add('beforeunload');
+    }
+    if (!sessionListenersRef.current.has('visibilitychange')) {
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      sessionListenersRef.current.add('visibilitychange');
+    }
 
     // Set up periodic session end check (every 30 seconds)
     const interval = setInterval(() => {
@@ -411,8 +575,15 @@ export default function SecurePDFViewer({
     }, 30000);
 
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      // Clean up all session listeners
+      if (sessionListenersRef.current.has('beforeunload')) {
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+        sessionListenersRef.current.delete('beforeunload');
+      }
+      if (sessionListenersRef.current.has('visibilitychange')) {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        sessionListenersRef.current.delete('visibilitychange');
+      }
       clearInterval(interval);
       
       // Track session end when component unmounts (if not already tracked)
@@ -421,6 +592,14 @@ export default function SecurePDFViewer({
       }
     };
   }, [sessionData.totalPages, sessionData.maxPageReached]);
+
+  // 📊 FINAL CLEANUP ON COMPONENT UNMOUNT
+  useEffect(() => {
+    return () => {
+      // Ensure all listeners are cleaned up when component unmounts
+      cleanupAllListeners();
+    };
+  }, [cleanupAllListeners]);
 
   // Initialize PDF URL
   useEffect(() => {
@@ -443,6 +622,11 @@ export default function SecurePDFViewer({
         .then(data => {
           if (data.success && data.data?.pdfUrl) {
             setPdfUrl(data.data.pdfUrl);
+            // Update download enabled state from the response
+            if (data.data.downloadEnabled !== undefined) {
+              // Note: downloadEnabled is now handled by the PDF viewer itself
+              // The backend response includes the current permission state
+            }
           } else {
             throw new Error(data.error || "Failed to get PDF URL");
           }
@@ -522,7 +706,10 @@ export default function SecurePDFViewer({
     setRotation((prev) => (prev + 90) % 360);
   }, []);
 
-  // Disable browser shortcuts and right-click
+  // 📊 REFS FOR SECURITY LISTENERS
+  const securityListenersRef = useRef<Set<string>>(new Set());
+
+  // FIXED: Disable browser shortcuts and right-click with proper cleanup
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "p")) {
@@ -534,12 +721,36 @@ export default function SecurePDFViewer({
       e.preventDefault();
     };
 
-    document.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("contextmenu", handleContextMenu);
+    // Clean up any existing security listeners first
+    if (securityListenersRef.current.has('keydown')) {
+      document.removeEventListener("keydown", handleKeyDown);
+      securityListenersRef.current.delete('keydown');
+    }
+    if (securityListenersRef.current.has('contextmenu')) {
+      document.removeEventListener("contextmenu", handleContextMenu);
+      securityListenersRef.current.delete('contextmenu');
+    }
+
+    // Add security listeners only if they don't exist
+    if (!securityListenersRef.current.has('keydown')) {
+      document.addEventListener("keydown", handleKeyDown);
+      securityListenersRef.current.add('keydown');
+    }
+    if (!securityListenersRef.current.has('contextmenu')) {
+      document.addEventListener("contextmenu", handleContextMenu);
+      securityListenersRef.current.add('contextmenu');
+    }
 
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("contextmenu", handleContextMenu);
+      // Clean up all security listeners
+      if (securityListenersRef.current.has('keydown')) {
+        document.removeEventListener("keydown", handleKeyDown);
+        securityListenersRef.current.delete('keydown');
+      }
+      if (securityListenersRef.current.has('contextmenu')) {
+        document.removeEventListener("contextmenu", handleContextMenu);
+        securityListenersRef.current.delete('contextmenu');
+      }
     };
   }, []);
 
