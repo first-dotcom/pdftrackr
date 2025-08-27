@@ -252,12 +252,10 @@ export interface AggregateAnalytics {
 export interface SessionPageView {
   pageNumber: number;
   duration: number;
-  scrollDepth: number;
   viewedAt: string;
   // Averaged data fields (for individual analytics)
   avgDuration?: number;
   totalViews?: number;
-  avgScrollDepth?: number;
 }
 
 export interface IndividualSession {
@@ -318,7 +316,6 @@ export interface IndividualAnalyticsResponse {
     pageNumber: number;
     avgDuration: number;
     totalViews: number;
-    avgScrollDepth: number;
     medianDuration: number;
   }[];
   filters: FilterState;

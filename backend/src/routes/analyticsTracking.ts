@@ -34,8 +34,7 @@ router.post(
       totalPages, 
       sessionId,
       // NEW: Enhanced tracking data
-      duration,
-      scrollDepth 
+      duration
     } = req.body;
 
     if (!shareId || !page || !totalPages) {
@@ -65,7 +64,7 @@ router.post(
             viewedAt: new Date(),
           });
           
-          logger.debug(`Enhanced page view stored: ${shareId} page ${page} - duration: ${duration}s, scroll: ${scrollDepth}%`);
+          logger.debug(`Enhanced page view stored: ${shareId} page ${page} - duration: ${duration}s`);
         } catch (dbError) {
           logger.warn('Failed to store enhanced page view data:', dbError);
           // Continue with audit logging even if enhanced data fails
@@ -150,8 +149,7 @@ router.post(
     const { 
       sessionId, 
       lastActiveAt, 
-      currentPage, 
-      scrollDepth 
+      currentPage
     } = req.body;
 
     if (!sessionId || !lastActiveAt) {
@@ -172,7 +170,7 @@ router.post(
         })
         .where(eq(viewSessions.sessionId, sessionId));
 
-      logger.debug(`Session activity updated: ${sessionId} - page ${currentPage}, scroll ${scrollDepth}%`);
+      logger.debug(`Session activity updated: ${sessionId} - page ${currentPage}`);
 
       res.json({
         success: true,

@@ -8,7 +8,6 @@ export const nameSchema = z.string().min(1).max(100).trim();
 export const passwordSchema = z.string().min(8).max(128);
 export const pageNumberSchema = z.number().int().min(1).max(10000);
 export const durationSchema = z.number().int().min(0).max(86400); // max 24 hours
-export const scrollDepthSchema = z.number().int().min(0).max(100);
 
 // File validation
 export const fileUploadSchema = z.object({
@@ -46,7 +45,6 @@ export const trackPageViewSchema = z.object({
   sessionId: z.string().uuid(),
   pageNumber: pageNumberSchema,
   duration: durationSchema.optional(),
-  scrollDepth: scrollDepthSchema.optional(),
 });
 
 // Share access validation

@@ -1,8 +1,8 @@
 "use client";
 
-import { config } from "./config";
-import { generateCSRFToken } from "../utils/security";
 import type { ApiResponse } from "@/shared/types";
+import { generateCSRFToken } from "../utils/security";
+import { config } from "./config";
 
 export interface RequestOptions {
   skipCSRF?: boolean;
@@ -26,7 +26,7 @@ class ApiClient {
 
   private async buildHeaders(
     method: string,
-    options: RequestOptions = {}
+    options: RequestOptions = {},
   ): Promise<Record<string, string>> {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -56,7 +56,7 @@ class ApiClient {
     endpoint: string,
     method: string,
     body?: any,
-    options: RequestOptions = {}
+    options: RequestOptions = {},
   ): Promise<ApiResponse<T>> {
     try {
       const url = `${this.baseUrl}${endpoint}`;
@@ -98,15 +98,15 @@ class ApiClient {
       return data;
     } catch (error) {
       console.error(`API request failed: ${method} ${endpoint}`, error);
-      
+
       // Handle network errors
-      if (error instanceof TypeError && error.message.includes('fetch')) {
+      if (error instanceof TypeError && error.message.includes("fetch")) {
         return {
           success: false,
           error: "Network error. Please check your connection.",
         };
       }
-      
+
       return {
         success: false,
         error: error instanceof Error ? error.message : "An unexpected error occurred",
@@ -139,7 +139,7 @@ class ApiClient {
   async uploadFile<T>(
     endpoint: string,
     formData: FormData,
-    options: RequestOptions = {}
+    options: RequestOptions = {},
   ): Promise<ApiResponse<T>> {
     try {
       const url = `${this.baseUrl}${endpoint}`;
@@ -194,10 +194,10 @@ class ApiClient {
   files = {
     list: (params?: { page?: number; limit?: number }) => {
       const searchParams = new URLSearchParams();
-      if (params?.page) searchParams.append('page', params.page.toString());
-      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.page) searchParams.append("page", params.page.toString());
+      if (params?.limit) searchParams.append("limit", params.limit.toString());
       const query = searchParams.toString();
-      return this.get(`/api/files${query ? `?${query}` : ''}`);
+      return this.get(`/api/files${query ? `?${query}` : ""}`);
     },
     get: (id: number) => this.get(`/api/files/${id}`),
     upload: (formData: FormData) => this.uploadFile("/api/files/upload", formData),
@@ -208,13 +208,12 @@ class ApiClient {
   shareLinks = {
     list: (fileId: number) => this.get(`/api/share/file/${fileId}`),
     create: (data: any) => this.post("/api/share", data),
-    get: (shareId: string, options?: RequestOptions) => 
+    get: (shareId: string, options?: RequestOptions) =>
       this.get(`/api/share/${shareId}`, { skipCSRF: true, skipAuth: true, ...options }),
-    update: (shareId: string, data: any) => 
+    update: (shareId: string, data: any) =>
       this.patch(`/api/share/${shareId}`, data, { skipCSRF: true }),
-    delete: (shareId: string) => 
-      this.delete(`/api/share/${shareId}`, { skipCSRF: true }),
-    access: (shareId: string, data: any) => 
+    delete: (shareId: string) => this.delete(`/api/share/${shareId}`, { skipCSRF: true }),
+    access: (shareId: string, data: any) =>
       this.post(`/api/share/${shareId}/access`, data, { skipCSRF: true, skipAuth: true }),
   };
 
@@ -227,19 +226,19 @@ class ApiClient {
   };
 
   waitlist = {
-    join: (data: { email: string; plan: string; source: string }) => 
+    join: (data: { email: string; plan: string; source: string }) =>
       this.post("/api/waitlist", data, { skipAuth: true }),
   };
 
   feedback = {
-    submit: (data: { message: string; rating?: number; category?: string }) => 
+    submit: (data: { message: string; rating?: number; category?: string }) =>
       this.post("/api/feedback", data),
     getHistory: (params?: { page?: number; limit?: number }) => {
       const searchParams = new URLSearchParams();
-      if (params?.page) searchParams.append('page', params.page.toString());
-      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.page) searchParams.append("page", params.page.toString());
+      if (params?.limit) searchParams.append("limit", params.limit.toString());
       const query = searchParams.toString();
-      return this.get(`/api/feedback${query ? `?${query}` : ''}`);
+      return this.get(`/api/feedback${query ? `?${query}` : ""}`);
     },
     getRateLimit: () => this.get("/api/feedback/rate-limit"),
   };
@@ -262,59 +261,65 @@ class ApiClient {
     file: (fileId: number) => this.get(`/api/analytics/files/${fileId}`),
     aggregate: (fileId: number, days?: number, pageRange?: string) => {
       const searchParams = new URLSearchParams();
-      if (days) searchParams.append('days', days.toString());
-      if (pageRange) searchParams.append('pageRange', pageRange);
-      searchParams.append('_t', Date.now().toString()); // Cache buster
+      if (days) searchParams.append("days", days.toString());
+      if (pageRange) searchParams.append("pageRange", pageRange);
+      searchParams.append("_t", Date.now().toString()); // Cache buster
       const query = searchParams.toString();
       return this.get(`/api/analytics/files/${fileId}/aggregate?${query}`);
     },
-    sessions: (fileId: number, params?: {
-      page?: number;
-      limit?: number;
-      email?: string;
-      device?: string;
-      country?: string;
-      dateFrom?: string;
-      dateTo?: string;
-    }) => {
+    sessions: (
+      fileId: number,
+      params?: {
+        page?: number;
+        limit?: number;
+        email?: string;
+        device?: string;
+        country?: string;
+        dateFrom?: string;
+        dateTo?: string;
+      },
+    ) => {
       const searchParams = new URLSearchParams();
-      if (params?.page) searchParams.append('page', params.page.toString());
-      if (params?.limit) searchParams.append('limit', params.limit.toString());
-      if (params?.email) searchParams.append('email', params.email);
-      if (params?.device) searchParams.append('device', params.device);
-      if (params?.country) searchParams.append('country', params.country);
-      if (params?.dateFrom) searchParams.append('dateFrom', params.dateFrom);
-      if (params?.dateTo) searchParams.append('dateTo', params.dateTo);
+      if (params?.page) searchParams.append("page", params.page.toString());
+      if (params?.limit) searchParams.append("limit", params.limit.toString());
+      if (params?.email) searchParams.append("email", params.email);
+      if (params?.device) searchParams.append("device", params.device);
+      if (params?.country) searchParams.append("country", params.country);
+      if (params?.dateFrom) searchParams.append("dateFrom", params.dateFrom);
+      if (params?.dateTo) searchParams.append("dateTo", params.dateTo);
       const query = searchParams.toString();
-      return this.get(`/api/analytics/files/${fileId}/sessions${query ? `?${query}` : ''}`);
+      return this.get(`/api/analytics/files/${fileId}/sessions${query ? `?${query}` : ""}`);
     },
-    
-    individual: (fileId: number, params?: {
-      page?: number;
-      limit?: number;
-      email?: string;
-      device?: string;
-      country?: string;
-      dateFrom?: string;
-      dateTo?: string;
-    }) => {
+
+    individual: (
+      fileId: number,
+      params?: {
+        page?: number;
+        limit?: number;
+        email?: string;
+        device?: string;
+        country?: string;
+        dateFrom?: string;
+        dateTo?: string;
+      },
+    ) => {
       const searchParams = new URLSearchParams();
-      if (params?.page) searchParams.append('page', params.page.toString());
-      if (params?.limit) searchParams.append('limit', params.limit.toString());
-      if (params?.email) searchParams.append('email', params.email);
-      if (params?.device) searchParams.append('device', params.device);
-      if (params?.country) searchParams.append('country', params.country);
-      if (params?.dateFrom) searchParams.append('dateFrom', params.dateFrom);
-      if (params?.dateTo) searchParams.append('dateTo', params.dateTo);
+      if (params?.page) searchParams.append("page", params.page.toString());
+      if (params?.limit) searchParams.append("limit", params.limit.toString());
+      if (params?.email) searchParams.append("email", params.email);
+      if (params?.device) searchParams.append("device", params.device);
+      if (params?.country) searchParams.append("country", params.country);
+      if (params?.dateFrom) searchParams.append("dateFrom", params.dateFrom);
+      if (params?.dateTo) searchParams.append("dateTo", params.dateTo);
       const query = searchParams.toString();
-      return this.get(`/api/analytics/files/${fileId}/individual${query ? `?${query}` : ''}`);
+      return this.get(`/api/analytics/files/${fileId}/individual${query ? `?${query}` : ""}`);
     },
     share: (shareId: string) => this.get(`/api/analytics/shares/${shareId}`),
     dashboard: () => this.get("/api/analytics/dashboard"),
-    
+
     // 📊 HIGH-VALUE ANALYTICS TRACKING
     // Session start is handled on backend when share link is accessed
-    
+
     trackPageView: (data: {
       shareId: string;
       email?: string;
@@ -325,7 +330,7 @@ class ApiClient {
       duration?: number;
       isPageExit?: boolean;
     }) => this.post("/api/analytics/page-view", data, { skipCSRF: true, skipAuth: true }),
-    
+
     trackSessionEnd: (data: {
       shareId: string;
       email?: string;
@@ -336,14 +341,13 @@ class ApiClient {
       maxPageReached: number;
       timestamp: string;
     }) => this.post("/api/analytics/session-end", data, { skipCSRF: true, skipAuth: true }),
-    
+
     updateSessionActivity: (data: {
       sessionId: string;
       lastActiveAt: string;
       currentPage?: number;
-      scrollDepth?: number;
     }) => this.post("/api/analytics/session-activity", data, { skipCSRF: true, skipAuth: true }),
-    
+
     trackReturnVisit: (data: {
       shareId: string;
       email?: string;
@@ -352,7 +356,7 @@ class ApiClient {
     }) => this.post("/api/analytics/return-visit", data, { skipCSRF: true, skipAuth: true }),
 
     // Simple analytics retrieval methods
-    getDocumentStats: (shareId: string) => 
+    getDocumentStats: (shareId: string) =>
       this.get(`/api/analytics/document/${shareId}/stats`, { skipCSRF: true, skipAuth: true }),
   };
 }
