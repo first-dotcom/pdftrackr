@@ -158,7 +158,6 @@ export const pageViews = pgTable(
     pageNumber: integer("page_number").notNull(),
     viewedAt: timestamp("viewed_at").defaultNow().notNull(),
     duration: integer("duration").notNull().default(0), // time spent on page in seconds
-    scrollDepth: integer("scroll_depth").notNull().default(0), // max scroll percentage (0-100)
   },
   (table) => ({
     sessionIdIdx: index("page_views_session_id_idx").on(table.sessionId),

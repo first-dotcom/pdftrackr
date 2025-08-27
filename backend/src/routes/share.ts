@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { and, desc, eq, sql, gte } from "drizzle-orm";
+import { and, desc, eq, sql, gte, isNull } from "drizzle-orm";
 import { Router } from "express";
 import type { Request, Response } from "express";
 import { nanoid } from "nanoid";
@@ -306,7 +306,7 @@ router.post(
     }
 
     // Create session ID
-    const sessionId = uuidv4();
+    let sessionId = uuidv4();
 
     // Get viewer info with GDPR compliance
     const ipHash = hashIPAddress(req.ip || "");
@@ -362,13 +362,31 @@ router.post(
         error.message.includes('duplicate key value') ||
         error.message.includes('UNIQUE constraint')
       )) {
-        logger.warn('Session creation race condition detected, using existing session', {
+        logger.warn('Session creation race condition detected, finding existing session', {
           shareId,
           sessionId,
           ipHash: viewerInfo.ipAddressHash.substring(0, 8),
           error: error.message
         });
-        // Continue with existing session
+        
+        // Find the existing session that was created by the other request
+        const existingSession = await db.select()
+          .from(viewSessions)
+          .where(and(
+            eq(viewSessions.shareId, shareId),
+            eq(viewSessions.ipAddressHash, viewerInfo.ipAddressHash),
+            viewerInfo.email ? eq(viewSessions.viewerEmail, viewerInfo.email) : isNull(viewSessions.viewerEmail)
+          ))
+          .limit(1);
+          
+        if (existingSession.length > 0) {
+          // Use the existing sessionId instead of the generated one
+          sessionId = existingSession[0].sessionId;
+          logger.info('Found existing session, using sessionId:', sessionId);
+        } else {
+          logger.error('Race condition detected but no existing session found');
+          throw new CustomError("Failed to create or find session", 500);
+        }
       } else {
         logger.error('Session creation failed:', error);
         throw error; // Re-throw other errors

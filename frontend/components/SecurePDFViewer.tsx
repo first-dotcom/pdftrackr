@@ -382,19 +382,16 @@ export default function SecurePDFViewer({
   }, []);
 
   const trackPageView = async (page: number, totalPages: number, isPageExit: boolean = false) => {
+    console.log('trackPageView called:', page, totalPages, isPageExit);
+    
     // Validate parameters
     if (!page || page <= 0 || !totalPages || totalPages <= 0 || page > totalPages) {
       console.warn(`Invalid page view tracking parameters: page=${page}, totalPages=${totalPages}`);
       return;
     }
 
-    // Check consent before tracking
-    if (typeof window !== 'undefined') {
-      const consent = localStorage.getItem('analytics-consent');
-      if (consent !== 'accepted') {
-        return; // Don't track without consent
-      }
-    }
+    // Track page views - file owners can always see their own analytics
+    // Consent only affects whether we show analytics to viewers
 
     // Calculate page duration in milliseconds for sub-second precision
     const now = Date.now();

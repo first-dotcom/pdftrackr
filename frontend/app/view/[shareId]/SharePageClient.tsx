@@ -4,7 +4,6 @@ import { config } from "@/lib/config";
 import { useApi } from "@/hooks/useApi";
 import { formatFileSize } from "@/utils/formatters";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import ConsentBanner from "@/components/ConsentBanner";
 import { lazy, Suspense } from "react";
 
 // Lazy load PDF viewer for better performance
@@ -324,7 +323,6 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
             </div>
           </div>
         </div>
-        <ConsentBanner />
       </>
     );
   }
@@ -359,7 +357,6 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
             />
           </Suspense>
         </ErrorBoundary>
-        <ConsentBanner />
       </>
     );
   }
