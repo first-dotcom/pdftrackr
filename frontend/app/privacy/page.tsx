@@ -178,7 +178,8 @@ export default function PrivacyPage() {
               We implement appropriate technical and organizational measures to protect your data:
             </p>
             <ul className="list-disc pl-6 text-gray-600 mb-4">
-              <li>Encryption of data in transit and at rest</li>
+              <li>Secure cloud storage with private access controls</li>
+              <li>TLS/SSL encryption for all data in transit</li>
               <li>Regular security assessments and updates</li>
               <li>Access controls and authentication</li>
               <li>Virus scanning for uploaded files</li>

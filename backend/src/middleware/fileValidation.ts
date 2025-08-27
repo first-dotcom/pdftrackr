@@ -279,7 +279,7 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
         error: errorMessage,
       });
 
-      throw new CustomError("Security scanning failed - please try again later", 503);
+      throw new CustomError("Security threat detected - file blocked", 403);
     }
 
     next();

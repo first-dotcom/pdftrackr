@@ -206,7 +206,7 @@ class PDFScanningService {
   private ensureTempDirectory() {
     try {
       if (!fs.existsSync(this.tempDir)) {
-        fs.mkdirSync(this.tempDir, { recursive: true, mode: 0o700 }); // Secure permissions
+        fs.mkdirSync(this.tempDir, { recursive: true, mode: 0o700 }); // Secure: owner only
         logger.info(`Created secure temporary directory: ${this.tempDir}`);
       }
       
@@ -219,16 +219,27 @@ class PDFScanningService {
     } catch (error) {
       logger.error(`Failed to setup temp directory ${this.tempDir}: ${error}`);
       
-      // Final fallback: use a subdirectory of the current working directory
-      this.tempDir = path.join(process.cwd(), 'temp_uploads');
+      // Try system temp directory as fallback
+      this.tempDir = '/tmp/pdftrackr_uploads';
       try {
         if (!fs.existsSync(this.tempDir)) {
-          fs.mkdirSync(this.tempDir, { recursive: true, mode: 0o700 });
+          fs.mkdirSync(this.tempDir, { recursive: true, mode: 0o700 }); // Secure: owner only
         }
-        logger.info(`Using fallback temp directory: ${this.tempDir}`);
+        logger.info(`Using secure system temp directory: ${this.tempDir}`);
       } catch (fallbackError) {
-        logger.error(`All temp directory fallbacks failed: ${fallbackError}`);
-        // Don't throw here - let the service continue and handle errors gracefully
+        logger.error(`System temp directory failed: ${fallbackError}`);
+        
+        // Final fallback: use a subdirectory of the current working directory
+        this.tempDir = path.join(process.cwd(), 'temp_uploads');
+        try {
+          if (!fs.existsSync(this.tempDir)) {
+            fs.mkdirSync(this.tempDir, { recursive: true, mode: 0o700 }); // Secure: owner only
+          }
+          logger.info(`Using secure fallback temp directory: ${this.tempDir}`);
+        } catch (finalError) {
+          logger.error(`All temp directory fallbacks failed: ${finalError}`);
+          // Don't throw here - let the service continue and handle errors gracefully
+        }
       }
     }
   }
@@ -308,10 +319,10 @@ class PDFScanningService {
         try {
           await fs.promises.writeFile(tempFilePath, input);
           
-          // Set file permissions that allow ClamAV to read the file
-          await fs.promises.chmod(tempFilePath, 0o644);
+          // Set secure file permissions: owner read/write only
+          await fs.promises.chmod(tempFilePath, 0o600);
           
-          logger.debug(`Created temporary file for ClamAV scan: ${tempFilePath}`);
+          logger.debug(`Created secure temporary file for ClamAV scan: ${tempFilePath}`);
           
           // No path conversion needed - using consistent path
         } catch (writeError) {

@@ -28,7 +28,9 @@ FROM base AS development
 COPY --from=deps /app/node_modules ./node_modules
 COPY shared/ ../shared/
 COPY backend/ .
-RUN mkdir -p logs /tmp/temp_uploads && chown pdftrackr:nodejs logs /tmp/temp_uploads
+RUN mkdir -p logs /tmp/temp_uploads /tmp/pdftrackr_uploads && \
+    chown pdftrackr:nodejs logs /tmp/temp_uploads /tmp/pdftrackr_uploads && \
+    chmod 700 /tmp/temp_uploads /tmp/pdftrackr_uploads
 USER pdftrackr
 EXPOSE 3001
 CMD ["pnpm", "run", "dev"]
@@ -54,7 +56,9 @@ COPY --from=builder --chown=pdftrackr:nodejs /app/drizzle ./drizzle
 COPY --from=builder --chown=pdftrackr:nodejs /app/../shared ../shared
 COPY --from=builder --chown=pdftrackr:nodejs /app/tsconfig.json ./tsconfig.json
 COPY --from=builder --chown=pdftrackr:nodejs /app/ecosystem.config.js ./ecosystem.config.js
-RUN mkdir -p logs /tmp/temp_uploads && chown pdftrackr:nodejs logs /tmp/temp_uploads
+RUN mkdir -p logs /tmp/temp_uploads /tmp/pdftrackr_uploads && \
+    chown pdftrackr:nodejs logs /tmp/temp_uploads /tmp/pdftrackr_uploads && \
+    chmod 700 /tmp/temp_uploads /tmp/pdftrackr_uploads
 USER pdftrackr
 EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
