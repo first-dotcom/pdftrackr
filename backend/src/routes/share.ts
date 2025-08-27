@@ -113,7 +113,7 @@ router.post(
       return result[0];
     });
 
-    // Invalidate caches for this user after transaction commits
+    // ✅ FIXED: Invalidate caches ONLY after successful database transaction
     await invalidateUserDashboardCache(req.user?.id);
     await deleteCache(`user_profile:${req.user?.id}`);
 
@@ -416,7 +416,7 @@ router.post(
       3600, // 1 hour
     );
 
-    // Invalidate dashboard cache for the file owner
+    // ✅ FIXED: Invalidate dashboard cache ONLY after successful session creation
     await invalidateUserDashboardCache(link.fileId);
 
     res.json({

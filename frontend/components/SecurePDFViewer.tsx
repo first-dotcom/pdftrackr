@@ -2,7 +2,7 @@
 
 import { config } from "@/lib/config";
 import { apiClient } from "@/lib/api-client";
-import { ChevronLeft, ChevronRight, RotateCw, ZoomIn, ZoomOut } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCw, ZoomIn, ZoomOut, Download } from "lucide-react";
 import { useCallback, useEffect, useState, useMemo, useRef } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
@@ -93,13 +93,6 @@ export default function SecurePDFViewer({
   // 📊 NEW: Activity tracking state
   const [lastActivityTime, setLastActivityTime] = useState<number>(Date.now());
 
-  // 📊 REFS FOR CLEANUP TRACKING
-  const scrollElementRef = useRef<Element | null>(null);
-  const scrollListenersRef = useRef<Set<string>>(new Set());
-  const activityListenersRef = useRef<Set<string>>(new Set());
-  const mobileListenersRef = useRef<Set<string>>(new Set());
-  const sessionListenersRef = useRef<Set<string>>(new Set());
-
   // 📊 NEW: Activity tracking function
   const trackUserActivity = useCallback(() => {
     setLastActivityTime(Date.now());
@@ -152,82 +145,8 @@ export default function SecurePDFViewer({
     trackUserActivity();
   }, [trackUserActivity]);
 
-  // 📊 COMPREHENSIVE CLEANUP FUNCTION
-  const cleanupAllListeners = useCallback(() => {
-    // Clean up scroll listeners
-    if (scrollElementRef.current) {
-      const element = scrollElementRef.current;
-      if (scrollListenersRef.current.has('scroll')) {
-        element.removeEventListener('scroll', handleScroll);
-        scrollListenersRef.current.delete('scroll');
-      }
-      if (scrollListenersRef.current.has('touchmove')) {
-        element.removeEventListener('touchmove', handleScroll);
-        scrollListenersRef.current.delete('touchmove');
-      }
-      scrollElementRef.current = null;
-    }
-
-    // Clean up activity listeners
-    const activityEvents = ['scroll', 'mousemove', 'click', 'keypress'];
-    activityEvents.forEach(event => {
-      if (activityListenersRef.current.has(event)) {
-        document.removeEventListener(event, trackUserActivity);
-        activityListenersRef.current.delete(event);
-      }
-    });
-
-    // Clean up mobile listeners
-    if (mobileListenersRef.current.has('orientationchange')) {
-      window.removeEventListener('orientationchange', () => {});
-      mobileListenersRef.current.delete('orientationchange');
-    }
-    if (mobileListenersRef.current.has('resize')) {
-      window.removeEventListener('resize', () => {});
-      mobileListenersRef.current.delete('resize');
-    }
-    if (mobileListenersRef.current.has('visualViewport-resize') && 'visualViewport' in window) {
-      (window as any).visualViewport?.removeEventListener('resize', () => {});
-      mobileListenersRef.current.delete('visualViewport-resize');
-    }
-
-    // Clean up security listeners
-    if (securityListenersRef.current.has('keydown')) {
-      document.removeEventListener('keydown', () => {});
-      securityListenersRef.current.delete('keydown');
-    }
-    if (securityListenersRef.current.has('contextmenu')) {
-      document.removeEventListener('contextmenu', () => {});
-      securityListenersRef.current.delete('contextmenu');
-    }
-
-    // Clean up session listeners
-    if (sessionListenersRef.current.has('beforeunload')) {
-      window.removeEventListener('beforeunload', () => {});
-      sessionListenersRef.current.delete('beforeunload');
-    }
-    if (sessionListenersRef.current.has('visibilitychange')) {
-      document.removeEventListener('visibilitychange', () => {});
-      sessionListenersRef.current.delete('visibilitychange');
-    }
-  }, [handleScroll, trackUserActivity]);
-
-  // 📊 FIXED: Mobile-friendly scroll setup with proper cleanup
+  // 📊 NEW: Mobile-friendly scroll setup
   useEffect(() => {
-    // Clean up any existing scroll listeners first
-    if (scrollElementRef.current) {
-      const element = scrollElementRef.current;
-      if (scrollListenersRef.current.has('scroll')) {
-        element.removeEventListener('scroll', handleScroll);
-        scrollListenersRef.current.delete('scroll');
-      }
-      if (scrollListenersRef.current.has('touchmove')) {
-        element.removeEventListener('touchmove', handleScroll);
-        scrollListenersRef.current.delete('touchmove');
-      }
-      scrollElementRef.current = null;
-    }
-
     const setupScrollTracking = () => {
       // Mobile-optimized selectors (order matters)
       const selectors = [
@@ -239,6 +158,7 @@ export default function SecurePDFViewer({
       ];
       
       let element: Element | null = null;
+      let cleanup: (() => void) | undefined;
 
       // Try to find scrollable element
       for (const selector of selectors) {
@@ -258,61 +178,40 @@ export default function SecurePDFViewer({
       }
 
       if (element) {
-        // Store reference for cleanup
-        scrollElementRef.current = element;
+        // Add both scroll and touch events for mobile
+        element.addEventListener('scroll', handleScroll, { passive: true });
+        element.addEventListener('touchmove', handleScroll, { passive: true });
         
-        // Check if listeners already exist before adding
-        if (!scrollListenersRef.current.has('scroll')) {
-          element.addEventListener('scroll', handleScroll, { passive: true });
-          scrollListenersRef.current.add('scroll');
-        }
-        
-        if (!scrollListenersRef.current.has('touchmove')) {
-          element.addEventListener('touchmove', handleScroll, { passive: true });
-          scrollListenersRef.current.add('touchmove');
-        }
-        
-        return true; // Setup successful
+        cleanup = () => {
+          element?.removeEventListener('scroll', handleScroll);
+          element?.removeEventListener('touchmove', handleScroll);
+        };
       }
 
-      return false; // Setup failed
+      return cleanup;
     };
 
     // Mobile-friendly setup with retry logic
+    let cleanup: (() => void) | undefined;
     let retryCount = 0;
     const maxRetries = 3;
-    let setupTimer: NodeJS.Timeout;
 
     const attemptSetup = () => {
-      const success = setupScrollTracking();
+      cleanup = setupScrollTracking();
       
       // If setup failed and we haven't exceeded retries, try again
-      if (!success && retryCount < maxRetries) {
+      if (!cleanup && retryCount < maxRetries) {
         retryCount++;
-        setupTimer = setTimeout(attemptSetup, 500 * retryCount); // Exponential backoff
+        setTimeout(attemptSetup, 500 * retryCount); // Exponential backoff
       }
     };
 
     // Initial setup with delay for PDF rendering
-    const initialTimer = setTimeout(attemptSetup, 1000);
+    const timer = setTimeout(attemptSetup, 1000);
     
     return () => {
-      clearTimeout(initialTimer);
-      clearTimeout(setupTimer);
-      
-      // Clean up scroll listeners
-      if (scrollElementRef.current) {
-        const element = scrollElementRef.current;
-        if (scrollListenersRef.current.has('scroll')) {
-          element.removeEventListener('scroll', handleScroll);
-          scrollListenersRef.current.delete('scroll');
-        }
-        if (scrollListenersRef.current.has('touchmove')) {
-          element.removeEventListener('touchmove', handleScroll);
-          scrollListenersRef.current.delete('touchmove');
-        }
-        scrollElementRef.current = null;
-      }
+      clearTimeout(timer);
+      cleanup?.();
     };
   }, [handleScroll, pageNumber]);
 
@@ -324,38 +223,22 @@ export default function SecurePDFViewer({
     });
   }, [pageNumber]);
 
-  // 📊 FIXED: Activity tracking setup with proper cleanup
+  // 📊 NEW: Activity tracking setup
   useEffect(() => {
     const events = ['scroll', 'mousemove', 'click', 'keypress'];
     
-    // Clean up any existing activity listeners first
     events.forEach(event => {
-      if (activityListenersRef.current.has(event)) {
-        document.removeEventListener(event, trackUserActivity);
-        activityListenersRef.current.delete(event);
-      }
-    });
-    
-    // Add new listeners only if they don't exist
-    events.forEach(event => {
-      if (!activityListenersRef.current.has(event)) {
-        document.addEventListener(event, trackUserActivity, { passive: true });
-        activityListenersRef.current.add(event);
-      }
+      document.addEventListener(event, trackUserActivity, { passive: true });
     });
     
     return () => {
-      // Clean up all activity listeners
       events.forEach(event => {
-        if (activityListenersRef.current.has(event)) {
-          document.removeEventListener(event, trackUserActivity);
-          activityListenersRef.current.delete(event);
-        }
+        document.removeEventListener(event, trackUserActivity);
       });
     };
   }, [trackUserActivity]);
 
-  // 📊 FIXED: Mobile-specific event handling with proper cleanup
+  // 📊 NEW: Mobile-specific event handling
   useEffect(() => {
     const handleOrientationChange = () => {
       // Reset scroll tracking when orientation changes
@@ -375,50 +258,20 @@ export default function SecurePDFViewer({
       }));
     };
 
-    // Clean up any existing mobile listeners first
-    if (mobileListenersRef.current.has('orientationchange')) {
-      window.removeEventListener('orientationchange', handleOrientationChange);
-      mobileListenersRef.current.delete('orientationchange');
-    }
-    if (mobileListenersRef.current.has('resize')) {
-      window.removeEventListener('resize', handleResize);
-      mobileListenersRef.current.delete('resize');
-    }
-    if (mobileListenersRef.current.has('visualViewport-resize') && 'visualViewport' in window) {
-      (window as any).visualViewport?.removeEventListener('resize', handleResize);
-      mobileListenersRef.current.delete('visualViewport-resize');
-    }
-
-    // Add mobile-specific event listeners only if they don't exist
-    if (!mobileListenersRef.current.has('orientationchange')) {
-      window.addEventListener('orientationchange', handleOrientationChange);
-      mobileListenersRef.current.add('orientationchange');
-    }
-    
-    if (!mobileListenersRef.current.has('resize')) {
-      window.addEventListener('resize', handleResize);
-      mobileListenersRef.current.add('resize');
-    }
+    // Add mobile-specific event listeners
+    window.addEventListener('orientationchange', handleOrientationChange);
+    window.addEventListener('resize', handleResize);
     
     // iOS Safari specific events
-    if ('visualViewport' in window && !mobileListenersRef.current.has('visualViewport-resize')) {
+    if ('visualViewport' in window) {
       (window as any).visualViewport?.addEventListener('resize', handleResize);
-      mobileListenersRef.current.add('visualViewport-resize');
     }
 
     return () => {
-      // Clean up all mobile listeners
-      if (mobileListenersRef.current.has('orientationchange')) {
-        window.removeEventListener('orientationchange', handleOrientationChange);
-        mobileListenersRef.current.delete('orientationchange');
-      }
-      if (mobileListenersRef.current.has('resize')) {
-        window.removeEventListener('resize', handleResize);
-        mobileListenersRef.current.delete('resize');
-      }
-      if (mobileListenersRef.current.has('visualViewport-resize') && 'visualViewport' in window) {
+      window.removeEventListener('orientationchange', handleOrientationChange);
+      window.removeEventListener('resize', handleResize);
+      if ('visualViewport' in window) {
         (window as any).visualViewport?.removeEventListener('resize', handleResize);
-        mobileListenersRef.current.delete('visualViewport-resize');
       }
     };
   }, []);
@@ -426,6 +279,107 @@ export default function SecurePDFViewer({
   // 📊 ANALYTICS FUNCTIONS
   // Session is already created on backend when share link is accessed
   // No need to create another session here
+
+  // 📊 ANALYTICS DATA PERSISTENCE UTILITIES
+  const ANALYTICS_STORAGE_KEY = 'pdftrackr:failed-analytics';
+  const MAX_RETRY_ATTEMPTS = 5;
+  const RETRY_DELAYS = [1000, 2000, 4000, 8000, 16000]; // Exponential backoff
+
+  // Store failed analytics data locally for later retry
+  const storeFailedAnalytics = useCallback((data: any, type: 'pageView' | 'sessionEnd') => {
+    try {
+      const existing = localStorage.getItem(ANALYTICS_STORAGE_KEY);
+      const failedData = existing ? JSON.parse(existing) : [];
+      
+      const newEntry = {
+        id: Date.now() + Math.random(), // Unique ID
+        type,
+        data,
+        timestamp: new Date().toISOString(),
+        retryCount: 0,
+        maxRetries: MAX_RETRY_ATTEMPTS
+      };
+      
+      failedData.push(newEntry);
+      
+      // Keep only last 50 failed entries to prevent storage bloat
+      if (failedData.length > 50) {
+        failedData.splice(0, failedData.length - 50);
+      }
+      
+      localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(failedData));
+      console.warn(`Analytics data stored locally for retry: ${type}`, newEntry);
+    } catch (error) {
+      console.error('Failed to store analytics data locally:', error);
+    }
+  }, []);
+
+  // Retry failed analytics data
+  const retryFailedAnalytics = useCallback(async () => {
+    try {
+      const existing = localStorage.getItem(ANALYTICS_STORAGE_KEY);
+      if (!existing) return;
+      
+      const failedData = JSON.parse(existing);
+      if (failedData.length === 0) return;
+      
+      const successfulRetries: number[] = [];
+      
+      for (const entry of failedData) {
+        if (entry.retryCount >= entry.maxRetries) {
+          console.warn(`Analytics data exceeded max retries, dropping: ${entry.type}`, entry);
+          successfulRetries.push(entry.id);
+          continue;
+        }
+        
+        try {
+          if (entry.type === 'pageView') {
+            await apiClient.analytics.trackPageView(entry.data);
+          } else if (entry.type === 'sessionEnd') {
+            await apiClient.analytics.trackSessionEnd(entry.data);
+          }
+          
+          successfulRetries.push(entry.id);
+          console.log(`Successfully retried analytics data: ${entry.type}`, entry);
+        } catch (error) {
+          entry.retryCount++;
+          console.warn(`Retry failed for analytics data: ${entry.type} (attempt ${entry.retryCount})`, error);
+        }
+      }
+      
+      // Remove successful retries from storage
+      if (successfulRetries.length > 0) {
+        const remainingData = failedData.filter((entry: any) => !successfulRetries.includes(entry.id));
+        localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(remainingData));
+      }
+    } catch (error) {
+      console.error('Failed to retry analytics data:', error);
+    }
+  }, [apiClient]);
+
+  // Enhanced retry logic with exponential backoff
+  const retryWithBackoff = useCallback(async (
+    operation: () => Promise<any>,
+    retryCount: number = 0,
+    context: string = 'unknown'
+  ): Promise<any> => {
+    try {
+      return await operation();
+    } catch (error) {
+      console.warn(`${context} failed (attempt ${retryCount + 1}):`, error);
+      
+      if (retryCount < MAX_RETRY_ATTEMPTS - 1) {
+        const delay = RETRY_DELAYS[retryCount] || RETRY_DELAYS[RETRY_DELAYS.length - 1];
+        console.log(`Retrying ${context} in ${delay}ms...`);
+        
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return retryWithBackoff(operation, retryCount + 1, context);
+      } else {
+        console.error(`${context} failed after ${MAX_RETRY_ATTEMPTS} attempts:`, error);
+        throw error;
+      }
+    }
+  }, []);
 
   const trackPageView = async (page: number, totalPages: number, isPageExit: boolean = false) => {
     // Validate parameters
@@ -455,20 +409,27 @@ export default function SecurePDFViewer({
       maxPageReached: Math.max(prev.maxPageReached, page),
     }));
 
-    // Send analytics to backend using custom API client
+    const pageViewData = {
+      shareId,
+      email,
+      page,
+      totalPages,
+      sessionId,
+      timestamp: new Date().toISOString(),
+      duration: pageDuration,
+      isPageExit, // Mark if this is a page exit
+    };
+
+    // Send analytics to backend with retry logic and local storage fallback
     try {
-      await apiClient.analytics.trackPageView({
-        shareId,
-        email,
-        page,
-        totalPages,
-        sessionId,
-        timestamp: new Date().toISOString(),
-        duration: pageDuration,
-        isPageExit, // Mark if this is a page exit
-      });
+      await retryWithBackoff(
+        () => apiClient.analytics.trackPageView(pageViewData),
+        0,
+        'Page view tracking'
+      );
     } catch (error) {
-      console.warn('Page view tracking failed:', error);
+      console.error('Page view tracking failed after all retries, storing locally:', error);
+      storeFailedAnalytics(pageViewData, 'pageView');
     }
   };
 
@@ -486,29 +447,30 @@ export default function SecurePDFViewer({
     
     // Track exit from current page before ending session
     if (pageNumber > 0 && numPages > 0) {
-      trackPageView(pageNumber, numPages, true);
+      await trackPageView(pageNumber, numPages, true);
     }
     
+    const sessionEndData = {
+      shareId,
+      email,
+      sessionId,
+      durationSeconds: rawDurationSeconds, // Use actual duration
+      pagesViewed: sessionData.pagesViewed.size,
+      totalPages: sessionData.totalPages,
+      maxPageReached: sessionData.maxPageReached,
+      timestamp: new Date().toISOString(),
+    };
+
     try {
-      await apiClient.analytics.trackSessionEnd({
-        shareId,
-        email,
-        sessionId,
-        durationSeconds: rawDurationSeconds, // Use actual duration
-        pagesViewed: sessionData.pagesViewed.size,
-        totalPages: sessionData.totalPages,
-        maxPageReached: sessionData.maxPageReached,
-        timestamp: new Date().toISOString(),
-      });
+      await retryWithBackoff(
+        () => apiClient.analytics.trackSessionEnd(sessionEndData),
+        0,
+        'Session end tracking'
+      );
+      console.log('Session end tracking successful:', sessionEndData);
     } catch (error) {
-      console.warn('Session end tracking failed:', error);
-      
-      // Retry logic for production reliability
-      if (retryCount < 2) {
-        setTimeout(() => {
-          trackSessionEnd(retryCount + 1);
-        }, 1000 * (retryCount + 1)); // Exponential backoff: 1s, 2s
-      }
+      console.error('Session end tracking failed after all retries, storing locally:', error);
+      storeFailedAnalytics(sessionEndData, 'sessionEnd');
     }
   };
 
@@ -520,7 +482,15 @@ export default function SecurePDFViewer({
     }
   }, [sessionId]);
 
-  // FIXED: Track session end with optimized event handling and proper cleanup
+  // 📊 Retry failed analytics data on component mount
+  useEffect(() => {
+    if (sessionId) {
+      // Retry any failed analytics data from previous sessions
+      retryFailedAnalytics();
+    }
+  }, [sessionId, retryFailedAnalytics]);
+
+  // Track session end with optimized event handling
   useEffect(() => {
     let hasTrackedEnd = false;
 
@@ -546,25 +516,8 @@ export default function SecurePDFViewer({
       }
     }, 2000); // 2 second debounce
 
-    // Clean up any existing session listeners first
-    if (sessionListenersRef.current.has('beforeunload')) {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      sessionListenersRef.current.delete('beforeunload');
-    }
-    if (sessionListenersRef.current.has('visibilitychange')) {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      sessionListenersRef.current.delete('visibilitychange');
-    }
-
-    // Add session listeners only if they don't exist
-    if (!sessionListenersRef.current.has('beforeunload')) {
-      window.addEventListener('beforeunload', handleBeforeUnload);
-      sessionListenersRef.current.add('beforeunload');
-    }
-    if (!sessionListenersRef.current.has('visibilitychange')) {
-      document.addEventListener('visibilitychange', handleVisibilityChange);
-      sessionListenersRef.current.add('visibilitychange');
-    }
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     // Set up periodic session end check (every 30 seconds)
     const interval = setInterval(() => {
@@ -575,15 +528,8 @@ export default function SecurePDFViewer({
     }, 30000);
 
     return () => {
-      // Clean up all session listeners
-      if (sessionListenersRef.current.has('beforeunload')) {
-        window.removeEventListener('beforeunload', handleBeforeUnload);
-        sessionListenersRef.current.delete('beforeunload');
-      }
-      if (sessionListenersRef.current.has('visibilitychange')) {
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-        sessionListenersRef.current.delete('visibilitychange');
-      }
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       clearInterval(interval);
       
       // Track session end when component unmounts (if not already tracked)
@@ -592,14 +538,6 @@ export default function SecurePDFViewer({
       }
     };
   }, [sessionData.totalPages, sessionData.maxPageReached]);
-
-  // 📊 FINAL CLEANUP ON COMPONENT UNMOUNT
-  useEffect(() => {
-    return () => {
-      // Ensure all listeners are cleaned up when component unmounts
-      cleanupAllListeners();
-    };
-  }, [cleanupAllListeners]);
 
   // Initialize PDF URL
   useEffect(() => {
@@ -706,10 +644,7 @@ export default function SecurePDFViewer({
     setRotation((prev) => (prev + 90) % 360);
   }, []);
 
-  // 📊 REFS FOR SECURITY LISTENERS
-  const securityListenersRef = useRef<Set<string>>(new Set());
-
-  // FIXED: Disable browser shortcuts and right-click with proper cleanup
+  // Disable browser shortcuts and right-click
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "p")) {
@@ -721,36 +656,12 @@ export default function SecurePDFViewer({
       e.preventDefault();
     };
 
-    // Clean up any existing security listeners first
-    if (securityListenersRef.current.has('keydown')) {
-      document.removeEventListener("keydown", handleKeyDown);
-      securityListenersRef.current.delete('keydown');
-    }
-    if (securityListenersRef.current.has('contextmenu')) {
-      document.removeEventListener("contextmenu", handleContextMenu);
-      securityListenersRef.current.delete('contextmenu');
-    }
-
-    // Add security listeners only if they don't exist
-    if (!securityListenersRef.current.has('keydown')) {
-      document.addEventListener("keydown", handleKeyDown);
-      securityListenersRef.current.add('keydown');
-    }
-    if (!securityListenersRef.current.has('contextmenu')) {
-      document.addEventListener("contextmenu", handleContextMenu);
-      securityListenersRef.current.add('contextmenu');
-    }
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("contextmenu", handleContextMenu);
 
     return () => {
-      // Clean up all security listeners
-      if (securityListenersRef.current.has('keydown')) {
-        document.removeEventListener("keydown", handleKeyDown);
-        securityListenersRef.current.delete('keydown');
-      }
-      if (securityListenersRef.current.has('contextmenu')) {
-        document.removeEventListener("contextmenu", handleContextMenu);
-        securityListenersRef.current.delete('contextmenu');
-      }
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("contextmenu", handleContextMenu);
     };
   }, []);
 
@@ -819,6 +730,25 @@ export default function SecurePDFViewer({
           <button onClick={rotate} className="p-2 rounded hover:bg-gray-100">
             <RotateCw className="w-5 h-5" />
           </button>
+          {downloadEnabled && (
+            <button 
+              onClick={() => {
+                if (pdfUrl) {
+                  const link = document.createElement('a');
+                  link.href = pdfUrl;
+                  link.download = 'document.pdf';
+                  link.target = '_blank';
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }
+              }}
+              className="p-2 rounded hover:bg-gray-100"
+              title="Download PDF"
+            >
+              <Download className="w-5 h-5" />
+            </button>
+          )}
         </div>
       </div>
 

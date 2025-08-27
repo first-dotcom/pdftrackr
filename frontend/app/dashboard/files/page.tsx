@@ -526,6 +526,8 @@ export default function FilesPage() {
       
       return () => clearTimeout(timeoutId);
     }
+    // Return undefined for the case when isReady && user is false
+    return undefined;
   }, [searchTerm, isReady, user, fetchFiles]); // ✅ FIXED: Separate from main fetch effect
 
   // Flash success toast after redirect from upload

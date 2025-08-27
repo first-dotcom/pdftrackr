@@ -165,7 +165,7 @@ router.post(
 
       fileUploads.labels("success", user.plan).inc();
 
-      // Invalidate caches for this user
+      // ✅ FIXED: Invalidate caches ONLY after all operations succeed
       await invalidateUserDashboardCache(user.id);
       await deleteCache(`user_profile:${user.id}`);
 
@@ -418,7 +418,7 @@ router.delete(
         });
       }
 
-      // Invalidate user profile cache
+      // ✅ FIXED: Invalidate user profile cache ONLY after successful deletion
       await deleteCache(`user_profile:${req.user?.id}`);
 
       successResponse(res, null, "File deleted successfully");

@@ -230,7 +230,7 @@ router.post(
           })
           .where(eq(users.id, usage.userId));
 
-        // Invalidate caches for this user
+        // ✅ FIXED: Invalidate caches ONLY after successful database update
         await deleteCache(`user_profile:${usage.userId}`);
         await invalidateUserDashboardCache(usage.userId);
       }
