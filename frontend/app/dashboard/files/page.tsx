@@ -430,6 +430,7 @@ export default function FilesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchInputValue, setSearchInputValue] = useState("");
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -467,9 +468,9 @@ export default function FilesPage() {
     [showSuccess],
   );
 
-  // Fetch files with pagination - FIXED: Remove searchTerm from dependencies to prevent infinite loop
+  // Fetch files with pagination and search
   const fetchFiles = useCallback(
-    async (page = 1) => {
+    async (page = 1, search = searchTerm) => {
       if (page === 1) {
         setLoading(true);
       } else {
@@ -481,6 +482,7 @@ export default function FilesPage() {
         const response = await api.files.list({
           page: page,
           limit: FILES_PER_PAGE,
+          search: search || undefined, // Add search parameter
         });
 
         if (response.success && response.data) {
@@ -502,31 +504,24 @@ export default function FilesPage() {
         setLoadingMore(false);
       }
     },
-    [api, stableShowError],
-  ); // ✅ FIXED: Remove searchTerm from dependencies to prevent infinite loop
+    [api, stableShowError, searchTerm], // Include searchTerm in dependencies
+  );
 
-  // FIXED: Separate useEffect for initial load and page changes
+  // Single useEffect for all data fetching to prevent conflicts
   useEffect(() => {
     if (isReady && user) {
-      fetchFiles(currentPage);
+      fetchFiles(currentPage, searchTerm);
     }
-  }, [isReady, user, currentPage, fetchFiles]); // ✅ FIXED: Include fetchFiles but it's now stable
+  }, [isReady, user, currentPage, searchTerm, fetchFiles]);
 
-  // FIXED: Separate useEffect for search changes to prevent infinite loops
+  // Reset search when user changes
   useEffect(() => {
-    if (isReady && user) {
-      // Reset to page 1 when search changes
+    if (user) {
+      setSearchInputValue("");
+      setSearchTerm("");
       setCurrentPage(1);
-      // Use debounced search to prevent excessive API calls
-      const timeoutId = setTimeout(() => {
-        fetchFiles(1);
-      }, 300);
-
-      return () => clearTimeout(timeoutId);
     }
-    // Return undefined for the case when isReady && user is false
-    return undefined;
-  }, [searchTerm, isReady, user, fetchFiles]); // ✅ FIXED: Separate from main fetch effect
+  }, [user?.id]);
 
   // Flash success toast after redirect from upload
   useEffect(() => {
@@ -547,10 +542,16 @@ export default function FilesPage() {
     } catch {}
   }, []); // Empty dependency array - only run once on mount
 
-  // FIXED: Simplified search handling - no need for complex debouncing since we handle it in useEffect
+  // Debounced search to prevent excessive API calls
+  const debouncedSearch = useDebounce((search: string) => {
+    setCurrentPage(1); // Reset to first page when searching
+    setSearchTerm(search);
+  }, 300);
+
   const handleSearchChange = useCallback((value: string) => {
-    setSearchTerm(value);
-  }, []); // ✅ FIXED: No dependencies needed
+    setSearchInputValue(value); // Update input immediately for visual feedback
+    debouncedSearch(value);
+  }, [debouncedSearch]);
 
   const handleShareClick = useCallback(
     async (file: File) => {
@@ -634,11 +635,8 @@ export default function FilesPage() {
     fetchFiles(currentPage);
   }, [fetchFiles, currentPage]);
 
-  // FIXED: Client-side filtering since server doesn't support search yet
-  const filteredFiles = useMemo(
-    () => files.filter((file) => file.title?.toLowerCase().includes(searchTerm.toLowerCase())),
-    [files, searchTerm],
-  );
+  // Use files directly since search is now handled server-side
+  const displayFiles = files;
 
   // Show loading state while Clerk is initializing
   if (!isReady) {
@@ -681,9 +679,10 @@ export default function FilesPage() {
                 type="text"
                 placeholder="Search files..."
                 className="input pl-10 w-full h-12 text-base"
-                value={searchTerm}
+                value={searchInputValue}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 aria-label="Search files"
+                key={`search-${user?.id}`} // Reset search when user changes
               />
             </div>
           </div>
@@ -709,7 +708,7 @@ export default function FilesPage() {
             </div>
           ) : error ? (
             <ErrorState error={error} onRetry={handleRetry} />
-          ) : filteredFiles.length === 0 ? (
+          ) : displayFiles.length === 0 ? (
             <EmptyState
               hasFiles={files.length > 0}
               onUpload={() => (window.location.href = "/dashboard/files/upload")}
@@ -717,7 +716,7 @@ export default function FilesPage() {
           ) : (
             <>
               <div className="space-y-4">
-                {filteredFiles.map((file) => (
+                {displayFiles.map((file: File) => (
                   <FileCard
                     key={file.id}
                     file={file}

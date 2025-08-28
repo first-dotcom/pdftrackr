@@ -7,6 +7,8 @@ import { logger } from "../utils/logger";
 import { db } from "../utils/database";
 import { pageViews, viewSessions } from "../models/schema";
 import { eq } from "drizzle-orm";
+import { shareLinks } from "../models/schema";
+import { getCacheKeys, deleteCache } from "../utils/redis";
 
 const router: Router = Router();
 
@@ -65,6 +67,30 @@ router.post(
           });
           
           logger.debug(`Enhanced page view stored: ${shareId} page ${page} - duration: ${duration}s`);
+          
+          // Invalidate individual analytics cache for this file
+          // Get the fileId from the shareId to invalidate the correct cache
+          const fileResult = await db
+            .select({ fileId: shareLinks.fileId })
+            .from(shareLinks)
+            .where(eq(shareLinks.shareId, shareId))
+            .limit(1);
+            
+          if (fileResult.length > 0) {
+            const fileId = fileResult[0].fileId;
+            // Invalidate all individual analytics cache keys for this file
+            try {
+              const keys = await getCacheKeys(`individual:${fileId}:*`);
+              if (keys.length > 0) {
+                for (const key of keys) {
+                  await deleteCache(key);
+                }
+                logger.debug(`Invalidated individual analytics cache for file ${fileId}`, { keysCount: keys.length });
+              }
+            } catch (cacheError) {
+              logger.warn('Failed to invalidate individual analytics cache:', cacheError);
+            }
+          }
         } catch (dbError) {
           logger.warn('Failed to store enhanced page view data:', dbError);
           // Continue with audit logging even if enhanced data fails

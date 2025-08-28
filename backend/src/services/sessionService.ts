@@ -12,11 +12,10 @@ export class SessionService {
     try {
       const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
       
-      // Calculate session duration and close inactive sessions
+      // Close inactive sessions (don't recalculate duration - let session end tracking handle it)
       const result = await db
         .update(viewSessions)
         .set({
-          totalDuration: sql`EXTRACT(EPOCH FROM (${viewSessions.lastActiveAt} - ${viewSessions.startedAt}))::integer`,
           isActive: false,
         })
         .where(
@@ -67,12 +66,11 @@ export class SessionService {
         isActive: false,
       };
 
+      // Only set total_duration if explicitly provided (from session end tracking)
       if (durationSeconds !== undefined) {
         updateData.totalDuration = durationSeconds;
-      } else {
-        // Calculate duration if not provided
-        updateData.totalDuration = sql`EXTRACT(EPOCH FROM (${viewSessions.lastActiveAt} - ${viewSessions.startedAt}))::integer`;
       }
+      // Don't calculate duration from lastActiveAt - let session end tracking handle it
 
       await db
         .update(viewSessions)

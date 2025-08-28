@@ -139,6 +139,7 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
       const response = await api.post(`/api/share/${shareId}/access`, payload);
 
       if (response.success && response.data) {
+        console.log("Access granted, session data:", response.data);
         setAccessData(response.data as AccessData);
         setShowAccessForm(false);
 
