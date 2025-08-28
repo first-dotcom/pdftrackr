@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { Eye, Clock, Users } from 'lucide-react';
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from "@/lib/api-client";
+import { Clock, Eye, Users } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface SimpleFileStats {
   totalViews: number;
@@ -37,10 +37,10 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
           avgViewTime: Number(data.avgSessionDuration) || 0, // Keep in seconds for better precision
         });
       } else {
-        setError('Failed to load file stats');
+        setError("Failed to load file stats");
       }
     } catch (err) {
-      setError('Failed to load file stats');
+      setError("Failed to load file stats");
     } finally {
       setLoading(false);
     }
@@ -92,28 +92,28 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
 
   const statItems = [
     {
-      label: 'Views',
+      label: "Views",
       value: (Number(stats.totalViews) || 0).toLocaleString(),
       icon: Eye,
-      bgGradient: 'from-blue-50 to-blue-100',
-      borderColor: 'border-blue-200',
-      iconColor: 'text-blue-600',
+      bgGradient: "from-blue-50 to-blue-100",
+      borderColor: "border-blue-200",
+      iconColor: "text-blue-600",
     },
     {
-      label: 'Unique Viewers',
+      label: "Unique Viewers",
       value: (Number(stats.uniqueViewers) || 0).toLocaleString(),
       icon: Users,
-      bgGradient: 'from-green-50 to-green-100',
-      borderColor: 'border-green-200',
-      iconColor: 'text-green-600',
+      bgGradient: "from-green-50 to-green-100",
+      borderColor: "border-green-200",
+      iconColor: "text-green-600",
     },
     {
-      label: 'Avg Session Time',
-      value: (Number(stats.avgViewTime) || 0) > 0 ? `${Number(stats.avgViewTime) || 0}s` : '-',
+      label: "Avg Session Time",
+      value: (Number(stats.avgViewTime) || 0) > 0 ? `${Number(stats.avgViewTime) || 0}s` : "-",
       icon: Clock,
-      bgGradient: 'from-orange-50 to-orange-100',
-      borderColor: 'border-orange-200',
-      iconColor: 'text-orange-600',
+      bgGradient: "from-orange-50 to-orange-100",
+      borderColor: "border-orange-200",
+      iconColor: "text-orange-600",
     },
   ];
 
@@ -121,23 +121,23 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
     <div className="space-y-4">
       <div>
         <h3 className="text-lg font-medium text-gray-900">
-          {title ? `Analytics for "${title}"` : 'Document Analytics'}
+          {title ? `Analytics for "${title}"` : "Document Analytics"}
         </h3>
-        <p className="mt-1 text-sm text-gray-600">
-          View statistics for this shared document
-        </p>
+        <p className="mt-1 text-sm text-gray-600">View statistics for this shared document</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-6">
         {statItems.map((item) => (
-          <div 
-            key={item.label} 
+          <div
+            key={item.label}
             className="card hover:shadow-md transition-shadow duration-200 cursor-pointer"
           >
             <div className="card-body p-4 sm:p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className={`w-12 h-12 bg-gradient-to-br ${item.bgGradient} rounded-lg flex items-center justify-center border ${item.borderColor}`}>
+                  <div
+                    className={`w-12 h-12 bg-gradient-to-br ${item.bgGradient} rounded-lg flex items-center justify-center border ${item.borderColor}`}
+                  >
                     <item.icon className={`h-6 w-6 ${item.iconColor}`} />
                   </div>
                 </div>

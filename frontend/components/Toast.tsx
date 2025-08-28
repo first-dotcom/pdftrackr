@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertCircle, CheckCircle, Info, X, XCircle } from "lucide-react";
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export type ToastType = "success" | "error" | "info" | "warning";
 
@@ -42,7 +42,7 @@ export function Toast({ id, type, title, message, duration = 5000, onClose }: To
   useEffect(() => {
     // Animate in
     const timer = setTimeout(() => setIsVisible(true), 100);
-    
+
     // Auto-dismiss
     const dismissTimer = setTimeout(() => {
       setIsVisible(false);
@@ -112,34 +112,54 @@ export function ToastContainer({ toasts, onClose }: ToastContainerProps) {
 
 // Hook for managing toasts
 export function useToasts() {
-  const [toasts, setToasts] = useState<Array<{
-    id: string;
-    type: ToastType;
-    title: string;
-    message?: string;
-    duration?: number;
-  }>>([]);
+  const [toasts, setToasts] = useState<
+    Array<{
+      id: string;
+      type: ToastType;
+      title: string;
+      message?: string;
+      duration?: number;
+    }>
+  >([]);
 
-  const addToast = useCallback((type: ToastType, title: string, message?: string, duration?: number) => {
-    const id = Math.random().toString(36).substr(2, 9);
-    setToasts((prev) => [...prev, { id, type, title, message, duration }]);
-  }, []);
+  const addToast = useCallback(
+    (type: ToastType, title: string, message?: string, duration?: number) => {
+      const id = Math.random().toString(36).substr(2, 9);
+      setToasts((prev) => [...prev, { id, type, title, message, duration }]);
+    },
+    [],
+  );
 
   const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
 
-  const showSuccess = useCallback((title: string, message?: string) => addToast("success", title, message), [addToast]);
-  const showError = useCallback((title: string, message?: string) => addToast("error", title, message), [addToast]);
-  const showWarning = useCallback((title: string, message?: string) => addToast("warning", title, message), [addToast]);
-  const showInfo = useCallback((title: string, message?: string) => addToast("info", title, message), [addToast]);
+  const showSuccess = useCallback(
+    (title: string, message?: string) => addToast("success", title, message),
+    [addToast],
+  );
+  const showError = useCallback(
+    (title: string, message?: string) => addToast("error", title, message),
+    [addToast],
+  );
+  const showWarning = useCallback(
+    (title: string, message?: string) => addToast("warning", title, message),
+    [addToast],
+  );
+  const showInfo = useCallback(
+    (title: string, message?: string) => addToast("info", title, message),
+    [addToast],
+  );
 
-  return useMemo(() => ({
-    toasts,
-    removeToast,
-    showSuccess,
-    showError,
-    showWarning,
-    showInfo,
-  }), [toasts, removeToast, showSuccess, showError, showWarning, showInfo]);
+  return useMemo(
+    () => ({
+      toasts,
+      removeToast,
+      showSuccess,
+      showError,
+      showWarning,
+      showInfo,
+    }),
+    [toasts, removeToast, showSuccess, showError, showWarning, showInfo],
+  );
 }

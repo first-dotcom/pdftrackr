@@ -1,14 +1,14 @@
 "use client";
 
-import { generateCSRFToken } from "@/utils/security";
-import { AlertCircle, CheckCircle, FileText, Upload, X, HardDrive, RefreshCw } from "lucide-react";
-import { useRouter } from "next/navigation";
-import type React from "react";
-import { useCallback, useEffect, useState, useRef } from "react";
 import { useApi } from "@/hooks/useApi";
-import { formatFileSize, getProgressColor, calculatePercentage } from "@/utils/formatters";
 import type { UserProfile } from "@/shared/types";
 import { getFileSizeLimit } from "@/shared/types";
+import { calculatePercentage, formatFileSize, getProgressColor } from "@/utils/formatters";
+import { generateCSRFToken } from "@/utils/security";
+import { AlertCircle, CheckCircle, FileText, HardDrive, RefreshCw, Upload, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import type React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface UploadFile {
   file: File;
@@ -64,7 +64,9 @@ export default function UploadPage() {
         // Fallback to a reasonable limit while profile is loading
         const fallbackLimit = getFileSizeLimit("free"); // Use free plan limit as fallback
         if (file.size > fallbackLimit) {
-          return `File size must be less than ${formatFileSize(fallbackLimit)} (loading plan limits...)`;
+          return `File size must be less than ${formatFileSize(
+            fallbackLimit,
+          )} (loading plan limits...)`;
         }
       }
 
@@ -78,7 +80,10 @@ export default function UploadPage() {
         }
 
         // Check file count quota (if not unlimited)
-        if (userProfile.quotas.fileCount !== -1 && userProfile.user.filesCount >= userProfile.quotas.fileCount) {
+        if (
+          userProfile.quotas.fileCount !== -1 &&
+          userProfile.user.filesCount >= userProfile.quotas.fileCount
+        ) {
           return `Upload would exceed file count limit (${userProfile.user.filesCount} / ${userProfile.quotas.fileCount})`;
         }
       }
@@ -164,10 +169,8 @@ export default function UploadPage() {
   const retryFile = (id: string) => {
     setFiles((prev) =>
       prev.map((file) =>
-        file.id === id
-          ? { ...file, status: "pending", progress: 0, error: null }
-          : file
-      )
+        file.id === id ? { ...file, status: "pending", progress: 0, error: null } : file,
+      ),
     );
   };
 
@@ -175,7 +178,7 @@ export default function UploadPage() {
     try {
       // Generate CSRF token
       const csrfToken = generateCSRFToken();
-      
+
       // Set CSRF token as cookie
       document.cookie = `csrfToken=${csrfToken}; path=/; SameSite=Lax`;
 
@@ -186,9 +189,10 @@ export default function UploadPage() {
       const response = await api.files.upload(formData);
 
       if (!response.success) {
-        const errorMessage = typeof response.error === 'string' 
-          ? response.error 
-          : response.error?.message || "Upload failed";
+        const errorMessage =
+          typeof response.error === "string"
+            ? response.error
+            : response.error?.message || "Upload failed";
         throw new Error(errorMessage);
       }
 
@@ -234,18 +238,24 @@ export default function UploadPage() {
 
         clearInterval(progressInterval);
         setFiles((prev) =>
-          prev.map((f) => (
+          prev.map((f) =>
             f.id === file.id
-              ? { ...f, status: "success", progress: 100, uploadedId: result?.fileId, uploadedTitle: result?.fileTitle }
-              : f
-          )),
+              ? {
+                  ...f,
+                  status: "success",
+                  progress: 100,
+                  uploadedId: result?.fileId,
+                  uploadedTitle: result?.fileTitle,
+                }
+              : f,
+          ),
         );
 
         if (result?.fileId) {
-          successfulUploads.push({ 
-            id: result.fileId, 
-            title: result.fileTitle ?? null, 
-            message: result.message 
+          successfulUploads.push({
+            id: result.fileId,
+            title: result.fileTitle ?? null,
+            message: result.message,
           });
         }
       } catch (error) {
@@ -279,7 +289,7 @@ export default function UploadPage() {
             ts: Date.now(),
           };
           sessionStorage.setItem("pdftrackr:flash", JSON.stringify(flash));
-          
+
           setTimeout(() => {
             router.push(`/dashboard/files/${upload.id}`);
           }, 800);
@@ -292,7 +302,7 @@ export default function UploadPage() {
             ts: Date.now(),
           };
           sessionStorage.setItem("pdftrackr:flash", JSON.stringify(flash));
-          
+
           setTimeout(() => {
             router.push("/dashboard/files");
           }, 800);
@@ -324,9 +334,9 @@ export default function UploadPage() {
     <div className="space-y-4 sm:space-y-6">
       {/* Header with Cancel Button - Mobile Responsive */}
       <div className="flex justify-end">
-        <button 
-          type="button" 
-          onClick={() => router.back()} 
+        <button
+          type="button"
+          onClick={() => router.back()}
           className="btn-outline btn-md w-full sm:w-auto flex items-center justify-center"
         >
           Cancel
@@ -336,77 +346,125 @@ export default function UploadPage() {
       {/* Upload Area - Modern Card Styling */}
       <div className="card">
         <div className="card-body p-4 sm:p-6">
-          {/* Quota Status - Modern Progress Bar Design */}
-          {userProfile && (
-            <div className="mb-6 p-4 sm:p-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200">
-              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-4 flex items-center">
-                <HardDrive className="h-5 w-5 mr-2 text-gray-500" />
-                Current Usage
-              </h3>
+          {/* Quota Status - Original design with same-sized skeleton to avoid layout shift */}
+          <div className="mb-6 p-4 sm:p-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-4 flex items-center">
+              <HardDrive className="h-5 w-5 mr-2 text-gray-500" />
+              Current Usage
+            </h3>
+            {!userProfile ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700">Storage</span>
-                    <span className="text-sm font-semibold text-gray-900">
-                      {formatFileSize(userProfile.user.storageUsed)} / {formatFileSize(userProfile.quotas.storage)}
-                    </span>
+                    <div className="h-4 bg-gray-200 rounded w-20" />
+                    <div className="h-4 bg-gray-200 rounded w-24" />
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                    <div
-                      className={`h-2.5 rounded-full transition-all duration-500 ease-out ${getProgressColor(
-                        calculatePercentage(userProfile.user.storageUsed, userProfile.quotas.storage)
-                      )}`}
-                      style={{
-                        width: `${Math.min(
-                          calculatePercentage(userProfile.user.storageUsed, userProfile.quotas.storage),
-                          100,
-                        )}%`,
-                      }}
-                    />
+                    <div className="h-2.5 bg-gray-300 rounded-full w-1/3" />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {calculatePercentage(userProfile.user.storageUsed, userProfile.quotas.storage).toFixed(1)}% used
-                  </p>
+                  <div className="h-3 bg-gray-200 rounded w-24 mt-1.5" />
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700">Files</span>
-                    <span className="text-sm font-semibold text-gray-900">
-                      {userProfile.user.filesCount} / {userProfile.quotas.fileCount === -1 ? "∞" : userProfile.quotas.fileCount}
-                    </span>
+                    <div className="h-4 bg-gray-200 rounded w-16" />
+                    <div className="h-4 bg-gray-200 rounded w-16" />
                   </div>
-                  {userProfile.quotas.fileCount !== -1 && (
-                    <>
-                      <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                        <div
-                          className={`h-2.5 rounded-full transition-all duration-500 ease-out ${getProgressColor(
-                            calculatePercentage(userProfile.user.filesCount, userProfile.quotas.fileCount)
-                          )}`}
-                          style={{
-                            width: `${Math.min(
-                              calculatePercentage(userProfile.user.filesCount, userProfile.quotas.fileCount),
-                              100,
-                            )}%`,
-                          }}
-                        />
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {calculatePercentage(userProfile.user.filesCount, userProfile.quotas.fileCount).toFixed(1)}% used
-                      </p>
-                    </>
-                  )}
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                    <div className="h-2.5 bg-gray-300 rounded-full w-1/4" />
+                  </div>
+                  <div className="h-3 bg-gray-200 rounded w-20 mt-1.5" />
                 </div>
               </div>
-              {calculatePercentage(userProfile.user.storageUsed, userProfile.quotas.storage) > 80 && (
-                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-700 flex items-center">
-                    <AlertCircle className="h-4 w-4 mr-2" />
-                    You're running low on storage space
-                  </p>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700">Storage</span>
+                      <span className="text-sm font-semibold text-gray-900">
+                        {formatFileSize(userProfile.user.storageUsed)} /{" "}
+                        {formatFileSize(userProfile.quotas.storage)}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                      <div
+                        className={`h-2.5 rounded-full transition-all duration-500 ease-out ${getProgressColor(
+                          calculatePercentage(
+                            userProfile.user.storageUsed,
+                            userProfile.quotas.storage,
+                          ),
+                        )}`}
+                        style={{
+                          width: `${Math.min(
+                            calculatePercentage(
+                              userProfile.user.storageUsed,
+                              userProfile.quotas.storage,
+                            ),
+                            100,
+                          )}%`,
+                        }}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {calculatePercentage(
+                        userProfile.user.storageUsed,
+                        userProfile.quotas.storage,
+                      ).toFixed(1)}
+                      % used
+                    </p>
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700">Files</span>
+                      <span className="text-sm font-semibold text-gray-900">
+                        {userProfile.user.filesCount} /{" "}
+                        {userProfile.quotas.fileCount === -1 ? "∞" : userProfile.quotas.fileCount}
+                      </span>
+                    </div>
+                    {userProfile.quotas.fileCount !== -1 && (
+                      <>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                          <div
+                            className={`h-2.5 rounded-full transition-all duration-500 ease-out ${getProgressColor(
+                              calculatePercentage(
+                                userProfile.user.filesCount,
+                                userProfile.quotas.fileCount,
+                              ),
+                            )}`}
+                            style={{
+                              width: `${Math.min(
+                                calculatePercentage(
+                                  userProfile.user.filesCount,
+                                  userProfile.quotas.fileCount,
+                                ),
+                                100,
+                              )}%`,
+                            }}
+                          />
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {calculatePercentage(
+                            userProfile.user.filesCount,
+                            userProfile.quotas.fileCount,
+                          ).toFixed(1)}
+                          % used
+                        </p>
+                      </>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
-          )}
+                {calculatePercentage(userProfile.user.storageUsed, userProfile.quotas.storage) >
+                  80 && (
+                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm text-red-700 flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-2" />
+                      You're running low on storage space
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
 
           {/* Modern Drag & Drop Zone */}
           <div
@@ -420,9 +478,11 @@ export default function UploadPage() {
             onDrop={handleDrop}
           >
             <div className="relative">
-              <Upload className={`mx-auto h-12 w-12 transition-colors duration-300 ${
-                isDragging ? "text-primary-500" : "text-gray-400 group-hover:text-primary-500"
-              }`} />
+              <Upload
+                className={`mx-auto h-12 w-12 transition-colors duration-300 ${
+                  isDragging ? "text-primary-500" : "text-gray-400 group-hover:text-primary-500"
+                }`}
+              />
               <div className="mt-4 space-y-2">
                 <label htmlFor="file-upload" className="cursor-pointer">
                   <span className="text-primary-600 font-semibold hover:text-primary-700 transition-colors text-base sm:text-lg">
@@ -441,7 +501,9 @@ export default function UploadPage() {
                   onChange={handleFileInput}
                 />
               </div>
-              <p className="text-sm text-gray-500 mt-3">PDF files only, up to {formatFileSize(getFileSizeLimit("free"))} each</p>
+              <p className="text-sm text-gray-500 mt-3">
+                PDF files only, up to {formatFileSize(getFileSizeLimit("free"))} each
+              </p>
             </div>
           </div>
         </div>
@@ -458,8 +520,8 @@ export default function UploadPage() {
           <div className="card-body p-4 sm:p-6">
             <div className="space-y-3 sm:space-y-4">
               {files.map((file) => (
-                <div 
-                  key={file.id} 
+                <div
+                  key={file.id}
                   className="group relative bg-white border border-gray-200 rounded-lg p-4 sm:p-6 transition-all duration-200 hover:shadow-sm focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2"
                 >
                   <div className="flex items-start space-x-4">
@@ -478,7 +540,7 @@ export default function UploadPage() {
                           <h3 className="text-base font-medium text-gray-900 truncate">
                             {file.file.name}
                           </h3>
-                          
+
                           {/* File Metadata - Mobile */}
                           <div className="mt-2 sm:hidden space-y-1">
                             <div className="text-sm text-gray-600 font-medium">
@@ -495,8 +557,12 @@ export default function UploadPage() {
                           {file.status === "uploading" && (
                             <div className="mt-3 sm:mt-4">
                               <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm font-medium text-gray-700">Uploading...</span>
-                                <span className="text-sm text-gray-500">{Math.round(file.progress)}%</span>
+                                <span className="text-sm font-medium text-gray-700">
+                                  Uploading...
+                                </span>
+                                <span className="text-sm text-gray-500">
+                                  {Math.round(file.progress)}%
+                                </span>
                               </div>
                               <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                                 <div
@@ -549,7 +615,13 @@ export default function UploadPage() {
 
                           {/* Desktop: Hover-visible actions */}
                           <div className="hidden sm:block">
-                            <div className={`flex space-x-2 transition-opacity duration-200 ${file.status !== "uploading" ? 'opacity-0 group-hover:opacity-100' : 'opacity-0'}`}>
+                            <div
+                              className={`flex space-x-2 transition-opacity duration-200 ${
+                                file.status !== "uploading"
+                                  ? "opacity-0 group-hover:opacity-100"
+                                  : "opacity-0"
+                              }`}
+                            >
                               {file.status === "error" && (
                                 <button
                                   type="button"
@@ -587,12 +659,16 @@ export default function UploadPage() {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
           <div className="text-sm text-gray-600 text-center sm:text-left">
             {successFiles > 0 && (
-              <span className="text-green-600 mr-4 font-medium">✓ {successFiles} uploaded successfully</span>
+              <span className="text-green-600 mr-4 font-medium">
+                ✓ {successFiles} uploaded successfully
+              </span>
             )}
             {errorFiles > 0 && (
               <span className="text-red-600 mr-4 font-medium">✗ {errorFiles} failed</span>
             )}
-            {pendingFiles > 0 && <span className="font-medium">{pendingFiles} files ready to upload</span>}
+            {pendingFiles > 0 && (
+              <span className="font-medium">{pendingFiles} files ready to upload</span>
+            )}
           </div>
           <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
             <button

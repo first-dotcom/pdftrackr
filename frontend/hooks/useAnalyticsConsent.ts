@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { hasAnalyticsConsent, updateAnalyticsConsent } from '@/components/ConsentBanner';
+import { hasAnalyticsConsent, updateAnalyticsConsent } from "@/components/ConsentBanner";
+import { useEffect, useState } from "react";
 
 export function useAnalyticsConsent() {
   const [consent, setConsent] = useState<boolean | null>(null);
@@ -23,7 +23,7 @@ export function useAnalyticsConsent() {
   };
 
   const resetConsent = () => {
-    localStorage.removeItem('analytics-consent');
+    localStorage.removeItem("analytics-consent");
     setConsent(null);
   };
 
@@ -34,35 +34,32 @@ export function useAnalyticsConsent() {
     denyConsent,
     resetConsent,
     hasConsent: consent === true,
-    needsConsent: consent === null
+    needsConsent: consent === null,
   };
 }
 
 // Utility function to track events only if consent is granted
-export function trackEvent(
-  eventName: string, 
-  parameters?: Record<string, any>
-): void {
-  if (typeof window === 'undefined' || !window.gtag) return;
-  
+export function trackEvent(eventName: string, parameters?: Record<string, any>): void {
+  if (typeof window === "undefined" || !window.gtag) return;
+
   const hasConsent = hasAnalyticsConsent();
   if (!hasConsent) return;
 
-  window.gtag('event', eventName, parameters);
+  window.gtag("event", eventName, parameters);
 }
 
 // Utility function to track page views only if consent is granted
 export function trackPageView(url?: string): void {
-  if (typeof window === 'undefined' || !window.gtag) return;
-  
+  if (typeof window === "undefined" || !window.gtag) return;
+
   const hasConsent = hasAnalyticsConsent();
   if (!hasConsent) return;
 
   if (url) {
-    window.gtag('config', 'G-0D0FQG4352', {
-      page_path: url
+    window.gtag("config", "G-0D0FQG4352", {
+      page_path: url,
     });
   } else {
-    window.gtag('config', 'G-0D0FQG4352');
+    window.gtag("config", "G-0D0FQG4352");
   }
 }

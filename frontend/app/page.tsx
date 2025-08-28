@@ -20,7 +20,7 @@ export default async function HomePage() {
         <HowItWorks />
         <UseCases />
         <Pricing />
-        
+
         {/* SEO-friendly CTA for authenticated users */}
         {user && (
           <div className="bg-primary-50 py-12 mt-16">
@@ -28,10 +28,7 @@ export default async function HomePage() {
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 Welcome back! Ready to manage your PDFs?
               </h2>
-              <a 
-                href="/dashboard" 
-                className="btn-primary btn-lg"
-              >
+              <a href="/dashboard" className="btn-primary btn-lg">
                 Go to Dashboard
               </a>
             </div>

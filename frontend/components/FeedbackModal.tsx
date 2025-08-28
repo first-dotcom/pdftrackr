@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useAuth } from "@clerk/nextjs";
-import { X, Star, MessageCircle, AlertCircle, CheckCircle } from "lucide-react";
 import { useApi } from "@/hooks/useApi";
+import { useAuth } from "@clerk/nextjs";
+import { AlertCircle, CheckCircle, MessageCircle, Star, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface FeedbackData {
   message: string;
@@ -83,9 +83,10 @@ export default function FeedbackModal() {
         // Update rate limit status
         await checkRateLimit();
       } else {
-        const errorMessage = typeof response.error === 'string' 
-          ? response.error 
-          : response.error?.message || "Failed to submit feedback";
+        const errorMessage =
+          typeof response.error === "string"
+            ? response.error
+            : response.error?.message || "Failed to submit feedback";
         setError(errorMessage);
       }
     } catch (error) {
@@ -177,7 +178,12 @@ export default function FeedbackModal() {
                             : "text-gray-300 hover:text-yellow-300"
                         }`}
                       >
-                        <Star size={24} fill={feedback.rating && feedback.rating >= star ? "currentColor" : "none"} />
+                        <Star
+                          size={24}
+                          fill={
+                            feedback.rating && feedback.rating >= star ? "currentColor" : "none"
+                          }
+                        />
                       </button>
                     ))}
                   </div>
@@ -203,9 +209,7 @@ export default function FeedbackModal() {
 
                 {/* Message */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Message *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Message *</label>
                   <textarea
                     value={feedback.message}
                     onChange={(e) => setFeedback({ ...feedback, message: e.target.value })}

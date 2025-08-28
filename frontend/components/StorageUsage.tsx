@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAuth, useUser } from "@clerk/nextjs";
 import { useApi } from "@/hooks/useApi";
-import { HardDrive, TrendingUp, FileText, AlertCircle } from "lucide-react";
-import { formatFileSize, getStorageColor, calculatePercentage } from "@/utils/formatters";
+import { calculatePercentage, formatFileSize, getStorageColor } from "@/utils/formatters";
+import { useAuth, useUser } from "@clerk/nextjs";
+import { AlertCircle, FileText, HardDrive, TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface StorageInfo {
   storageUsed: number;
@@ -18,10 +18,10 @@ export default function StorageUsage() {
   const { isLoaded: authLoaded } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
   const api = useApi();
-  
+
   // Wait for both auth and user to be loaded
   const isReady = authLoaded && userLoaded;
-  
+
   const [storage, setStorage] = useState<StorageInfo>({
     storageUsed: 0,
     storageQuota: 0,
@@ -59,9 +59,10 @@ export default function StorageUsage() {
           plan: userData.plan,
         });
       } else {
-        const errorMessage = typeof response.error === 'string' 
-          ? response.error 
-          : response.error?.message || "Failed to fetch storage info";
+        const errorMessage =
+          typeof response.error === "string"
+            ? response.error
+            : response.error?.message || "Failed to fetch storage info";
         setError(errorMessage);
       }
     } catch (error) {
@@ -71,12 +72,9 @@ export default function StorageUsage() {
     }
   };
 
-
-
   const storagePercentage = calculatePercentage(storage.storageUsed, storage.storageQuota);
-  const filesPercentage = storage.filesQuota === -1 
-    ? 0 
-    : calculatePercentage(storage.filesCount, storage.filesQuota);
+  const filesPercentage =
+    storage.filesQuota === -1 ? 0 : calculatePercentage(storage.filesCount, storage.filesQuota);
 
   // Show loading state while Clerk is initializing
   if (!isReady) {
@@ -107,7 +105,9 @@ export default function StorageUsage() {
         <div className="card-body p-4 sm:p-6">
           <div className="text-center py-8 sm:py-12">
             <HardDrive className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-400" />
-            <p className="mt-4 text-sm sm:text-base text-gray-500">Please sign in to view your storage usage.</p>
+            <p className="mt-4 text-sm sm:text-base text-gray-500">
+              Please sign in to view your storage usage.
+            </p>
           </div>
         </div>
       </div>
@@ -180,18 +180,16 @@ export default function StorageUsage() {
           </div>
           <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
             <div
-                              className={`h-3 rounded-full transition-all duration-500 ease-out shadow-sm ${getStorageColor(
-                  storagePercentage,
-                )}`}
+              className={`h-3 rounded-full transition-all duration-500 ease-out shadow-sm ${getStorageColor(
+                storagePercentage,
+              )}`}
               style={{ width: `${Math.min(storagePercentage, 100)}%` }}
             />
           </div>
           <div className="flex items-center justify-between">
+            <p className="text-xs sm:text-sm text-gray-500">{storagePercentage.toFixed(1)}% used</p>
             <p className="text-xs sm:text-sm text-gray-500">
-              {storagePercentage.toFixed(1)}% used
-            </p>
-            <p className="text-xs sm:text-sm text-gray-500">
-                              {formatFileSize(storage.storageQuota - storage.storageUsed)} remaining
+              {formatFileSize(storage.storageQuota - storage.storageUsed)} remaining
             </p>
           </div>
         </div>
@@ -221,9 +219,9 @@ export default function StorageUsage() {
             <>
               <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                 <div
-                                  className={`h-3 rounded-full transition-all duration-500 ease-out shadow-sm ${getStorageColor(
-                  filesPercentage,
-                )}`}
+                  className={`h-3 rounded-full transition-all duration-500 ease-out shadow-sm ${getStorageColor(
+                    filesPercentage,
+                  )}`}
                   style={{ width: `${Math.min(filesPercentage, 100)}%` }}
                 />
               </div>
@@ -278,11 +276,10 @@ export default function StorageUsage() {
             <div className="flex items-start">
               <AlertCircle className="h-5 w-5 text-yellow-600 mr-3 mt-0.5 flex-shrink-0" />
               <div>
-                <h4 className="text-sm font-medium text-yellow-800 mb-1">
-                  Storage Space Low
-                </h4>
+                <h4 className="text-sm font-medium text-yellow-800 mb-1">Storage Space Low</h4>
                 <p className="text-sm text-yellow-700">
-                  You're running low on storage space. Consider upgrading your plan or removing unused files.
+                  You're running low on storage space. Consider upgrading your plan or removing
+                  unused files.
                 </p>
               </div>
             </div>

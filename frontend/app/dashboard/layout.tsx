@@ -8,7 +8,7 @@ import WaitlistModal from "@/components/WaitlistModal";
 
 import { useAuth } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -17,8 +17,6 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { isLoaded, userId } = useAuth();
-
-
 
   // Show loading while auth is loading
   if (!isLoaded) {
@@ -39,40 +37,36 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-        <DashboardHeader onMobileMenuClick={handleMobileSidebarOpen} />
-        
-        <div className="flex">
-          {/* Mobile-only sidebar */}
-          <div className="lg:hidden">
-            <DashboardSidebar 
-              isMobileOpen={isMobileSidebarOpen} 
-              onMobileClose={handleMobileSidebarClose} 
-            />
-          </div>
+      <DashboardHeader onMobileMenuClick={handleMobileSidebarOpen} />
 
-          <main className="flex-1 w-full">
-            {/* Intelligent responsive layout */}
-            <div className="flex justify-center">
-              <div className="w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                <div className="flex gap-8">
-                  {/* Main content area */}
-                  <div className="flex-1 min-w-0">
-              {/* Breadcrumbs - Only show on mobile for cleaner desktop */}
-              <div className="mb-6 lg:hidden">
-                <Breadcrumbs />
-              </div>
-              <ErrorBoundary>
-                {children}
-              </ErrorBoundary>
+      <div className="flex">
+        {/* Mobile-only sidebar */}
+        <div className="lg:hidden">
+          <DashboardSidebar
+            isMobileOpen={isMobileSidebarOpen}
+            onMobileClose={handleMobileSidebarClose}
+          />
+        </div>
+
+        <main className="flex-1 w-full">
+          {/* Intelligent responsive layout */}
+          <div className="flex justify-center">
+            <div className="w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+              <div className="flex gap-8">
+                {/* Main content area */}
+                <div className="flex-1 min-w-0">
+                  {/* Breadcrumbs - Only show on mobile for cleaner desktop */}
+                  <div className="mb-6 lg:hidden">
+                    <Breadcrumbs />
                   </div>
-                
-
+                  <ErrorBoundary>{children}</ErrorBoundary>
+                </div>
               </div>
             </div>
           </div>
         </main>
       </div>
-      
+
       {/* Removed floating upload button - redundant with header button */}
       <WaitlistModal />
     </div>

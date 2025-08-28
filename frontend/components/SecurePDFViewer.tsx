@@ -1,9 +1,9 @@
 "use client";
 
-import { config } from "@/lib/config";
 import { apiClient } from "@/lib/api-client";
-import { ChevronLeft, ChevronRight, RotateCw, ZoomIn, ZoomOut, Download } from "lucide-react";
-import { useCallback, useEffect, useState, useMemo, useRef } from "react";
+import { config } from "@/lib/config";
+import { ChevronLeft, ChevronRight, Download, RotateCw, ZoomIn, ZoomOut } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
@@ -11,7 +11,7 @@ import "react-pdf/dist/esm/Page/TextLayer.css";
 // Simple debounce utility
 function debounce<T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout;
   return (...args: Parameters<T>) => {
@@ -21,7 +21,7 @@ function debounce<T extends (...args: any[]) => any>(
 }
 
 // Set up PDF.js worker (same as test page)
-pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
 interface SecurePDFViewerProps {
   shareId: string;
@@ -47,7 +47,6 @@ interface SessionData {
 interface PageTrackingData {
   pageStartTime: number;
 }
-
 
 const WatermarkOverlay = ({ email, timestamp }: { email: string; timestamp: string }) => (
   <div className="absolute top-4 right-4 bg-black bg-opacity-20 text-white px-3 py-1 rounded text-sm font-mono pointer-events-none z-10">
@@ -94,20 +93,20 @@ export default function SecurePDFViewer({
   // 📊 NEW: Activity tracking function
   const trackUserActivity = useCallback(() => {
     setLastActivityTime(Date.now());
-    
+
     // Send activity heartbeat
     if (sessionId) {
-      apiClient.analytics.updateSessionActivity({
-        sessionId,
-        lastActiveAt: new Date().toISOString(),
-        currentPage: pageNumber,
-      }).catch(error => {
-        console.warn('Activity heartbeat failed:', error);
-      });
+      apiClient.analytics
+        .updateSessionActivity({
+          sessionId,
+          lastActiveAt: new Date().toISOString(),
+          currentPage: pageNumber,
+        })
+        .catch((error) => {
+          console.warn("Activity heartbeat failed:", error);
+        });
     }
   }, [sessionId, pageNumber]);
-
-
 
   // 📊 NEW: Reset tracking data on page change
   useEffect(() => {
@@ -118,56 +117,54 @@ export default function SecurePDFViewer({
 
   // 📊 NEW: Activity tracking setup
   useEffect(() => {
-    const events = ['scroll', 'mousemove', 'click', 'keypress'];
-    
-    events.forEach(event => {
+    const events = ["scroll", "mousemove", "click", "keypress"];
+
+    events.forEach((event) => {
       document.addEventListener(event, trackUserActivity, { passive: true });
     });
-    
+
     return () => {
-      events.forEach(event => {
+      events.forEach((event) => {
         document.removeEventListener(event, trackUserActivity);
       });
     };
   }, [trackUserActivity]);
-
-
 
   // 📊 ANALYTICS FUNCTIONS
   // Session is already created on backend when share link is accessed
   // No need to create another session here
 
   // 📊 ANALYTICS DATA PERSISTENCE UTILITIES
-  const ANALYTICS_STORAGE_KEY = 'pdftrackr:failed-analytics';
+  const ANALYTICS_STORAGE_KEY = "pdftrackr:failed-analytics";
   const MAX_RETRY_ATTEMPTS = 5;
   const RETRY_DELAYS = [1000, 2000, 4000, 8000, 16000]; // Exponential backoff
 
   // Store failed analytics data locally for later retry
-  const storeFailedAnalytics = useCallback((data: any, type: 'pageView' | 'sessionEnd') => {
+  const storeFailedAnalytics = useCallback((data: any, type: "pageView" | "sessionEnd") => {
     try {
       const existing = localStorage.getItem(ANALYTICS_STORAGE_KEY);
       const failedData = existing ? JSON.parse(existing) : [];
-      
+
       const newEntry = {
         id: Date.now() + Math.random(), // Unique ID
         type,
         data,
         timestamp: new Date().toISOString(),
         retryCount: 0,
-        maxRetries: MAX_RETRY_ATTEMPTS
+        maxRetries: MAX_RETRY_ATTEMPTS,
       };
-      
+
       failedData.push(newEntry);
-      
+
       // Keep only last 50 failed entries to prevent storage bloat
       if (failedData.length > 50) {
         failedData.splice(0, failedData.length - 50);
       }
-      
+
       localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(failedData));
       console.warn(`Analytics data stored locally for retry: ${type}`, newEntry);
     } catch (error) {
-      console.error('Failed to store analytics data locally:', error);
+      console.error("Failed to store analytics data locally:", error);
     }
   }, []);
 
@@ -176,71 +173,75 @@ export default function SecurePDFViewer({
     try {
       const existing = localStorage.getItem(ANALYTICS_STORAGE_KEY);
       if (!existing) return;
-      
+
       const failedData = JSON.parse(existing);
       if (failedData.length === 0) return;
-      
+
       const successfulRetries: number[] = [];
-      
+
       for (const entry of failedData) {
         if (entry.retryCount >= entry.maxRetries) {
           console.warn(`Analytics data exceeded max retries, dropping: ${entry.type}`, entry);
           successfulRetries.push(entry.id);
           continue;
         }
-        
+
         try {
-          if (entry.type === 'pageView') {
+          if (entry.type === "pageView") {
             await apiClient.analytics.trackPageView(entry.data);
-          } else if (entry.type === 'sessionEnd') {
+          } else if (entry.type === "sessionEnd") {
             await apiClient.analytics.trackSessionEnd(entry.data);
           }
-          
+
           successfulRetries.push(entry.id);
           console.log(`Successfully retried analytics data: ${entry.type}`, entry);
         } catch (error) {
           entry.retryCount++;
-          console.warn(`Retry failed for analytics data: ${entry.type} (attempt ${entry.retryCount})`, error);
+          console.warn(
+            `Retry failed for analytics data: ${entry.type} (attempt ${entry.retryCount})`,
+            error,
+          );
         }
       }
-      
+
       // Remove successful retries from storage
       if (successfulRetries.length > 0) {
-        const remainingData = failedData.filter((entry: any) => !successfulRetries.includes(entry.id));
+        const remainingData = failedData.filter(
+          (entry: any) => !successfulRetries.includes(entry.id),
+        );
         localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(remainingData));
       }
     } catch (error) {
-      console.error('Failed to retry analytics data:', error);
+      console.error("Failed to retry analytics data:", error);
     }
   }, [apiClient]);
 
   // Enhanced retry logic with exponential backoff
-  const retryWithBackoff = useCallback(async (
-    operation: () => Promise<any>,
-    retryCount: number = 0,
-    context: string = 'unknown'
-  ): Promise<any> => {
-    try {
-      return await operation();
-    } catch (error) {
-      console.warn(`${context} failed (attempt ${retryCount + 1}):`, error);
-      
-      if (retryCount < MAX_RETRY_ATTEMPTS - 1) {
-        const delay = RETRY_DELAYS[retryCount] || RETRY_DELAYS[RETRY_DELAYS.length - 1];
-        console.log(`Retrying ${context} in ${delay}ms...`);
-        
-        await new Promise(resolve => setTimeout(resolve, delay));
-        return retryWithBackoff(operation, retryCount + 1, context);
-      } else {
-        console.error(`${context} failed after ${MAX_RETRY_ATTEMPTS} attempts:`, error);
-        throw error;
-      }
-    }
-  }, []);
+  const retryWithBackoff = useCallback(
+    async (operation: () => Promise<any>, retryCount = 0, context = "unknown"): Promise<any> => {
+      try {
+        return await operation();
+      } catch (error) {
+        console.warn(`${context} failed (attempt ${retryCount + 1}):`, error);
 
-  const trackPageView = async (page: number, totalPages: number, isPageExit: boolean = false) => {
-    console.log('trackPageView called:', page, totalPages, isPageExit);
-    
+        if (retryCount < MAX_RETRY_ATTEMPTS - 1) {
+          const delay = RETRY_DELAYS[retryCount] || RETRY_DELAYS[RETRY_DELAYS.length - 1];
+          console.log(`Retrying ${context} in ${delay}ms...`);
+
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          return retryWithBackoff(operation, retryCount + 1, context);
+        } else {
+          console.error(`${context} failed after ${MAX_RETRY_ATTEMPTS} attempts:`, error);
+          throw error;
+        }
+      }
+    },
+    [],
+  );
+
+  const trackPageView = async (page: number, totalPages: number, isPageExit = false) => {
+    console.log("trackPageView called:", page, totalPages, isPageExit);
+
     // Validate parameters
     if (!page || page <= 0 || !totalPages || totalPages <= 0 || page > totalPages) {
       console.warn(`Invalid page view tracking parameters: page=${page}, totalPages=${totalPages}`);
@@ -252,12 +253,12 @@ export default function SecurePDFViewer({
 
     // Calculate page duration in milliseconds for sub-second precision
     const now = Date.now();
-    const pageDuration = isPageExit 
+    const pageDuration = isPageExit
       ? Math.max(1, now - pageTracking.pageStartTime) // Exit: ms precision, min 1ms
       : 0; // Entry: 0ms duration
 
     // Update session data
-    setSessionData(prev => ({
+    setSessionData((prev) => ({
       ...prev,
       pagesViewed: new Set([...prev.pagesViewed, page]),
       maxPageReached: Math.max(prev.maxPageReached, page),
@@ -279,31 +280,33 @@ export default function SecurePDFViewer({
       await retryWithBackoff(
         () => apiClient.analytics.trackPageView(pageViewData),
         0,
-        'Page view tracking'
+        "Page view tracking",
       );
     } catch (error) {
-      console.error('Page view tracking failed after all retries, storing locally:', error);
-      storeFailedAnalytics(pageViewData, 'pageView');
+      console.error("Page view tracking failed after all retries, storing locally:", error);
+      storeFailedAnalytics(pageViewData, "pageView");
     }
   };
 
   const trackSessionEnd = async (retryCount = 0) => {
     const rawDurationSeconds = Math.round((Date.now() - sessionData.startTime) / 1000);
-    
+
     // Quality filter: Only track sessions with meaningful engagement
     const minEngagementTime = 3; // 3 seconds minimum
     const minPagesViewed = 1; // At least 1 page viewed
-    
+
     if (rawDurationSeconds < minEngagementTime || sessionData.pagesViewed.size < minPagesViewed) {
-      console.log(`Session too short (${rawDurationSeconds}s) or no pages viewed (${sessionData.pagesViewed.size}), skipping session end tracking`);
+      console.log(
+        `Session too short (${rawDurationSeconds}s) or no pages viewed (${sessionData.pagesViewed.size}), skipping session end tracking`,
+      );
       return;
     }
-    
+
     // Track exit from current page before ending session
     if (pageNumber > 0 && numPages > 0) {
       await trackPageView(pageNumber, numPages, true);
     }
-    
+
     const sessionEndData = {
       shareId,
       email,
@@ -319,12 +322,12 @@ export default function SecurePDFViewer({
       await retryWithBackoff(
         () => apiClient.analytics.trackSessionEnd(sessionEndData),
         0,
-        'Session end tracking'
+        "Session end tracking",
       );
-      console.log('Session end tracking successful:', sessionEndData);
+      console.log("Session end tracking successful:", sessionEndData);
     } catch (error) {
-      console.error('Session end tracking failed after all retries, storing locally:', error);
-      storeFailedAnalytics(sessionEndData, 'sessionEnd');
+      console.error("Session end tracking failed after all retries, storing locally:", error);
+      storeFailedAnalytics(sessionEndData, "sessionEnd");
     }
   };
 
@@ -332,7 +335,7 @@ export default function SecurePDFViewer({
   // No need to create another session here
   useEffect(() => {
     if (sessionId) {
-      console.log('Session ready for tracking:', sessionId);
+      console.log("Session ready for tracking:", sessionId);
     }
   }, [sessionId]);
 
@@ -370,22 +373,23 @@ export default function SecurePDFViewer({
       }
     }, 2000); // 2 second debounce
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     // Set up periodic session end check (every 30 seconds)
     const interval = setInterval(() => {
       const currentDuration = Math.round((Date.now() - sessionData.startTime) / 1000);
-      if (currentDuration > 30) { // Only check after 30 seconds
+      if (currentDuration > 30) {
+        // Only check after 30 seconds
         debouncedSessionEnd();
       }
     }, 30000);
 
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       clearInterval(interval);
-      
+
       // Track session end when component unmounts (if not already tracked)
       if (!hasTrackedEnd) {
         trackSessionEnd();
@@ -402,16 +406,16 @@ export default function SecurePDFViewer({
       if (email) params.append("email", email);
 
       const secureUrl = `${config.api.url}/api/share/${shareId}/view?${params.toString()}`;
-      
+
       // Fetch the PDF URL from the backend
       fetch(secureUrl)
-        .then(response => {
+        .then((response) => {
           if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
           }
           return response.json();
         })
-        .then(data => {
+        .then((data) => {
           if (data.success && data.data?.pdfUrl) {
             setPdfUrl(data.data.pdfUrl);
             // Update download enabled state from the response
@@ -423,7 +427,7 @@ export default function SecurePDFViewer({
             throw new Error(data.error || "Failed to get PDF URL");
           }
         })
-        .catch(error => {
+        .catch((error) => {
           console.error("Failed to get PDF URL:", error);
           setWorkerError(error.message || "Failed to load PDF");
         })
@@ -435,8 +439,6 @@ export default function SecurePDFViewer({
       setLoading(false);
     }
   }, [shareId, sessionId, password, email]);
-
-
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     console.log(`PDF loaded successfully with ${numPages} pages`);
@@ -451,11 +453,9 @@ export default function SecurePDFViewer({
 
     // Track initial page view
     trackPageView(1, numPages, false);
-    
+
     onLoadSuccess?.();
   };
-
-
 
   const onDocumentLoadError = (error: Error) => {
     console.error("PDF load error:", error);
@@ -525,8 +525,8 @@ export default function SecurePDFViewer({
         <div className="text-center">
           <div className="text-red-600 text-xl mb-4">⚠️ PDF Viewer Error</div>
           <div className="text-gray-700 mb-4">{workerError}</div>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
             Reload Page
@@ -559,7 +559,7 @@ export default function SecurePDFViewer({
           </button>
 
           <span className="text-sm text-gray-600">
-            Page {pageNumber} of {numPages || '?'}
+            Page {pageNumber} of {numPages || "?"}
           </span>
 
           <button
@@ -585,13 +585,13 @@ export default function SecurePDFViewer({
             <RotateCw className="w-5 h-5" />
           </button>
           {downloadEnabled && (
-            <button 
+            <button
               onClick={() => {
                 if (pdfUrl) {
-                  const link = document.createElement('a');
+                  const link = document.createElement("a");
                   link.href = pdfUrl;
-                  link.download = 'document.pdf';
-                  link.target = '_blank';
+                  link.download = "document.pdf";
+                  link.target = "_blank";
                   document.body.appendChild(link);
                   link.click();
                   document.body.removeChild(link);
@@ -615,26 +615,22 @@ export default function SecurePDFViewer({
         <div className="shadow-lg bg-white">
           {pdfUrl ? (
             <Document
-                file={pdfUrl}
-                onLoadSuccess={onDocumentLoadSuccess}
-                onLoadError={onDocumentLoadError}
-                loading={
-                  <div className="flex items-center justify-center p-8">
-                    <div className="flex items-center space-x-3">
-                      <img
-                        src="/logo.png"
-                        alt="PDFTrackr Logo"
-                        className="w-8 h-8 animate-pulse"
-                      />
-                      <span className="text-gray-600">Loading PDF...</span>
-                    </div>
+              file={pdfUrl}
+              onLoadSuccess={onDocumentLoadSuccess}
+              onLoadError={onDocumentLoadError}
+              loading={
+                <div className="flex items-center justify-center p-8">
+                  <div className="flex items-center space-x-3">
+                    <img src="/logo.png" alt="PDFTrackr Logo" className="w-8 h-8 animate-pulse" />
+                    <span className="text-gray-600">Loading PDF...</span>
                   </div>
-                }
-                error={
-                  <div className="flex items-center justify-center p-8 text-red-600">
-                    <span>❌ Failed to load PDF</span>
-                  </div>
-                }
+                </div>
+              }
+              error={
+                <div className="flex items-center justify-center p-8 text-red-600">
+                  <span>❌ Failed to load PDF</span>
+                </div>
+              }
             >
               {numPages > 0 && pageNumber <= numPages ? (
                 <Page
@@ -670,8 +666,9 @@ export default function SecurePDFViewer({
         </div>
       )}
 
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
           .react-pdf__Page__canvas {
             max-width: 100% !important;
             height: auto !important; 
@@ -693,8 +690,9 @@ export default function SecurePDFViewer({
           @media print {
             body { display: none !important; }
           }
-        `
-      }} />
+        `,
+        }}
+      />
     </div>
   );
 }

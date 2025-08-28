@@ -1,13 +1,19 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
-} from 'recharts';
-import { apiClient } from '@/lib/api-client';
-import { AggregateAnalytics, PageStats } from '@/shared/types/api';
-import LoadingSpinner from './LoadingSpinner';
-import { formatViewTime } from '@/utils/formatters';
+import { apiClient } from "@/lib/api-client";
+import { type AggregateAnalytics, PageStats } from "@/shared/types/api";
+import { formatViewTime } from "@/utils/formatters";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import LoadingSpinner from "./LoadingSpinner";
 
 interface AggregateViewProps {
   fileId: number;
@@ -25,18 +31,18 @@ export default function AggregateView({ fileId, totalPages, days = 30 }: Aggrega
     try {
       setLoading(true);
       setError(null);
-      
+
       // Use page range for optimization
       const pageRangeParam = `${pageRange.start}-${pageRange.end}`;
       const response = await apiClient.analytics.aggregate(fileId, days, pageRangeParam);
-      
+
       if (response.success && response.data) {
         setData(response.data as AggregateAnalytics);
       } else {
-        setError('Failed to load analytics data');
+        setError("Failed to load analytics data");
       }
     } catch (err) {
-      setError('Error loading analytics data');
+      setError("Error loading analytics data");
     } finally {
       setLoading(false);
     }
@@ -51,12 +57,14 @@ export default function AggregateView({ fileId, totalPages, days = 30 }: Aggrega
     if (!data?.pageStats || !Array.isArray(data.pageStats)) {
       return [];
     }
-    
-    return data.pageStats.map(stat => ({
-      page: `Page ${stat.pageNumber}`,
-      avgTime: Number(stat.avgDuration) || 0,
-      pageNumber: stat.pageNumber
-    })).sort((a, b) => a.pageNumber - b.pageNumber);
+
+    return data.pageStats
+      .map((stat) => ({
+        page: `Page ${stat.pageNumber}`,
+        avgTime: Number(stat.avgDuration) || 0,
+        pageNumber: stat.pageNumber,
+      }))
+      .sort((a, b) => a.pageNumber - b.pageNumber);
   }, [data]);
 
   if (loading) {
@@ -104,7 +112,12 @@ export default function AggregateView({ fileId, totalPages, days = 30 }: Aggrega
                   min="1"
                   max={totalPages}
                   value={pageRange.start}
-                  onChange={(e) => setPageRange(prev => ({ ...prev, start: Math.max(1, parseInt(e.target.value) || 1) }))}
+                  onChange={(e) =>
+                    setPageRange((prev) => ({
+                      ...prev,
+                      start: Math.max(1, parseInt(e.target.value) || 1),
+                    }))
+                  }
                   className="w-16 px-2 py-1 text-sm border border-gray-300 rounded"
                 />
                 <span className="text-sm text-gray-600">to</span>
@@ -113,7 +126,12 @@ export default function AggregateView({ fileId, totalPages, days = 30 }: Aggrega
                   min={pageRange.start}
                   max={totalPages}
                   value={pageRange.end}
-                  onChange={(e) => setPageRange(prev => ({ ...prev, end: Math.min(totalPages, parseInt(e.target.value) || prev.end) }))}
+                  onChange={(e) =>
+                    setPageRange((prev) => ({
+                      ...prev,
+                      end: Math.min(totalPages, parseInt(e.target.value) || prev.end),
+                    }))
+                  }
                   className="w-16 px-2 py-1 text-sm border border-gray-300 rounded"
                 />
               </div>
@@ -134,31 +152,31 @@ export default function AggregateView({ fileId, totalPages, days = 30 }: Aggrega
         <p className="text-sm text-gray-600 mb-6">
           Average time spent on each page (like a price chart showing reading patterns)
         </p>
-        
+
         {chartData.length > 0 ? (
           <ResponsiveContainer width="100%" height={320}>
             <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="page" 
+              <XAxis
+                dataKey="page"
                 tick={{ fontSize: 12 }}
                 interval={Math.max(1, Math.floor(chartData.length / 10))}
               />
-              <YAxis 
+              <YAxis
                 tick={{ fontSize: 12 }}
-                label={{ value: 'Time (seconds)', angle: -90, position: 'insideLeft' }}
+                label={{ value: "Time (seconds)", angle: -90, position: "insideLeft" }}
               />
-              <Tooltip 
-                formatter={(value: any) => [formatViewTime(value), 'Average Time']}
+              <Tooltip
+                formatter={(value: any) => [formatViewTime(value), "Average Time"]}
                 labelFormatter={(label) => label}
               />
-              <Line 
-                type="monotone" 
-                dataKey="avgTime" 
-                stroke="#3B82F6" 
+              <Line
+                type="monotone"
+                dataKey="avgTime"
+                stroke="#3B82F6"
                 strokeWidth={3}
-                dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: '#3B82F6', strokeWidth: 2 }}
+                dot={{ fill: "#3B82F6", strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6, stroke: "#3B82F6", strokeWidth: 2 }}
               />
             </LineChart>
           </ResponsiveContainer>

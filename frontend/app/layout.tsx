@@ -1,19 +1,20 @@
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ClerkProvider } from "@clerk/nextjs";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
     default: "PDFTrackr - PDF Tracking & Analytics | Secure Document Sharing Platform",
-    template: "%s | PDFTrackr"
+    template: "%s | PDFTrackr",
   },
-  description: "PDFTrackr provides professional PDF tracking and analytics to see who's reading your documents. Track PDF views, capture emails, and control access with our secure sharing platform. 500MB free storage, no credit card required.",
+  description:
+    "PDFTrackr provides professional PDF tracking and analytics to see who's reading your documents. Track PDF views, capture emails, and control access with our secure sharing platform. 500MB free storage, no credit card required.",
   keywords: [
     "PDF tracking",
-    "PDF analytics", 
+    "PDF analytics",
     "secure PDF sharing",
     "PDF viewer tracking",
     "document analytics",
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
     "PDF virus scanning",
     "GDPR compliant PDF tool",
     "PDF privacy policy",
-    "PDF data rights"
+    "PDF data rights",
   ],
   authors: [{ name: "PDFTrackr" }],
   creator: "PDFTrackr",
@@ -46,7 +47,8 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: process.env.NEXT_PUBLIC_APP_URL || "https://pdftrackr.com",
     title: "PDFTrackr - PDF Tracking & Analytics | Secure Document Sharing Platform",
-    description: "Track PDF views, capture emails, and control access with our secure sharing platform. Professional PDF analytics with 500MB free storage.",
+    description:
+      "Track PDF views, capture emails, and control access with our secure sharing platform. Professional PDF analytics with 500MB free storage.",
     siteName: "PDFTrackr",
     images: [
       {
@@ -60,7 +62,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "PDFTrackr - PDF Tracking & Analytics | Secure Document Sharing Platform",
-    description: "Track PDF views, capture emails, and control access with our secure sharing platform. Professional PDF analytics with 500MB free storage.",
+    description:
+      "Track PDF views, capture emails, and control access with our secure sharing platform. Professional PDF analytics with 500MB free storage.",
     images: ["/logo.png"],
     creator: "@pdftrackr",
   },
@@ -74,7 +77,7 @@ export const metadata: Metadata = {
       "max-image-preview": "large",
       "max-snippet": -1,
     },
-  }
+  },
 };
 
 export default function RootLayout({
@@ -100,9 +103,7 @@ export default function RootLayout({
             }}
           />
         </head>
-        <body className={inter.className}>
-          {children}
-        </body>
+        <body className={inter.className}>{children}</body>
       </html>
     </ClerkProvider>
   );

@@ -1,12 +1,12 @@
 "use client";
 
+import { useAdmin } from "@/hooks/useAdmin";
+import { useUser } from "@clerk/nextjs";
 import { clsx } from "clsx";
-import { FileText, LayoutDashboard, X, Shield, Settings } from "lucide-react";
+import { FileText, LayoutDashboard, Settings, Shield, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
-import { useAdmin } from "@/hooks/useAdmin";
 import Logo from "./Logo";
 
 const navigation = [
@@ -14,16 +14,17 @@ const navigation = [
   { name: "Files", href: "/dashboard/files", icon: FileText },
 ];
 
-const adminNavigation = [
-  { name: "Admin", href: "/dashboard/admin", icon: Shield },
-];
+const adminNavigation = [{ name: "Admin", href: "/dashboard/admin", icon: Shield }];
 
 interface DashboardSidebarProps {
   isMobileOpen?: boolean;
   onMobileClose?: () => void;
 }
 
-export default function DashboardSidebar({ isMobileOpen = false, onMobileClose }: DashboardSidebarProps) {
+export default function DashboardSidebar({
+  isMobileOpen = false,
+  onMobileClose,
+}: DashboardSidebarProps) {
   const pathname = usePathname();
   const { user } = useUser();
   const { isAdmin } = useAdmin();
@@ -38,20 +39,20 @@ export default function DashboardSidebar({ isMobileOpen = false, onMobileClose }
   // Close mobile sidebar on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isMobileOpen && onMobileClose) {
+      if (e.key === "Escape" && isMobileOpen && onMobileClose) {
         onMobileClose();
       }
     };
 
     if (isMobileOpen) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener("keydown", handleEscape);
       // Prevent body scroll when mobile sidebar is open
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "unset";
     };
   }, [isMobileOpen, onMobileClose]);
 
@@ -59,7 +60,7 @@ export default function DashboardSidebar({ isMobileOpen = false, onMobileClose }
     <>
       {/* Mobile overlay */}
       {isMobileOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
           onClick={onMobileClose}
           aria-hidden="true"
@@ -71,7 +72,7 @@ export default function DashboardSidebar({ isMobileOpen = false, onMobileClose }
         className={clsx(
           "bg-white border-r border-gray-200 min-h-screen transition-transform duration-300 flex flex-col",
           "fixed inset-y-0 left-0 z-50 w-80",
-          isMobileOpen ? "translate-x-0" : "-translate-x-full"
+          isMobileOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         {/* Header */}
@@ -80,7 +81,7 @@ export default function DashboardSidebar({ isMobileOpen = false, onMobileClose }
           <Link href="/">
             <Logo size="md" />
           </Link>
-          
+
           {/* Close button */}
           <button
             type="button"
@@ -96,7 +97,8 @@ export default function DashboardSidebar({ isMobileOpen = false, onMobileClose }
         <nav className="flex-1 px-4 py-6">
           <ul className="space-y-2">
             {navigation.map((item) => {
-              const isActive = pathname === item.href || 
+              const isActive =
+                pathname === item.href ||
                 (item.href === "/dashboard/files" && pathname.startsWith("/dashboard/files"));
               return (
                 <li key={item.name}>
@@ -120,32 +122,33 @@ export default function DashboardSidebar({ isMobileOpen = false, onMobileClose }
                 </li>
               );
             })}
-            
+
             {/* Admin Navigation - Only show if user is admin */}
-            {isAdmin && adminNavigation.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <li key={item.name}>
-                  <Link
-                    href={item.href}
-                    className={clsx(
-                      "group flex items-center px-4 py-3 text-base font-medium rounded-lg transition-colors touch-manipulation",
-                      isActive
-                        ? "bg-primary-100 text-primary-700"
-                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
-                    )}
-                  >
-                    <item.icon
+            {isAdmin &&
+              adminNavigation.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <li key={item.name}>
+                    <Link
+                      href={item.href}
                       className={clsx(
-                        "mr-4 h-6 w-6 flex-shrink-0",
-                        isActive ? "text-primary-500" : "text-gray-400 group-hover:text-gray-500",
+                        "group flex items-center px-4 py-3 text-base font-medium rounded-lg transition-colors touch-manipulation",
+                        isActive
+                          ? "bg-primary-100 text-primary-700"
+                          : "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
                       )}
-                    />
-                    <span className="truncate">{item.name}</span>
-                  </Link>
-                </li>
-              );
-            })}
+                    >
+                      <item.icon
+                        className={clsx(
+                          "mr-4 h-6 w-6 flex-shrink-0",
+                          isActive ? "text-primary-500" : "text-gray-400 group-hover:text-gray-500",
+                        )}
+                      />
+                      <span className="truncate">{item.name}</span>
+                    </Link>
+                  </li>
+                );
+              })}
           </ul>
         </nav>
 
@@ -163,7 +166,9 @@ export default function DashboardSidebar({ isMobileOpen = false, onMobileClose }
             <Settings
               className={clsx(
                 "mr-4 h-6 w-6 flex-shrink-0",
-                pathname === "/dashboard/settings" ? "text-primary-500" : "text-gray-400 group-hover:text-gray-500",
+                pathname === "/dashboard/settings"
+                  ? "text-primary-500"
+                  : "text-gray-400 group-hover:text-gray-500",
               )}
             />
             <span className="truncate">Settings</span>

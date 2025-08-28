@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAuth, useUser } from "@clerk/nextjs";
-import { formatDistanceToNow } from "date-fns";
-import { FileText, Eye, Calendar, MoreHorizontal, Plus } from "lucide-react";
-import Link from "next/link";
 import { useApi } from "@/hooks/useApi";
 import { formatFileSize } from "@/utils/formatters";
+import { useAuth, useUser } from "@clerk/nextjs";
+import { formatDistanceToNow } from "date-fns";
+import { Calendar, Eye, FileText, MoreHorizontal, Plus } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface File {
   id: number;
@@ -25,10 +25,10 @@ export default function RecentFiles() {
   const { isLoaded: authLoaded } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
   const api = useApi();
-  
+
   // Wait for both auth and user to be loaded
   const isReady = authLoaded && userLoaded;
-  
+
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -56,10 +56,6 @@ export default function RecentFiles() {
       setLoading(false);
     }
   };
-
-
-
-
 
   // Show loading state while Clerk is initializing
   if (!isReady) {
@@ -115,7 +111,9 @@ export default function RecentFiles() {
         <div className="card-body p-4 sm:p-6">
           <div className="text-center py-8 sm:py-12">
             <FileText className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-400" />
-            <p className="mt-4 text-sm sm:text-base text-gray-500">Please sign in to view your files.</p>
+            <p className="mt-4 text-sm sm:text-base text-gray-500">
+              Please sign in to view your files.
+            </p>
           </div>
         </div>
       </div>
@@ -169,8 +167,8 @@ export default function RecentFiles() {
     <div className="card">
       <div className="card-header flex justify-between items-center">
         <h3 className="text-base sm:text-lg font-medium text-gray-900">Recent Files</h3>
-        <Link 
-          href="/dashboard/files" 
+        <Link
+          href="/dashboard/files"
           className="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors duration-200 hover:underline"
         >
           View all
@@ -186,8 +184,8 @@ export default function RecentFiles() {
             <p className="text-gray-500 mb-8 max-w-sm mx-auto">
               Get started by uploading your first PDF to share and track.
             </p>
-            <Link 
-              href="/dashboard/files/upload" 
+            <Link
+              href="/dashboard/files/upload"
               className="btn-primary btn-md inline-flex items-center"
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -197,8 +195,8 @@ export default function RecentFiles() {
         ) : (
           <div className="space-y-3 sm:space-y-4">
             {files.map((file) => (
-              <div 
-                key={file.id} 
+              <div
+                key={file.id}
                 className="group relative bg-white border border-gray-200 rounded-lg p-4 sm:p-6 transition-all duration-200 hover:shadow-sm focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2"
               >
                 <div className="flex items-start space-x-4">
@@ -214,15 +212,12 @@ export default function RecentFiles() {
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
                       <div className="flex-1 min-w-0">
                         {/* File Title */}
-                        <Link 
-                          href={`/dashboard/files/${file.id}`}
-                          className="block w-full"
-                        >
+                        <Link href={`/dashboard/files/${file.id}`} className="block w-full">
                           <h3 className="text-base font-medium text-gray-900 truncate hover:text-primary-600 transition-colors focus:outline-none focus:text-primary-600">
                             {file.title || "Untitled Document"}
                           </h3>
                         </Link>
-                        
+
                         {/* File Metadata - Mobile */}
                         <div className="mt-2 sm:hidden space-y-1">
                           <div className="text-sm text-gray-600 font-medium">

@@ -1,11 +1,11 @@
 "use client";
 
-import { Bell, Download, Shield, Trash2, User, HardDrive, TrendingUp, Cookie } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useApi } from "@/hooks/useApi";
-import { formatFileSize, getProgressColor, calculatePercentage } from "@/utils/formatters";
-import { planQuotas } from "@/shared/types";
 import { useAnalyticsConsent } from "@/hooks/useAnalyticsConsent";
+import { useApi } from "@/hooks/useApi";
+import { planQuotas } from "@/shared/types";
+import { calculatePercentage, formatFileSize, getProgressColor } from "@/utils/formatters";
+import { Bell, Cookie, Download, HardDrive, Shield, Trash2, TrendingUp, User } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface UserSettings {
   email: string;
@@ -34,7 +34,8 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
 
   const api = useApi();
-  const { consent, grantConsent, denyConsent, resetConsent, hasConsent, needsConsent } = useAnalyticsConsent();
+  const { consent, grantConsent, denyConsent, resetConsent, hasConsent, needsConsent } =
+    useAnalyticsConsent();
 
   useEffect(() => {
     fetchSettings();
@@ -91,8 +92,6 @@ export default function SettingsPage() {
     }
   };
 
-
-
   if (loading) {
     return (
       <div className="space-y-4 sm:space-y-6">
@@ -116,8 +115,12 @@ export default function SettingsPage() {
         <div className="card">
           <div className="card-body p-4 sm:p-6 text-center py-12">
             <User className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-400" />
-            <h3 className="mt-4 text-lg sm:text-xl font-medium text-gray-900">Settings Unavailable</h3>
-            <p className="mt-2 text-sm sm:text-base text-gray-600">Unable to load your settings at this time.</p>
+            <h3 className="mt-4 text-lg sm:text-xl font-medium text-gray-900">
+              Settings Unavailable
+            </h3>
+            <p className="mt-2 text-sm sm:text-base text-gray-600">
+              Unable to load your settings at this time.
+            </p>
           </div>
         </div>
       </div>
@@ -183,21 +186,29 @@ export default function SettingsPage() {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
               <div
-                className={`h-2.5 rounded-full transition-all duration-500 ease-out shadow-sm ${getProgressColor(calculatePercentage(settings.storage.used, settings.storage.limit))}`}
-                style={{ width: `${Math.min(calculatePercentage(settings.storage.used, settings.storage.limit), 100)}%` }}
+                className={`h-2.5 rounded-full transition-all duration-500 ease-out shadow-sm ${getProgressColor(
+                  calculatePercentage(settings.storage.used, settings.storage.limit),
+                )}`}
+                style={{
+                  width: `${Math.min(
+                    calculatePercentage(settings.storage.used, settings.storage.limit),
+                    100,
+                  )}%`,
+                }}
               />
             </div>
             <div className="flex items-center justify-between mt-2">
               <p className="text-xs text-gray-500">
-                {calculatePercentage(settings.storage.used, settings.storage.limit).toFixed(1)}% used
+                {calculatePercentage(settings.storage.used, settings.storage.limit).toFixed(1)}%
+                used
               </p>
               <p className="text-xs font-medium text-gray-700 capitalize">
                 {settings.storage.plan} Plan
               </p>
             </div>
           </div>
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="btn-outline btn-md w-full sm:w-auto flex items-center justify-center"
             onClick={() => document.getElementById("waitlist-modal")?.classList.remove("hidden")}
           >
@@ -270,7 +281,9 @@ export default function SettingsPage() {
             </div>
             Privacy & Data
           </h3>
-          <p className="mt-1 text-sm text-gray-500">Control your privacy settings and data collection</p>
+          <p className="mt-1 text-sm text-gray-500">
+            Control your privacy settings and data collection
+          </p>
         </div>
         <div className="card-body p-4 sm:p-6 space-y-4">
           <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -294,7 +307,9 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Data Retention Period</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Data Retention Period
+            </label>
             <select
               id="data-retention-select"
               name="dataRetention"
@@ -325,7 +340,9 @@ export default function SettingsPage() {
             </div>
             Cookie & Analytics Consent
           </h3>
-          <p className="mt-1 text-sm text-gray-500">Manage your cookie preferences and analytics consent</p>
+          <p className="mt-1 text-sm text-gray-500">
+            Manage your cookie preferences and analytics consent
+          </p>
         </div>
         <div className="card-body p-4 sm:p-6 space-y-4">
           <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
@@ -336,7 +353,8 @@ export default function SettingsPage() {
               <div className="ml-3">
                 <h4 className="text-sm font-medium text-blue-800">GDPR Compliance</h4>
                 <p className="text-sm text-blue-700 mt-1">
-                  We respect your privacy and comply with GDPR regulations. You can control how we use cookies and analytics to improve our service.
+                  We respect your privacy and comply with GDPR regulations. You can control how we
+                  use cookies and analytics to improve our service.
                 </p>
               </div>
             </div>
@@ -346,7 +364,9 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-700">Google Analytics</p>
-                <p className="text-xs text-gray-500">Help us improve by allowing analytics cookies</p>
+                <p className="text-xs text-gray-500">
+                  Help us improve by allowing analytics cookies
+                </p>
               </div>
               <div className="flex items-center space-x-2">
                 {needsConsent ? (
@@ -393,10 +413,22 @@ export default function SettingsPage() {
           </div>
 
           <div className="text-xs text-gray-500 space-y-1">
-            <p><strong>What we collect:</strong> Page views, user interactions, and performance data to improve our service.</p>
-            <p><strong>How we use it:</strong> To understand how users interact with our platform and make improvements.</p>
-            <p><strong>Data retention:</strong> Analytics data is retained for up to 26 months as per Google Analytics policy.</p>
-            <p><strong>Your rights:</strong> You can change your consent at any time in these settings.</p>
+            <p>
+              <strong>What we collect:</strong> Page views, user interactions, and performance data
+              to improve our service.
+            </p>
+            <p>
+              <strong>How we use it:</strong> To understand how users interact with our platform and
+              make improvements.
+            </p>
+            <p>
+              <strong>Data retention:</strong> Analytics data is retained for up to 26 months as per
+              Google Analytics policy.
+            </p>
+            <p>
+              <strong>Your rights:</strong> You can change your consent at any time in these
+              settings.
+            </p>
           </div>
         </div>
       </div>
@@ -429,7 +461,10 @@ export default function SettingsPage() {
               <p className="text-sm font-medium text-red-700">Delete My Account</p>
               <p className="text-xs text-red-600">Permanently delete your account and all data</p>
             </div>
-            <button type="button" className="btn-outline btn-md text-red-600 hover:text-red-700 border-red-300 hover:border-red-400 hover:bg-red-50 flex items-center">
+            <button
+              type="button"
+              className="btn-outline btn-md text-red-600 hover:text-red-700 border-red-300 hover:border-red-400 hover:bg-red-50 flex items-center"
+            >
               <Trash2 className="h-4 w-4 mr-2" />
               Delete
             </button>

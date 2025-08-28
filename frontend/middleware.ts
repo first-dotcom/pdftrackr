@@ -5,7 +5,7 @@ export default authMiddleware({
   publicRoutes: [
     "/",
     "/sign-in",
-    "/sign-up", 
+    "/sign-up",
     "/privacy",
     "/terms",
     "/cookies",
@@ -16,20 +16,15 @@ export default authMiddleware({
   ],
   // Routes that can always be accessed, and have
   // no authentication information
-  ignoredRoutes: [
-    "/api/health",
-    "/_next/(.*)",
-    "/favicon.ico",
-    "/static/(.*)",
-  ],
+  ignoredRoutes: ["/api/health", "/_next/(.*)", "/favicon.ico", "/static/(.*)"],
   // Optional: Configure which routes to run middleware on
   // This is useful if you want to run middleware on all routes
   // except for certain ones
-  beforeAuth: (req) => {
+  beforeAuth: (_req) => {
     // Handle any pre-auth logic here
     return;
   },
-  afterAuth: (auth, req) => {
+  afterAuth: (_auth, _req) => {
     // Handle any post-auth logic here
     return;
   },
@@ -41,5 +36,5 @@ export const config = {
   // for more information about configuring your Middleware
   matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
   // Disable Edge Runtime for standalone builds to avoid Node.js API issues
-  runtime: 'nodejs',
+  runtime: "nodejs",
 };

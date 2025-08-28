@@ -4,7 +4,7 @@
  */
 
 import { z } from "zod";
-import { waitlistPlanSchema, validatePlan } from "./validation";
+import { validatePlan, waitlistPlanSchema } from "./validation";
 
 // Zod schemas for robust validation
 export const emailSchema = z.string().email().max(254);

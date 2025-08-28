@@ -1,9 +1,9 @@
 "use client";
 
+import { getFileSizeLimitDisplay } from "@/shared/types";
 import { Check } from "lucide-react";
 import Link from "next/link";
 import WaitlistModal from "./WaitlistModal";
-import { getFileSizeLimitDisplay } from "@/shared/types";
 
 const plans = [
   {
@@ -113,7 +113,9 @@ export default function Pricing() {
                 plan.featured ? "border-primary-200 shadow-lg ring-1 ring-primary-200" : ""
               } ${!plan.available ? "opacity-75" : ""}`}
             >
-              <div className={`absolute top-4 right-4 ${plan.badgeColor} text-xs font-medium px-2 py-1 rounded-full`}>
+              <div
+                className={`absolute top-4 right-4 ${plan.badgeColor} text-xs font-medium px-2 py-1 rounded-full`}
+              >
                 {plan.badge}
               </div>
               <div className="p-6">

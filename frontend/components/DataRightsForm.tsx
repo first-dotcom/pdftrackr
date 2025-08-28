@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useAuth, SignInButton } from "@clerk/nextjs";
 import { useApi } from "@/hooks/useApi";
+import { SignInButton, useAuth } from "@clerk/nextjs";
+import { useState } from "react";
 
 export default function DataRightsForm() {
   const { isSignedIn } = useAuth();
@@ -13,8 +13,8 @@ export default function DataRightsForm() {
     fields: {
       firstName: "",
       lastName: "",
-      email: ""
-    }
+      email: "",
+    },
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,7 +35,7 @@ export default function DataRightsForm() {
       const requestData = {
         requestType: formData.requestType,
         description: formData.description,
-        ...(formData.requestType === "rectification" && { fields: formData.fields })
+        ...(formData.requestType === "rectification" && { fields: formData.fields }),
       };
 
       const response = await api.dataRights.request(requestData);
@@ -43,18 +43,20 @@ export default function DataRightsForm() {
       if (response.success) {
         setSubmitStatus("success");
         setResponseData(response.data);
-        
+
         // Reset form for new requests
         setFormData({
           requestType: "access",
           description: "",
-          fields: { firstName: "", lastName: "", email: "" }
+          fields: { firstName: "", lastName: "", email: "" },
         });
       } else {
         setSubmitStatus("error");
         // If backend returns 401, guide the user to sign in
         if ((response as any)?.error?.toString?.().includes("401")) {
-          setResponseData({ message: "You must be signed in to submit a request. Please sign in and try again." });
+          setResponseData({
+            message: "You must be signed in to submit a request. Please sign in and try again.",
+          });
         }
       }
     } catch (error) {
@@ -65,22 +67,24 @@ export default function DataRightsForm() {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
-    
+
     if (name.startsWith("fields.")) {
       const fieldName = name.split(".")[1] as keyof typeof formData.fields;
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         fields: {
           ...prev.fields,
-          [fieldName]: value
-        }
+          [fieldName]: value,
+        },
       }));
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [name]: value
+        [name]: value,
       }));
     }
   };
@@ -89,17 +93,31 @@ export default function DataRightsForm() {
     <div className="max-w-2xl mx-auto">
       <div className="bg-white shadow-sm rounded-lg p-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Exercise Your Data Rights</h2>
-        
+
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <h3 className="text-lg font-semibold text-blue-900 mb-2">Your Rights Under GDPR</h3>
           <ul className="text-sm text-blue-800 space-y-1">
-            <li>• <strong>Right of Access:</strong> Request a copy of your personal data</li>
-            <li>• <strong>Right to Rectification:</strong> Request correction of inaccurate data</li>
-            <li>• <strong>Right to Erasure:</strong> Request deletion of your personal data</li>
-            <li>• <strong>Right to Restrict Processing:</strong> Request limitation of data processing</li>
-            <li>• <strong>Right to Data Portability:</strong> Request transfer of your data</li>
-            <li>• <strong>Right to Object:</strong> Object to processing based on legitimate interests</li>
-            <li>• <strong>Right to Withdraw Consent:</strong> Withdraw consent for analytics</li>
+            <li>
+              • <strong>Right of Access:</strong> Request a copy of your personal data
+            </li>
+            <li>
+              • <strong>Right to Rectification:</strong> Request correction of inaccurate data
+            </li>
+            <li>
+              • <strong>Right to Erasure:</strong> Request deletion of your personal data
+            </li>
+            <li>
+              • <strong>Right to Restrict Processing:</strong> Request limitation of data processing
+            </li>
+            <li>
+              • <strong>Right to Data Portability:</strong> Request transfer of your data
+            </li>
+            <li>
+              • <strong>Right to Object:</strong> Object to processing based on legitimate interests
+            </li>
+            <li>
+              • <strong>Right to Withdraw Consent:</strong> Withdraw consent for analytics
+            </li>
           </ul>
         </div>
 
@@ -109,7 +127,10 @@ export default function DataRightsForm() {
             <p className="text-sm">You need to be signed in to submit a data rights request.</p>
             <div className="mt-3">
               <SignInButton>
-                <button type="button" className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
+                <button
+                  type="button"
+                  className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                >
                   Sign in
                 </button>
               </SignInButton>
@@ -142,7 +163,10 @@ export default function DataRightsForm() {
               <h4 className="text-lg font-medium text-gray-900">Fields to Update</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="fields.firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="fields.firstName"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
                     First Name
                   </label>
                   <input
@@ -156,7 +180,10 @@ export default function DataRightsForm() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="fields.lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="fields.lastName"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
                     Last Name
                   </label>
                   <input
@@ -171,7 +198,10 @@ export default function DataRightsForm() {
                 </div>
               </div>
               <div>
-                <label htmlFor="fields.email" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="fields.email"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Email Address
                 </label>
                 <input
@@ -209,7 +239,12 @@ export default function DataRightsForm() {
               <li>• We will respond to your request within 30 days</li>
               <li>• We may need to verify your identity before processing</li>
               <li>• Some requests may be subject to legal exceptions</li>
-              <li>• For help, use the <a href="/data-rights" className="underline">Data Rights Request form</a></li>
+              <li>
+                • For help, use the{" "}
+                <a href="/data-rights" className="underline">
+                  Data Rights Request form
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -224,25 +259,25 @@ export default function DataRightsForm() {
 
         {submitStatus === "success" && (
           <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
-            <h3 className="text-lg font-semibold text-green-800 mb-2">Request Processed Successfully</h3>
+            <h3 className="text-lg font-semibold text-green-800 mb-2">
+              Request Processed Successfully
+            </h3>
             <p className="text-green-700">
-              {formData.requestType === "deletion" && 
-                "Your account and all associated data have been permanently deleted. You will be logged out automatically."
-              }
-              {formData.requestType === "access" && 
-                "Your data access request has been processed. You can view your data below."
-              }
-              {formData.requestType === "portability" && 
-                "Your data has been exported in machine-readable format. You can download it below."
-              }
-              {formData.requestType === "rectification" && 
-                "Your data has been updated successfully."
-              }
+              {formData.requestType === "deletion" &&
+                "Your account and all associated data have been permanently deleted. You will be logged out automatically."}
+              {formData.requestType === "access" &&
+                "Your data access request has been processed. You can view your data below."}
+              {formData.requestType === "portability" &&
+                "Your data has been exported in machine-readable format. You can download it below."}
+              {formData.requestType === "rectification" &&
+                "Your data has been updated successfully."}
             </p>
             {responseData && (
               <div className="mt-4">
                 <details className="bg-white rounded border p-3">
-                  <summary className="cursor-pointer font-medium text-green-800">View Response Data</summary>
+                  <summary className="cursor-pointer font-medium text-green-800">
+                    View Response Data
+                  </summary>
                   <pre className="mt-2 text-xs overflow-auto max-h-64 bg-gray-50 p-2 rounded">
                     {JSON.stringify(responseData, null, 2)}
                   </pre>
@@ -256,7 +291,11 @@ export default function DataRightsForm() {
           <div className="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-red-800 mb-2">Submission Failed</h3>
             <p className="text-red-700">
-              There was an error submitting your request. Please try again, or use the <a href="/data-rights" className="underline">Data Rights Request form</a> later.
+              There was an error submitting your request. Please try again, or use the{" "}
+              <a href="/data-rights" className="underline">
+                Data Rights Request form
+              </a>{" "}
+              later.
             </p>
           </div>
         )}
@@ -264,8 +303,15 @@ export default function DataRightsForm() {
         <div className="mt-8 pt-6 border-t border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Need Help?</h3>
           <p className="text-sm text-gray-600">
-            Use the <a href="/data-rights" className="underline">Data Rights Request form</a> or see our
-            {' '}<a href="/privacy" className="underline">Privacy Policy</a> for details on how to exercise your rights.
+            Use the{" "}
+            <a href="/data-rights" className="underline">
+              Data Rights Request form
+            </a>{" "}
+            or see our{" "}
+            <a href="/privacy" className="underline">
+              Privacy Policy
+            </a>{" "}
+            for details on how to exercise your rights.
           </p>
         </div>
       </div>

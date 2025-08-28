@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { pdfjs } from 'react-pdf';
+import { NextResponse } from "next/server";
+import { pdfjs } from "react-pdf";
 
 /**
  * Health check endpoint for PDF viewing functionality
@@ -9,8 +9,8 @@ export async function GET() {
   try {
     const healthCheck = {
       timestamp: new Date().toISOString(),
-      service: 'pdf-viewer',
-      status: 'unknown',
+      service: "pdf-viewer",
+      status: "unknown",
       details: {} as any,
     };
 
@@ -27,45 +27,44 @@ export async function GET() {
     const urlTests = await Promise.allSettled(
       workerUrls.map(async (url) => {
         try {
-          const response = await fetch(url, { 
-            method: 'HEAD',
-            signal: AbortSignal.timeout(5000) // 5s timeout
+          const response = await fetch(url, {
+            method: "HEAD",
+            signal: AbortSignal.timeout(5000), // 5s timeout
           });
           return { url, status: response.status, ok: response.ok };
         } catch (error) {
           return { url, status: 0, ok: false, error: (error as Error).message };
         }
-      })
+      }),
     );
 
     healthCheck.details.workerUrls = urlTests.map((result, index) => ({
       url: workerUrls[index],
-      accessible: result.status === 'fulfilled' && result.value.ok,
-      details: result.status === 'fulfilled' ? result.value : result.reason
+      accessible: result.status === "fulfilled" && result.value.ok,
+      details: result.status === "fulfilled" ? result.value : result.reason,
     }));
 
     // Determine overall status
     const anyWorkerAccessible = healthCheck.details.workerUrls.some((url: any) => url.accessible);
-    healthCheck.status = anyWorkerAccessible ? 'healthy' : 'unhealthy';
+    healthCheck.status = anyWorkerAccessible ? "healthy" : "unhealthy";
 
-    return NextResponse.json(healthCheck, { 
+    return NextResponse.json(healthCheck, {
       status: anyWorkerAccessible ? 200 : 503,
       headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      }
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
     });
-
   } catch (error) {
     return NextResponse.json(
       {
         timestamp: new Date().toISOString(),
-        service: 'pdf-viewer',
-        status: 'error',
+        service: "pdf-viewer",
+        status: "error",
         error: (error as Error).message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

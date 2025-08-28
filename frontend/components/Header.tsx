@@ -1,9 +1,9 @@
 "use client";
 
-import { Menu, X, Upload } from "lucide-react";
+import { useAuth, useUser } from "@clerk/nextjs";
+import { Menu, Upload, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { useAuth, useUser } from "@clerk/nextjs";
 import Logo from "./Logo";
 
 export default function Header() {
@@ -41,7 +41,10 @@ export default function Header() {
             ) : (
               // Authenticated user navigation
               <>
-                <Link href="/dashboard/files" className="text-gray-600 hover:text-gray-900 flex items-center space-x-1">
+                <Link
+                  href="/dashboard/files"
+                  className="text-gray-600 hover:text-gray-900 flex items-center space-x-1"
+                >
                   <Upload className="h-4 w-4" />
                   <span>Upload</span>
                 </Link>

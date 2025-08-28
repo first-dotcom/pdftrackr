@@ -1,10 +1,11 @@
-import Link from "next/link";
-import { ArrowLeft, Shield, Lock, Eye, Download, Mail, Clock, Users } from "lucide-react";
+import { ArrowLeft, Clock, Download, Eye, Lock, Mail, Shield, Users } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Secure PDF Sharing Guide - Protect Your Documents with Professional Tools",
-  description: "Learn how to share PDFs securely while maintaining control over who accesses your documents. Comprehensive guide to password protection, access controls, and security best practices.",
+  description:
+    "Learn how to share PDFs securely while maintaining control over who accesses your documents. Comprehensive guide to password protection, access controls, and security best practices.",
   keywords: [
     "secure PDF sharing guide",
     "PDF security best practices",
@@ -13,11 +14,12 @@ export const metadata: Metadata = {
     "secure document sharing",
     "PDF encryption",
     "PDF security features",
-    "document protection guide"
+    "document protection guide",
   ],
   openGraph: {
     title: "Secure PDF Sharing Guide - Protect Your Documents with Professional Tools",
-    description: "Learn how to share PDFs securely while maintaining control over who accesses your documents. Comprehensive guide to password protection, access controls, and security best practices.",
+    description:
+      "Learn how to share PDFs securely while maintaining control over who accesses your documents. Comprehensive guide to password protection, access controls, and security best practices.",
     type: "article",
   },
 };
@@ -32,13 +34,17 @@ export default function SecurePdfSharingGuidePage() {
             Back to Home
           </Link>
         </div>
-        
+
         <div className="bg-white shadow-sm rounded-lg p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Secure PDF Sharing Guide - Protect Your Documents with Professional Tools</h1>
-          
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">
+            Secure PDF Sharing Guide - Protect Your Documents with Professional Tools
+          </h1>
+
           <div className="prose prose-gray max-w-none">
             <p className="text-lg text-gray-600 mb-6">
-              Learn how to share PDFs securely while maintaining control over who accesses your documents. This comprehensive guide covers password protection, access controls, tracking, and best practices for secure document sharing in professional environments.
+              Learn how to share PDFs securely while maintaining control over who accesses your
+              documents. This comprehensive guide covers password protection, access controls,
+              tracking, and best practices for secure document sharing in professional environments.
             </p>
 
             <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-8">
@@ -48,18 +54,27 @@ export default function SecurePdfSharingGuidePage() {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm text-blue-700">
-                    <strong>Security First:</strong> PDFTrackr provides enterprise-grade security for your PDF documents with virus scanning, encryption, and comprehensive access controls.
+                    <strong>Security First:</strong> PDFTrackr provides enterprise-grade security
+                    for your PDF documents with virus scanning, encryption, and comprehensive access
+                    controls.
                   </p>
                 </div>
               </div>
             </div>
 
-            <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Why Secure PDF Sharing Matters</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
+              Why Secure PDF Sharing Matters
+            </h2>
             <p className="text-gray-600 mb-4">
-              In today's digital world, secure PDF sharing is essential for protecting sensitive information, maintaining compliance, and controlling document access. Whether you're sharing business proposals, legal documents, or confidential reports, proper security measures ensure your documents remain protected.
+              In today's digital world, secure PDF sharing is essential for protecting sensitive
+              information, maintaining compliance, and controlling document access. Whether you're
+              sharing business proposals, legal documents, or confidential reports, proper security
+              measures ensure your documents remain protected.
             </p>
 
-            <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Essential Security Features for PDF Sharing</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
+              Essential Security Features for PDF Sharing
+            </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <div className="bg-gray-50 p-6 rounded-lg">
@@ -68,7 +83,8 @@ export default function SecurePdfSharingGuidePage() {
                   <h3 className="text-xl font-semibold text-gray-900">Password Protection</h3>
                 </div>
                 <p className="text-gray-600 mb-3">
-                  Add strong passwords to restrict access to your PDF documents. Only users with the correct password can view the content.
+                  Add strong passwords to restrict access to your PDF documents. Only users with the
+                  correct password can view the content.
                 </p>
                 <ul className="text-sm text-gray-600">
                   <li>• Custom password requirements</li>
@@ -83,7 +99,8 @@ export default function SecurePdfSharingGuidePage() {
                   <h3 className="text-xl font-semibold text-gray-900">Email Gating</h3>
                 </div>
                 <p className="text-gray-600 mb-3">
-                  Capture viewer email addresses before granting document access. Perfect for lead generation and audience building.
+                  Capture viewer email addresses before granting document access. Perfect for lead
+                  generation and audience building.
                 </p>
                 <ul className="text-sm text-gray-600">
                   <li>• Automatic email collection</li>
@@ -98,7 +115,8 @@ export default function SecurePdfSharingGuidePage() {
                   <h3 className="text-xl font-semibold text-gray-900">Link Expiration</h3>
                 </div>
                 <p className="text-gray-600 mb-3">
-                  Set time limits on document access. Links automatically expire after a specified period, ensuring temporary access only.
+                  Set time limits on document access. Links automatically expire after a specified
+                  period, ensuring temporary access only.
                 </p>
                 <ul className="text-sm text-gray-600">
                   <li>• Custom expiration dates</li>
@@ -113,7 +131,8 @@ export default function SecurePdfSharingGuidePage() {
                   <h3 className="text-xl font-semibold text-gray-900">Download Control</h3>
                 </div>
                 <p className="text-gray-600 mb-3">
-                  Choose whether viewers can download your PDF or only view it online. Maintain document control and prevent unauthorized distribution.
+                  Choose whether viewers can download your PDF or only view it online. Maintain
+                  document control and prevent unauthorized distribution.
                 </p>
                 <ul className="text-sm text-gray-600">
                   <li>• View-only mode</li>
@@ -123,9 +142,13 @@ export default function SecurePdfSharingGuidePage() {
               </div>
             </div>
 
-            <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Step-by-Step Secure PDF Sharing Process</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
+              Step-by-Step Secure PDF Sharing Process
+            </h2>
 
-            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">Step 1: Prepare Your Document</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
+              Step 1: Prepare Your Document
+            </h3>
             <p className="text-gray-600 mb-4">
               Before sharing, ensure your PDF is properly prepared:
             </p>
@@ -136,19 +159,33 @@ export default function SecurePdfSharingGuidePage() {
               <li>Consider adding watermarks for additional protection</li>
             </ul>
 
-            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">Step 2: Choose Your Security Settings</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
+              Step 2: Choose Your Security Settings
+            </h3>
             <p className="text-gray-600 mb-4">
               Configure the appropriate security measures for your document:
             </p>
             <ul className="list-disc pl-6 text-gray-600 mb-4">
-              <li><strong>Password Protection:</strong> Set a strong, unique password</li>
-              <li><strong>Email Gating:</strong> Enable if you want to capture leads</li>
-              <li><strong>Link Expiration:</strong> Set appropriate time limits</li>
-              <li><strong>Download Control:</strong> Choose view-only or downloadable</li>
-              <li><strong>Access Notifications:</strong> Get alerts when documents are viewed</li>
+              <li>
+                <strong>Password Protection:</strong> Set a strong, unique password
+              </li>
+              <li>
+                <strong>Email Gating:</strong> Enable if you want to capture leads
+              </li>
+              <li>
+                <strong>Link Expiration:</strong> Set appropriate time limits
+              </li>
+              <li>
+                <strong>Download Control:</strong> Choose view-only or downloadable
+              </li>
+              <li>
+                <strong>Access Notifications:</strong> Get alerts when documents are viewed
+              </li>
             </ul>
 
-            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">Step 3: Upload and Secure</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
+              Step 3: Upload and Secure
+            </h3>
             <p className="text-gray-600 mb-4">
               Upload your PDF to a secure platform like PDFTrackr. The platform will:
             </p>
@@ -159,7 +196,9 @@ export default function SecurePdfSharingGuidePage() {
               <li>Set up tracking and analytics</li>
             </ul>
 
-            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">Step 4: Share Securely</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
+              Step 4: Share Securely
+            </h3>
             <p className="text-gray-600 mb-4">
               Distribute your secure PDF link through appropriate channels:
             </p>
@@ -170,10 +209,10 @@ export default function SecurePdfSharingGuidePage() {
               <li>Direct messaging for sensitive documents</li>
             </ul>
 
-            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">Step 5: Monitor and Manage</h3>
-            <p className="text-gray-600 mb-4">
-              Track document access and manage security:
-            </p>
+            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
+              Step 5: Monitor and Manage
+            </h3>
+            <p className="text-gray-600 mb-4">Track document access and manage security:</p>
             <ul className="list-disc pl-6 text-gray-600 mb-4">
               <li>Monitor who accesses your documents</li>
               <li>Track viewing patterns and engagement</li>
@@ -181,64 +220,97 @@ export default function SecurePdfSharingGuidePage() {
               <li>Update security settings as needed</li>
             </ul>
 
-            <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Advanced Security Features</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
+              Advanced Security Features
+            </h2>
 
             <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">Virus Scanning</h3>
             <p className="text-gray-600 mb-4">
-              Every uploaded PDF is automatically scanned for viruses and malware, ensuring your documents and recipients remain safe from security threats.
+              Every uploaded PDF is automatically scanned for viruses and malware, ensuring your
+              documents and recipients remain safe from security threats.
             </p>
 
             <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">TLS/SSL Encryption</h3>
             <p className="text-gray-600 mb-4">
-              All data transmission is encrypted using industry-standard TLS/SSL protocols, protecting your documents during upload, storage, and sharing.
+              All data transmission is encrypted using industry-standard TLS/SSL protocols,
+              protecting your documents during upload, storage, and sharing.
             </p>
 
             <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">Access Logging</h3>
             <p className="text-gray-600 mb-4">
-              Comprehensive logs track every access attempt, providing an audit trail for compliance and security monitoring purposes.
+              Comprehensive logs track every access attempt, providing an audit trail for compliance
+              and security monitoring purposes.
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">Geographic Restrictions</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
+              Geographic Restrictions
+            </h3>
             <p className="text-gray-600 mb-4">
-              Restrict document access based on geographic location, ensuring compliance with regional data protection regulations.
+              Restrict document access based on geographic location, ensuring compliance with
+              regional data protection regulations.
             </p>
 
-            <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Best Practices for Secure PDF Sharing</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
+              Best Practices for Secure PDF Sharing
+            </h2>
 
-            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">1. Use Strong Passwords</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
+              1. Use Strong Passwords
+            </h3>
             <p className="text-gray-600 mb-4">
-              Create complex passwords with a mix of letters, numbers, and special characters. Avoid using easily guessable information.
+              Create complex passwords with a mix of letters, numbers, and special characters. Avoid
+              using easily guessable information.
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">2. Set Appropriate Expiration Dates</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
+              2. Set Appropriate Expiration Dates
+            </h3>
             <p className="text-gray-600 mb-4">
-              Choose expiration dates that balance security with usability. Consider the document's sensitivity and intended use.
+              Choose expiration dates that balance security with usability. Consider the document's
+              sensitivity and intended use.
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">3. Monitor Access Regularly</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
+              3. Monitor Access Regularly
+            </h3>
             <p className="text-gray-600 mb-4">
-              Regularly review access logs and analytics to identify any suspicious activity or unauthorized access attempts.
+              Regularly review access logs and analytics to identify any suspicious activity or
+              unauthorized access attempts.
             </p>
 
             <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">4. Educate Recipients</h3>
             <p className="text-gray-600 mb-4">
-              Inform recipients about security measures and best practices for handling sensitive documents.
+              Inform recipients about security measures and best practices for handling sensitive
+              documents.
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">5. Regular Security Updates</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
+              5. Regular Security Updates
+            </h3>
             <p className="text-gray-600 mb-4">
-              Keep your sharing platform and security tools updated to protect against the latest threats and vulnerabilities.
+              Keep your sharing platform and security tools updated to protect against the latest
+              threats and vulnerabilities.
             </p>
 
-            <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Compliance and Legal Considerations</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
+              Compliance and Legal Considerations
+            </h2>
             <p className="text-gray-600 mb-4">
               When sharing PDFs securely, consider these compliance requirements:
             </p>
             <ul className="list-disc pl-6 text-gray-600 mb-4">
-              <li><strong>GDPR Compliance:</strong> Ensure proper data handling for European users</li>
-              <li><strong>HIPAA Compliance:</strong> Special requirements for healthcare documents</li>
-              <li><strong>SOX Compliance:</strong> Financial document security requirements</li>
-              <li><strong>Industry Standards:</strong> Follow relevant industry security guidelines</li>
+              <li>
+                <strong>GDPR Compliance:</strong> Ensure proper data handling for European users
+              </li>
+              <li>
+                <strong>HIPAA Compliance:</strong> Special requirements for healthcare documents
+              </li>
+              <li>
+                <strong>SOX Compliance:</strong> Financial document security requirements
+              </li>
+              <li>
+                <strong>Industry Standards:</strong> Follow relevant industry security guidelines
+              </li>
             </ul>
 
             <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-8">
@@ -248,7 +320,9 @@ export default function SecurePdfSharingGuidePage() {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm text-green-700">
-                    <strong>Secure Your Documents:</strong> PDFTrackr provides enterprise-grade security with 500MB free storage. Start protecting your PDFs today with professional security features.
+                    <strong>Secure Your Documents:</strong> PDFTrackr provides enterprise-grade
+                    security with 500MB free storage. Start protecting your PDFs today with
+                    professional security features.
                   </p>
                 </div>
               </div>

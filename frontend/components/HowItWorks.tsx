@@ -1,15 +1,17 @@
-import { Upload, Link, BarChart, Shield } from "lucide-react";
 import { getFileSizeLimitDisplay } from "@/shared/types";
+import { BarChart, Link, Shield, Upload } from "lucide-react";
 
 const steps = [
   {
     number: "1",
     title: "Upload Your PDF",
-    description: `Drag and drop or select your PDF file (up to ${getFileSizeLimitDisplay("free")}). We'll scan it for security.`,
+    description: `Drag and drop or select your PDF file (up to ${getFileSizeLimitDisplay(
+      "free",
+    )}). We'll scan it for security.`,
     icon: Upload,
   },
   {
-    number: "2", 
+    number: "2",
     title: "Create Secure Link",
     description: "Set passwords, expiration dates, and choose who can download.",
     icon: Link,

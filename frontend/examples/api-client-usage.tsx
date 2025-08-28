@@ -11,7 +11,7 @@ import { useApi, useApiState } from "../hooks/useApi";
 // Example 1: Simple API usage
 export function SimpleExample() {
   const api = useApi();
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<unknown>(null);
 
   const handleCreateShareLink = async () => {
     // No need to manually handle CSRF tokens or auth headers!
@@ -48,8 +48,13 @@ export function SimpleExample() {
 
   return (
     <div>
-      <button onClick={handleCreateShareLink}>Create Share Link</button>
-      <input type="file" onChange={(e) => e.target.files?.[0] && handleUploadFile(e.target.files[0])} />
+      <button type="button" onClick={handleCreateShareLink}>
+        Create Share Link
+      </button>
+      <input
+        type="file"
+        onChange={(e) => e.target.files?.[0] && handleUploadFile(e.target.files[0])}
+      />
       {result && <pre>{JSON.stringify(result, null, 2)}</pre>}
     </div>
   );
@@ -61,11 +66,17 @@ export function WithLoadingStates() {
   const { data, loading, error, execute } = useApiState();
 
   const handleFetchFiles = () => {
-    execute(() => api.files.list());
+    execute(async () => {
+      const response = await api.files.list();
+      return response;
+    });
   };
 
   const handleDeleteFile = (fileId: number) => {
-    execute(() => api.files.delete(fileId));
+    execute(async () => {
+      const response = await api.files.delete(fileId);
+      return response;
+    });
   };
 
   if (loading) return <div>Loading...</div>;
@@ -73,11 +84,15 @@ export function WithLoadingStates() {
 
   return (
     <div>
-      <button onClick={handleFetchFiles}>Fetch Files</button>
-      {data?.files?.map((file: any) => (
+      <button type="button" onClick={handleFetchFiles}>
+        Fetch Files
+      </button>
+      {(data as any)?.files?.map((file: any) => (
         <div key={file.id}>
           {file.title}
-          <button onClick={() => handleDeleteFile(file.id)}>Delete</button>
+          <button type="button" onClick={() => handleDeleteFile(file.id)}>
+            Delete
+          </button>
         </div>
       ))}
     </div>
@@ -113,15 +128,19 @@ export function CustomApiCalls() {
 
   return (
     <div>
-      <button onClick={handleCustomCall}>Custom API Call</button>
-      <button onClick={handlePublicCall}>Public API Call</button>
+      <button type="button" onClick={handleCustomCall}>
+        Custom API Call
+      </button>
+      <button type="button" onClick={handlePublicCall}>
+        Public API Call
+      </button>
     </div>
   );
 }
 
 /**
  * Benefits of this approach:
- * 
+ *
  * ✅ Automatic CSRF token handling
  * ✅ Automatic authentication headers
  * ✅ Consistent error handling
@@ -130,7 +149,7 @@ export function CustomApiCalls() {
  * ✅ No repetitive boilerplate
  * ✅ Easy to test and mock
  * ✅ Centralized configuration
- * 
+ *
  * Usage in your components:
  * 1. Import { useApi } from "../hooks/useApi"
  * 2. const api = useApi();

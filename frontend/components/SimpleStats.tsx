@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { FileText, Eye, Share2, Clock } from 'lucide-react';
-import { apiClient } from '@/lib/api-client';
-import { formatViewTime } from '@/utils/formatters';
+import { apiClient } from "@/lib/api-client";
+import { formatViewTime } from "@/utils/formatters";
+import { Clock, Eye, FileText, Share2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface SimpleStats {
   totalFiles: number;
@@ -41,10 +41,10 @@ export default function SimpleStats({ userId }: SimpleStatsProps) {
           avgViewTime: data.avgDuration || 0, // Keep in seconds for better precision
         });
       } else {
-        setError('Failed to load stats');
+        setError("Failed to load stats");
       }
     } catch (err) {
-      setError('Failed to load stats');
+      setError("Failed to load stats");
     } finally {
       setLoading(false);
     }
@@ -84,36 +84,36 @@ export default function SimpleStats({ userId }: SimpleStatsProps) {
 
   const statItems = [
     {
-      label: 'Total Files',
+      label: "Total Files",
       value: stats.totalFiles.toLocaleString(),
       icon: FileText,
-      bgGradient: 'from-blue-50 to-blue-100',
-      borderColor: 'border-blue-200',
-      iconColor: 'text-blue-600',
+      bgGradient: "from-blue-50 to-blue-100",
+      borderColor: "border-blue-200",
+      iconColor: "text-blue-600",
     },
     {
-      label: 'Total Views',
+      label: "Total Views",
       value: stats.totalViews.toLocaleString(),
       icon: Eye,
-      bgGradient: 'from-green-50 to-green-100',
-      borderColor: 'border-green-200',
-      iconColor: 'text-green-600',
+      bgGradient: "from-green-50 to-green-100",
+      borderColor: "border-green-200",
+      iconColor: "text-green-600",
     },
     {
-      label: 'Share Links',
+      label: "Share Links",
       value: stats.totalShares.toLocaleString(),
       icon: Share2,
-      bgGradient: 'from-purple-50 to-purple-100',
-      borderColor: 'border-purple-200',
-      iconColor: 'text-purple-600',
+      bgGradient: "from-purple-50 to-purple-100",
+      borderColor: "border-purple-200",
+      iconColor: "text-purple-600",
     },
     {
-      label: 'Avg Session Time',
-      value: stats.avgViewTime > 0 ? formatViewTime(stats.avgViewTime) : '-',
+      label: "Avg Session Time",
+      value: stats.avgViewTime > 0 ? formatViewTime(stats.avgViewTime) : "-",
       icon: Clock,
-      bgGradient: 'from-orange-50 to-orange-100',
-      borderColor: 'border-orange-200',
-      iconColor: 'text-orange-600',
+      bgGradient: "from-orange-50 to-orange-100",
+      borderColor: "border-orange-200",
+      iconColor: "text-orange-600",
     },
   ];
 
@@ -126,14 +126,16 @@ export default function SimpleStats({ userId }: SimpleStatsProps) {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-6">
         {statItems.map((item) => (
-          <div 
-            key={item.label} 
+          <div
+            key={item.label}
             className="card hover:shadow-md transition-shadow duration-200 cursor-pointer"
           >
             <div className="card-body p-4 sm:p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className={`w-12 h-12 bg-gradient-to-br ${item.bgGradient} rounded-lg flex items-center justify-center border ${item.borderColor}`}>
+                  <div
+                    className={`w-12 h-12 bg-gradient-to-br ${item.bgGradient} rounded-lg flex items-center justify-center border ${item.borderColor}`}
+                  >
                     <item.icon className={`h-6 w-6 ${item.iconColor}`} />
                   </div>
                 </div>

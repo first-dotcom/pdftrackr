@@ -1,52 +1,52 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function ConsentBanner() {
   const [showBanner, setShowBanner] = useState(false);
 
   useEffect(() => {
     // Check if user has already given consent
-    const consent = localStorage.getItem('analytics-consent');
+    const consent = localStorage.getItem("analytics-consent");
     if (!consent) {
       setShowBanner(true);
     }
   }, []);
 
   const handleAccept = () => {
-    localStorage.setItem('analytics-consent', 'accepted');
+    localStorage.setItem("analytics-consent", "accepted");
     setShowBanner(false);
-    
+
     // Enable analytics with proper consent update
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('consent', 'update', {
-        'analytics_storage': 'granted',
-        'ad_storage': 'granted'
+    if (typeof window !== "undefined" && window.gtag) {
+      window.gtag("consent", "update", {
+        analytics_storage: "granted",
+        ad_storage: "granted",
       });
-      
+
       // Send a pageview event to record the consent
-      window.gtag('event', 'consent_granted', {
-        'event_category': 'consent',
-        'event_label': 'analytics'
+      window.gtag("event", "consent_granted", {
+        event_category: "consent",
+        event_label: "analytics",
       });
     }
   };
 
   const handleDecline = () => {
-    localStorage.setItem('analytics-consent', 'declined');
+    localStorage.setItem("analytics-consent", "declined");
     setShowBanner(false);
-    
+
     // Ensure analytics remain disabled
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('consent', 'update', {
-        'analytics_storage': 'denied',
-        'ad_storage': 'denied'
+    if (typeof window !== "undefined" && window.gtag) {
+      window.gtag("consent", "update", {
+        analytics_storage: "denied",
+        ad_storage: "denied",
       });
-      
+
       // Send a consent declined event (this won't be tracked if analytics are denied)
-      window.gtag('event', 'consent_declined', {
-        'event_category': 'consent',
-        'event_label': 'analytics'
+      window.gtag("event", "consent_declined", {
+        event_category: "consent",
+        event_label: "analytics",
       });
     }
   };
@@ -61,9 +61,9 @@ export default function ConsentBanner() {
             <strong>We value your privacy</strong>
           </p>
           <p>
-            We use Google Analytics and other cookies to analyze site usage and improve our service. 
-            This includes collecting data about page views, time spent, and geographic location. 
-            You can choose to accept or decline these cookies.{" "}
+            We use Google Analytics and other cookies to analyze site usage and improve our service.
+            This includes collecting data about page views, time spent, and geographic location. You
+            can choose to accept or decline these cookies.{" "}
             <a href="/privacy" className="underline hover:text-gray-300">
               Privacy Policy
             </a>{" "}
@@ -94,18 +94,18 @@ export default function ConsentBanner() {
 
 // Helper function to check consent status
 export function hasAnalyticsConsent(): boolean {
-  if (typeof window === 'undefined') return false;
-  return localStorage.getItem('analytics-consent') === 'accepted';
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem("analytics-consent") === "accepted";
 }
 
 // Helper function to update consent programmatically
 export function updateAnalyticsConsent(granted: boolean): void {
-  if (typeof window === 'undefined' || !window.gtag) return;
-  
-  window.gtag('consent', 'update', {
-    'analytics_storage': granted ? 'granted' : 'denied',
-    'ad_storage': granted ? 'granted' : 'denied'
+  if (typeof window === "undefined" || !window.gtag) return;
+
+  window.gtag("consent", "update", {
+    analytics_storage: granted ? "granted" : "denied",
+    ad_storage: granted ? "granted" : "denied",
   });
-  
-  localStorage.setItem('analytics-consent', granted ? 'accepted' : 'declined');
+
+  localStorage.setItem("analytics-consent", granted ? "accepted" : "declined");
 }

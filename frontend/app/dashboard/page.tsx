@@ -1,15 +1,15 @@
 "use client";
 
-import StorageUsage from "@/components/StorageUsage";
 import SimpleStats from "@/components/SimpleStats";
+import SkeletonLoader from "@/components/SkeletonLoader";
+import StorageUsage from "@/components/StorageUsage";
+import { useApi } from "@/hooks/useApi";
 import { config } from "@/lib/config";
+import { formatViewTime } from "@/utils/formatters";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { BarChart3, Clock, Eye, FileText, Mail, Plus, TrendingUp, Users } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import SkeletonLoader from "@/components/SkeletonLoader";
-import { useApi } from "@/hooks/useApi";
-import { formatViewTime } from "@/utils/formatters";
 
 interface DashboardData {
   totalFiles: number;
@@ -77,9 +77,10 @@ export default function DashboardPage() {
       if (response.success && response.data) {
         setDashboardData(response.data as DashboardData);
       } else {
-        const errorMessage = typeof response.error === 'string' 
-          ? response.error 
-          : response.error?.message || "Failed to fetch dashboard data";
+        const errorMessage =
+          typeof response.error === "string"
+            ? response.error
+            : response.error?.message || "Failed to fetch dashboard data";
         setError(errorMessage);
       }
     } catch (error) {
@@ -88,8 +89,6 @@ export default function DashboardPage() {
       setLoading(false);
     }
   };
-
-
 
   const formatNumber = (num: number | string | undefined | null) => {
     if (num === undefined || num === null) {
@@ -155,7 +154,10 @@ export default function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
         <div className="flex-1">{/* Welcome message is handled by header */}</div>
         <div className="sm:ml-4">
-          <Link href="/dashboard/files/upload" className="btn-primary btn-md flex items-center justify-center w-full sm:w-auto">
+          <Link
+            href="/dashboard/files/upload"
+            className="btn-primary btn-md flex items-center justify-center w-full sm:w-auto"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Upload PDF
           </Link>
@@ -172,8 +174,12 @@ export default function DashboardPage() {
                   <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                 </div>
                 <div className="ml-2 sm:ml-4 flex-1 min-w-0">
-                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">{stat.name}</p>
-                  <p className="text-lg sm:text-2xl font-semibold text-gray-900">{formatNumber(stat.value)}</p>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">
+                    {stat.name}
+                  </p>
+                  <p className="text-lg sm:text-2xl font-semibold text-gray-900">
+                    {formatNumber(stat.value)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -209,7 +215,8 @@ export default function DashboardPage() {
                         {view.viewerName || view.viewerEmail || "Anonymous"}
                       </div>
                       <div className="text-xs text-gray-500 truncate">
-                        {formatViewTime(view.totalDuration)} • {view.city || view.country || "Unknown location"}
+                        {formatViewTime(view.totalDuration)} •{" "}
+                        {view.city || view.country || "Unknown location"}
                       </div>
                     </div>
                   </div>
@@ -241,14 +248,17 @@ export default function DashboardPage() {
                 >
                   <div className="flex items-center flex-1 min-w-0">
                     <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs sm:text-sm font-bold text-green-600">#{index + 1}</span>
+                      <span className="text-xs sm:text-sm font-bold text-green-600">
+                        #{index + 1}
+                      </span>
                     </div>
                     <div className="ml-2 sm:ml-3 flex-1 min-w-0">
                       <div className="text-sm font-medium text-gray-900 truncate">
                         {file.title || "Untitled Document"}
                       </div>
                       <div className="text-xs text-gray-500 truncate">
-                        {formatNumber(file.viewCount)} views • {formatNumber(file.uniqueViewCount)} unique
+                        {formatNumber(file.viewCount)} views • {formatNumber(file.uniqueViewCount)}{" "}
+                        unique
                       </div>
                     </div>
                   </div>
@@ -275,7 +285,10 @@ export default function DashboardPage() {
               Upload your first PDF to start tracking views and sharing securely.
             </p>
             <div className="mt-4 sm:mt-6">
-              <Link href="/dashboard/files/upload" className="btn-primary btn-lg flex items-center justify-center w-full sm:w-auto">
+              <Link
+                href="/dashboard/files/upload"
+                className="btn-primary btn-lg flex items-center justify-center w-full sm:w-auto"
+              >
                 <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                 Upload PDF
               </Link>
@@ -285,9 +298,7 @@ export default function DashboardPage() {
       )}
 
       {/* Simple Stats - Show if user has files */}
-      {dashboardData && dashboardData.totalFiles > 0 && (
-        <SimpleStats userId={user?.id} />
-      )}
+      {dashboardData && dashboardData.totalFiles > 0 && <SimpleStats userId={user?.id} />}
     </div>
   );
 }

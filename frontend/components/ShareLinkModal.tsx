@@ -1,13 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { X, CheckCircle, Copy, Shield, Calendar } from "lucide-react";
 import { useApi } from "@/hooks/useApi";
-import { 
-  ShareLink, 
-  CreateShareLinkRequest,
-  File as FileType
-} from "@/shared/types";
+import type { CreateShareLinkRequest, File as FileType, ShareLink } from "@/shared/types";
+import { Calendar, CheckCircle, Copy, Shield, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface ShareLinkModalProps {
   isOpen: boolean;
@@ -28,7 +24,13 @@ interface ShareLinkForm {
   maxViews: string;
 }
 
-export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, existingShareLink }: ShareLinkModalProps) {
+export default function ShareLinkModal({
+  isOpen,
+  onClose,
+  file,
+  onSuccess,
+  existingShareLink,
+}: ShareLinkModalProps) {
   const [loading, setLoading] = useState(false);
   const [shareLink, setShareLink] = useState<ShareLink | null>(null);
   const [copied, setCopied] = useState(false);
@@ -41,7 +43,9 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
     emailGatingEnabled: existingShareLink?.emailGatingEnabled || false,
     downloadEnabled: existingShareLink?.downloadEnabled !== false, // default true
     watermarkEnabled: existingShareLink?.watermarkEnabled || false,
-    expiresAt: existingShareLink?.expiresAt ? new Date(existingShareLink.expiresAt).toISOString().slice(0, 16) : "",
+    expiresAt: existingShareLink?.expiresAt
+      ? new Date(existingShareLink.expiresAt).toISOString().slice(0, 16)
+      : "",
     maxViews: existingShareLink?.maxViews?.toString() || "",
   });
 
@@ -120,7 +124,7 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
       }
 
       const isEditing = !!existingShareLink;
-      
+
       // Use the API client - it handles CSRF automatically
       const response = isEditing
         ? await api.shareLinks.update(existingShareLink.shareId, payload)
@@ -133,9 +137,16 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
         console.error("API Error:", response.error);
 
         // Handle validation errors from backend
-        if (response.error && typeof response.error === 'object' && (response.error as any).details) {
+        if (
+          response.error &&
+          typeof response.error === "object" &&
+          (response.error as any).details
+        ) {
           const backendErrors: Partial<ShareLinkForm> = {};
-          for (const detail of (response.error as any).details as Array<{ path?: string[]; message: string }>) {
+          for (const detail of (response.error as any).details as Array<{
+            path?: string[];
+            message: string;
+          }>) {
             const field = detail.path?.[0];
             if (field) {
               (backendErrors as any)[field as keyof ShareLinkForm] = detail.message;
@@ -143,11 +154,12 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
           }
           setErrors(backendErrors);
         } else {
-          const errorMessage = typeof response.error === 'string' 
-            ? response.error 
-            : typeof response.error === 'object' && response.error?.message 
-            ? (response.error as any).message 
-            : "Failed to create share link";
+          const errorMessage =
+            typeof response.error === "string"
+              ? response.error
+              : typeof response.error === "object" && response.error?.message
+                ? (response.error as any).message
+                : "Failed to create share link";
           alert(errorMessage);
         }
       }
@@ -179,7 +191,9 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
       emailGatingEnabled: existingShareLink?.emailGatingEnabled || false,
       downloadEnabled: existingShareLink?.downloadEnabled !== false,
       watermarkEnabled: existingShareLink?.watermarkEnabled || false,
-      expiresAt: existingShareLink?.expiresAt ? new Date(existingShareLink.expiresAt).toISOString().slice(0, 16) : "",
+      expiresAt: existingShareLink?.expiresAt
+        ? new Date(existingShareLink.expiresAt).toISOString().slice(0, 16)
+        : "",
       maxViews: existingShareLink?.maxViews?.toString() || "",
     });
   };
@@ -214,9 +228,9 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
           <h2 className="text-lg font-semibold text-gray-900">
             {shareLink ? "Share Link Created!" : "Create Share Link"}
           </h2>
-          <button 
-            type="button" 
-            onClick={handleClose} 
+          <button
+            type="button"
+            onClick={handleClose}
             className="text-gray-400 hover:text-gray-500 p-2 -m-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
             aria-label="Close modal"
           >
@@ -301,7 +315,11 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
               >
                 Create Another
               </button>
-              <button type="button" onClick={handleClose} className="flex-1 btn-primary btn-md min-h-[44px] touch-manipulation">
+              <button
+                type="button"
+                onClick={handleClose}
+                className="flex-1 btn-primary btn-md min-h-[44px] touch-manipulation"
+              >
                 Done
               </button>
             </div>
@@ -449,10 +467,18 @@ export default function ShareLinkModal({ isOpen, onClose, file, onSuccess, exist
             </div>
 
             <div className="flex gap-3 pt-4">
-              <button type="button" onClick={handleClose} className="flex-1 btn-outline btn-md min-h-[44px] touch-manipulation">
+              <button
+                type="button"
+                onClick={handleClose}
+                className="flex-1 btn-outline btn-md min-h-[44px] touch-manipulation"
+              >
                 Cancel
               </button>
-              <button type="submit" disabled={loading} className="flex-1 btn-primary btn-md min-h-[44px] touch-manipulation">
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 btn-primary btn-md min-h-[44px] touch-manipulation"
+              >
                 {loading ? "Creating..." : "Create Share Link"}
               </button>
             </div>

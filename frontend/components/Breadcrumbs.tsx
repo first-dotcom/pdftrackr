@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
-import { ChevronRight, Home } from "lucide-react";
 import { useApi } from "@/hooks/useApi";
+import { ChevronRight, Home } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface BreadcrumbsProps {
   fileName?: string;
@@ -94,18 +94,22 @@ export default function Breadcrumbs({ fileName }: BreadcrumbsProps) {
                 {index === 0 && <Home className="h-4 w-4 inline mr-1" />}
                 <span className="hidden sm:inline">{breadcrumb.name}</span>
                 <span className="sm:hidden">
-                  {breadcrumb.name.length > 12 ? breadcrumb.name.substring(0, 12) + "..." : breadcrumb.name}
+                  {breadcrumb.name.length > 12
+                    ? breadcrumb.name.substring(0, 12) + "..."
+                    : breadcrumb.name}
                 </span>
               </span>
             ) : (
-              <Link 
-                href={breadcrumb.href} 
+              <Link
+                href={breadcrumb.href}
                 className="px-2 py-1 rounded-md hover:bg-white hover:text-gray-900 hover:shadow-sm border border-transparent hover:border-gray-200 transition-all duration-200 font-medium"
               >
                 {index === 0 && <Home className="h-4 w-4 inline mr-1" />}
                 <span className="hidden sm:inline">{breadcrumb.name}</span>
                 <span className="sm:hidden">
-                  {breadcrumb.name.length > 12 ? breadcrumb.name.substring(0, 12) + "..." : breadcrumb.name}
+                  {breadcrumb.name.length > 12
+                    ? breadcrumb.name.substring(0, 12) + "..."
+                    : breadcrumb.name}
                 </span>
               </Link>
             )}

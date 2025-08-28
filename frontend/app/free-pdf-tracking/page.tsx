@@ -1,10 +1,11 @@
-import Link from "next/link";
-import { ArrowLeft, Gift, CheckCircle, Shield, BarChart3, Mail, Lock, Clock } from "lucide-react";
+import { ArrowLeft, BarChart3, CheckCircle, Clock, Gift, Lock, Mail, Shield } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Free PDF Tracking - Track PDF Views & Analytics | No Credit Card Required",
-  description: "Get free PDF tracking with PDFTrackr. Track PDF views, capture emails, and get analytics without paying a dime. 500MB free storage, no credit card required. Start tracking your documents today.",
+  description:
+    "Get free PDF tracking with PDFTrackr. Track PDF views, capture emails, and get analytics without paying a dime. 500MB free storage, no credit card required. Start tracking your documents today.",
   keywords: [
     "free PDF tracking",
     "PDF tracking free",
@@ -13,11 +14,12 @@ export const metadata: Metadata = {
     "free document tracking",
     "PDF viewer tracking free",
     "free PDF security",
-    "no credit card PDF tracking"
+    "no credit card PDF tracking",
   ],
   openGraph: {
     title: "Free PDF Tracking - Track PDF Views & Analytics | No Credit Card Required",
-    description: "Get free PDF tracking with PDFTrackr. Track PDF views, capture emails, and get analytics without paying a dime. 500MB free storage, no credit card required.",
+    description:
+      "Get free PDF tracking with PDFTrackr. Track PDF views, capture emails, and get analytics without paying a dime. 500MB free storage, no credit card required.",
     type: "website",
   },
 };
@@ -26,38 +28,45 @@ const features = [
   {
     icon: Gift,
     title: "500MB Free Storage",
-    description: "Upload and track unlimited PDFs with 500MB of free storage space. No hidden fees or storage limits."
+    description:
+      "Upload and track unlimited PDFs with 500MB of free storage space. No hidden fees or storage limits.",
   },
   {
     icon: CheckCircle,
     title: "No Credit Card Required",
-    description: "Start tracking PDFs immediately without providing any payment information. Our free plan is truly free."
+    description:
+      "Start tracking PDFs immediately without providing any payment information. Our free plan is truly free.",
   },
   {
     icon: BarChart3,
     title: "Full Analytics Dashboard",
-    description: "Get comprehensive analytics including view counts, engagement time, geographic data, and page-by-page insights."
+    description:
+      "Get comprehensive analytics including view counts, engagement time, geographic data, and page-by-page insights.",
   },
   {
     icon: Mail,
     title: "Email Capture",
-    description: "Capture viewer email addresses before they access your documents. Perfect for lead generation and building your audience."
+    description:
+      "Capture viewer email addresses before they access your documents. Perfect for lead generation and building your audience.",
   },
   {
     icon: Lock,
     title: "Password Protection",
-    description: "Secure your PDFs with password protection. Control who can access your documents and when."
+    description:
+      "Secure your PDFs with password protection. Control who can access your documents and when.",
   },
   {
     icon: Shield,
     title: "Virus Scanning",
-    description: "Every uploaded PDF is automatically scanned for viruses and malware to keep your documents safe."
+    description:
+      "Every uploaded PDF is automatically scanned for viruses and malware to keep your documents safe.",
   },
   {
     icon: Clock,
     title: "Link Expiration",
-    description: "Set custom expiration dates for your document links. Perfect for time-sensitive content."
-  }
+    description:
+      "Set custom expiration dates for your document links. Perfect for time-sensitive content.",
+  },
 ];
 
 const comparisonData = [
@@ -65,38 +74,38 @@ const comparisonData = [
     feature: "Free Storage",
     pdfTrackr: "500MB",
     competitors: "50-100MB",
-    winner: "pdfTrackr"
+    winner: "pdfTrackr",
   },
   {
     feature: "Credit Card Required",
     pdfTrackr: "No",
     competitors: "Often Yes",
-    winner: "pdfTrackr"
+    winner: "pdfTrackr",
   },
   {
     feature: "Email Capture",
     pdfTrackr: "Included",
     competitors: "Premium Feature",
-    winner: "pdfTrackr"
+    winner: "pdfTrackr",
   },
   {
     feature: "Password Protection",
     pdfTrackr: "Included",
     competitors: "Premium Feature",
-    winner: "pdfTrackr"
+    winner: "pdfTrackr",
   },
   {
     feature: "Virus Scanning",
     pdfTrackr: "Included",
     competitors: "Sometimes",
-    winner: "pdfTrackr"
+    winner: "pdfTrackr",
   },
   {
     feature: "Analytics Dashboard",
     pdfTrackr: "Full Access",
     competitors: "Limited",
-    winner: "pdfTrackr"
-  }
+    winner: "pdfTrackr",
+  },
 ];
 
 export default function FreePdfTrackingPage() {
@@ -109,13 +118,14 @@ export default function FreePdfTrackingPage() {
             Back to Home
           </Link>
         </div>
-        
+
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Free PDF Tracking - Track PDF Views & Analytics
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Get professional PDF tracking and analytics completely free. No credit card required, no hidden fees, no limitations. Start tracking your documents in minutes.
+            Get professional PDF tracking and analytics completely free. No credit card required, no
+            hidden fees, no limitations. Start tracking your documents in minutes.
           </p>
         </div>
 
@@ -164,7 +174,8 @@ export default function FreePdfTrackingPage() {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Your PDF</h3>
               <p className="text-gray-600">
-                Upload any PDF document to PDFTrackr. Our platform automatically scans for viruses and prepares it for secure sharing.
+                Upload any PDF document to PDFTrackr. Our platform automatically scans for viruses
+                and prepares it for secure sharing.
               </p>
             </div>
             <div className="text-center">
@@ -173,7 +184,8 @@ export default function FreePdfTrackingPage() {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Share Securely</h3>
               <p className="text-gray-600">
-                Get a secure link to share your PDF. Add password protection, email capture, or set expiration dates as needed.
+                Get a secure link to share your PDF. Add password protection, email capture, or set
+                expiration dates as needed.
               </p>
             </div>
             <div className="text-center">
@@ -182,7 +194,8 @@ export default function FreePdfTrackingPage() {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Track & Analyze</h3>
               <p className="text-gray-600">
-                Monitor views, engagement, and analytics in real-time. See who's reading your documents and how they interact with them.
+                Monitor views, engagement, and analytics in real-time. See who's reading your
+                documents and how they interact with them.
               </p>
             </div>
           </div>
@@ -198,8 +211,12 @@ export default function FreePdfTrackingPage() {
               <thead>
                 <tr className="border-b border-gray-200">
                   <th className="text-left py-4 px-4 font-semibold text-gray-900">Feature</th>
-                  <th className="text-center py-4 px-4 font-semibold text-primary-600">PDFTrackr Free</th>
-                  <th className="text-center py-4 px-4 font-semibold text-gray-600">Other Platforms</th>
+                  <th className="text-center py-4 px-4 font-semibold text-primary-600">
+                    PDFTrackr Free
+                  </th>
+                  <th className="text-center py-4 px-4 font-semibold text-gray-600">
+                    Other Platforms
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -233,28 +250,36 @@ export default function FreePdfTrackingPage() {
                 <span className="text-blue-600 font-bold">📊</span>
               </div>
               <h3 className="font-semibold text-gray-900 mb-2">Business Reports</h3>
-              <p className="text-sm text-gray-600">Track engagement with quarterly reports, proposals, and presentations</p>
+              <p className="text-sm text-gray-600">
+                Track engagement with quarterly reports, proposals, and presentations
+              </p>
             </div>
             <div className="bg-white rounded-lg p-6 shadow-sm text-center">
               <div className="bg-green-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
                 <span className="text-green-600 font-bold">📚</span>
               </div>
               <h3 className="font-semibold text-gray-900 mb-2">Educational Content</h3>
-              <p className="text-sm text-gray-600">Monitor student engagement with course materials and study guides</p>
+              <p className="text-sm text-gray-600">
+                Monitor student engagement with course materials and study guides
+              </p>
             </div>
             <div className="bg-white rounded-lg p-6 shadow-sm text-center">
               <div className="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
                 <span className="text-purple-600 font-bold">💼</span>
               </div>
               <h3 className="font-semibold text-gray-900 mb-2">Lead Generation</h3>
-              <p className="text-sm text-gray-600">Capture emails and track engagement with marketing materials</p>
+              <p className="text-sm text-gray-600">
+                Capture emails and track engagement with marketing materials
+              </p>
             </div>
             <div className="bg-white rounded-lg p-6 shadow-sm text-center">
               <div className="bg-orange-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
                 <span className="text-orange-600 font-bold">🔒</span>
               </div>
               <h3 className="font-semibold text-gray-900 mb-2">Secure Sharing</h3>
-              <p className="text-sm text-gray-600">Protect sensitive documents with password protection and access controls</p>
+              <p className="text-sm text-gray-600">
+                Protect sensitive documents with password protection and access controls
+              </p>
             </div>
           </div>
         </div>
@@ -266,20 +291,39 @@ export default function FreePdfTrackingPage() {
           </h2>
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Is PDF tracking really free?</h3>
-              <p className="text-gray-600">Yes! PDFTrackr offers a generous free plan with 500MB storage, full analytics, email capture, and security features. No credit card required to get started.</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Is PDF tracking really free?
+              </h3>
+              <p className="text-gray-600">
+                Yes! PDFTrackr offers a generous free plan with 500MB storage, full analytics, email
+                capture, and security features. No credit card required to get started.
+              </p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">What's the catch?</h3>
-              <p className="text-gray-600">There's no catch. We believe in providing value first. Our free plan includes everything you need to start tracking PDFs effectively. Pro plans will be available later for advanced features.</p>
+              <p className="text-gray-600">
+                There's no catch. We believe in providing value first. Our free plan includes
+                everything you need to start tracking PDFs effectively. Pro plans will be available
+                later for advanced features.
+              </p>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">How long can I use the free plan?</h3>
-              <p className="text-gray-600">The free plan is available indefinitely. You can use it as long as you want with no time restrictions or hidden fees.</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                How long can I use the free plan?
+              </h3>
+              <p className="text-gray-600">
+                The free plan is available indefinitely. You can use it as long as you want with no
+                time restrictions or hidden fees.
+              </p>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">What happens when I reach 500MB?</h3>
-              <p className="text-gray-600">You can delete old files to free up space, or wait for our Pro plans to launch in Q4 2025 for unlimited storage and advanced features.</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                What happens when I reach 500MB?
+              </h3>
+              <p className="text-gray-600">
+                You can delete old files to free up space, or wait for our Pro plans to launch in Q4
+                2025 for unlimited storage and advanced features.
+              </p>
             </div>
           </div>
         </div>
@@ -290,7 +334,8 @@ export default function FreePdfTrackingPage() {
             Ready to Start Free PDF Tracking?
           </h2>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Join thousands of users who are already tracking their PDFs with PDFTrackr. Get started in minutes with no credit card required.
+            Join thousands of users who are already tracking their PDFs with PDFTrackr. Get started
+            in minutes with no credit card required.
           </p>
           <Link
             href="/sign-up"

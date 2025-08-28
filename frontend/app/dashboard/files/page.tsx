@@ -1,30 +1,30 @@
 "use client";
 
+import ErrorBoundary from "@/components/ErrorBoundary";
 import ShareLinkModal from "@/components/ShareLinkModal";
 import SkeletonLoader from "@/components/SkeletonLoader";
-import ErrorBoundary from "@/components/ErrorBoundary";
 import { ToastContainer, useToasts } from "@/components/Toast";
+import { useApi } from "@/hooks/useApi";
 import { config } from "@/lib/config";
+import type { File } from "@/shared/types";
+import { formatFileSize } from "@/utils/formatters";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { formatDistanceToNow } from "date-fns";
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Eye, 
-  FileText, 
-  MoreHorizontal, 
-  Plus, 
-  Search, 
-  Share, 
-  Share2, 
+import {
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  FileText,
+  MoreHorizontal,
+  Plus,
+  RefreshCw,
+  Search,
+  Share,
+  Share2,
   Trash2,
-  RefreshCw
 } from "lucide-react";
 import Link from "next/link";
 import React, { useEffect, useState, useCallback, useRef, useMemo } from "react";
-import type { File } from "@/shared/types";
-import { useApi } from "@/hooks/useApi";
-import { formatFileSize } from "@/utils/formatters";
 
 const FILES_PER_PAGE = 20;
 
@@ -38,18 +38,16 @@ interface FileCardProps {
 }
 
 // Memoized File Card Component for performance
-const FileCard = React.memo(function FileCard({ 
-  file, 
-  onShare, 
-  onDelete, 
-  onView, 
+const FileCard = React.memo(function FileCard({
+  file,
+  onShare,
+  onDelete,
+  onView,
   isDeleting = false,
-  isSharing = false 
+  isSharing = false,
 }: FileCardProps) {
   const [showActions, setShowActions] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
-
-
 
   const getActiveShareLinks = useCallback((shareLinks: Array<{ isActive: boolean }> = []) => {
     return shareLinks.filter((link) => link.isActive).length;
@@ -57,7 +55,7 @@ const FileCard = React.memo(function FileCard({
 
   const formatDate = useCallback((dateString: string | null | undefined) => {
     if (!dateString) return "Unknown date";
-    
+
     try {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) {
@@ -71,7 +69,7 @@ const FileCard = React.memo(function FileCard({
   }, []);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent, action: () => void) => {
-    if (e.key === 'Enter' || e.key === ' ') {
+    if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       action();
     }
@@ -110,12 +108,10 @@ const FileCard = React.memo(function FileCard({
                   {file.title || "Untitled Document"}
                 </h3>
               </button>
-              
+
               {/* File Metadata - Mobile */}
               <div className="mt-2 sm:hidden space-y-1">
-                <div className="text-sm text-gray-600 font-medium">
-                  {formatFileSize(file.size)}
-                </div>
+                <div className="text-sm text-gray-600 font-medium">{formatFileSize(file.size)}</div>
                 <div className="flex items-center space-x-4 text-sm text-gray-500">
                   <span className="flex items-center">
                     <Eye className="h-4 w-4 mr-1" aria-hidden="true" />
@@ -126,9 +122,7 @@ const FileCard = React.memo(function FileCard({
                     {getActiveShareLinks(file.shareLinks)} links
                   </span>
                 </div>
-                <div className="text-sm text-gray-500">
-                  {formatDate(file.createdAt)}
-                </div>
+                <div className="text-sm text-gray-500">{formatDate(file.createdAt)}</div>
               </div>
 
               {/* File Metadata - Desktop */}
@@ -142,9 +136,7 @@ const FileCard = React.memo(function FileCard({
                   <Share2 className="h-4 w-4 mr-1" aria-hidden="true" />
                   {getActiveShareLinks(file.shareLinks)} links
                 </span>
-                <span>
-                  {formatDate(file.createdAt)}
-                </span>
+                <span>{formatDate(file.createdAt)}</span>
               </div>
             </div>
 
@@ -184,7 +176,11 @@ const FileCard = React.memo(function FileCard({
 
               {/* Desktop: Hover-visible actions */}
               <div className="hidden sm:block">
-                <div className={`flex space-x-2 transition-opacity duration-200 ${showActions ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                <div
+                  className={`flex space-x-2 transition-opacity duration-200 ${
+                    showActions ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                  }`}
+                >
                   <button
                     type="button"
                     onClick={() => onShare(file)}
@@ -224,26 +220,26 @@ const FileCard = React.memo(function FileCard({
 });
 
 // Pagination Component
-function Pagination({ 
-  currentPage, 
-  totalPages, 
-  onPageChange 
-}: { 
-  currentPage: number; 
-  totalPages: number; 
-  onPageChange: (page: number) => void; 
+function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
 }) {
   if (totalPages <= 1) return null;
 
   const handleKeyDown = (e: React.KeyboardEvent, page: number) => {
-    if (e.key === 'Enter' || e.key === ' ') {
+    if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       onPageChange(page);
     }
   };
 
   return (
-    <nav 
+    <nav
       className="flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6"
       aria-label="Pagination"
     >
@@ -268,12 +264,15 @@ function Pagination({
       <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
         <div>
           <p className="text-sm text-gray-700">
-            Showing page <span className="font-medium">{currentPage}</span> of{' '}
+            Showing page <span className="font-medium">{currentPage}</span> of{" "}
             <span className="font-medium">{totalPages}</span>
           </p>
         </div>
         <div>
-          <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+          <nav
+            className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+            aria-label="Pagination"
+          >
             <button
               onClick={() => onPageChange(currentPage - 1)}
               disabled={currentPage === 1}
@@ -282,7 +281,7 @@ function Pagination({
             >
               <ChevronLeft className="h-5 w-5" aria-hidden="true" />
             </button>
-            
+
             {/* Page numbers */}
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               const page = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
@@ -292,17 +291,17 @@ function Pagination({
                   onClick={() => onPageChange(page)}
                   className={`relative inline-flex items-center justify-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] touch-manipulation ${
                     page === currentPage
-                      ? 'z-10 bg-primary-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600'
-                      : 'text-gray-900 hover:bg-gray-50'
+                      ? "z-10 bg-primary-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
+                      : "text-gray-900 hover:bg-gray-50"
                   }`}
                   aria-label={`Page ${page}`}
-                  aria-current={page === currentPage ? 'page' : undefined}
+                  aria-current={page === currentPage ? "page" : undefined}
                 >
                   {page}
                 </button>
               );
             })}
-            
+
             <button
               onClick={() => onPageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
@@ -360,28 +359,21 @@ function FileCardSkeleton() {
 }
 
 // Error State Component
-function ErrorState({ 
-  error, 
-  onRetry 
-}: { 
-  error: string; 
-  onRetry: () => void; 
+function ErrorState({
+  error,
+  onRetry,
+}: {
+  error: string;
+  onRetry: () => void;
 }) {
   return (
     <div className="text-center py-12 sm:py-16">
       <div className="mx-auto w-24 h-24 bg-gradient-to-br from-red-50 to-red-100 rounded-full flex items-center justify-center mb-6">
         <FileText className="h-12 w-12 text-red-400" aria-hidden="true" />
       </div>
-      <h3 className="text-lg font-medium text-gray-900 mb-2">
-        Failed to load files
-      </h3>
-      <p className="text-gray-500 mb-8 max-w-sm mx-auto">
-        {error}
-      </p>
-      <button
-        onClick={onRetry}
-        className="btn-primary btn-lg inline-flex items-center"
-      >
+      <h3 className="text-lg font-medium text-gray-900 mb-2">Failed to load files</h3>
+      <p className="text-gray-500 mb-8 max-w-sm mx-auto">{error}</p>
+      <button onClick={onRetry} className="btn-primary btn-lg inline-flex items-center">
         <RefreshCw className="h-5 w-5 mr-2" aria-hidden="true" />
         Try Again
       </button>
@@ -400,10 +392,9 @@ function EmptyState({ hasFiles, onUpload }: { hasFiles: boolean; onUpload: () =>
         {hasFiles ? "No files found" : "No files uploaded yet"}
       </h3>
       <p className="text-gray-500 mb-8 max-w-sm mx-auto">
-        {hasFiles 
+        {hasFiles
           ? "Try adjusting your search terms to find what you're looking for."
-          : "Get started by uploading your first PDF file to share and track."
-        }
+          : "Get started by uploading your first PDF file to share and track."}
       </p>
       {!hasFiles && (
         <button
@@ -420,10 +411,7 @@ function EmptyState({ hasFiles, onUpload }: { hasFiles: boolean; onUpload: () =>
 }
 
 // Proper debounce hook implementation
-function useDebounce<T extends (...args: any[]) => any>(
-  func: T,
-  delay: number
-): T {
+function useDebounce<T extends (...args: any[]) => any>(func: T, delay: number): T {
   const timeoutRef = useRef<NodeJS.Timeout>();
 
   return useCallback(
@@ -433,7 +421,7 @@ function useDebounce<T extends (...args: any[]) => any>(
       }
       timeoutRef.current = setTimeout(() => func(...args), delay);
     },
-    [func, delay]
+    [func, delay],
   ) as T;
 }
 
@@ -465,47 +453,57 @@ export default function FilesPage() {
   const totalPages = Math.ceil(totalFiles / FILES_PER_PAGE);
 
   // Stable references to prevent infinite loops
-  const stableShowError = useCallback((title: string, message?: string) => {
-    showError(title, message);
-  }, [showError]);
+  const stableShowError = useCallback(
+    (title: string, message?: string) => {
+      showError(title, message);
+    },
+    [showError],
+  );
 
-  const stableShowSuccess = useCallback((title: string, message?: string) => {
-    showSuccess(title, message);
-  }, [showSuccess]);
+  const stableShowSuccess = useCallback(
+    (title: string, message?: string) => {
+      showSuccess(title, message);
+    },
+    [showSuccess],
+  );
 
   // Fetch files with pagination - FIXED: Remove searchTerm from dependencies to prevent infinite loop
-  const fetchFiles = useCallback(async (page = 1) => {
-    if (page === 1) {
-      setLoading(true);
-    } else {
-      setLoadingMore(true);
-    }
-    setError(null);
-
-    try {
-      const response = await api.files.list({ 
-        page: page, 
-        limit: FILES_PER_PAGE
-      });
-      
-      if (response.success && response.data) {
-        const data = response.data as any;
-        setFiles(data.items || []);
-        setTotalFiles(data.total || data.items?.length || 0);
+  const fetchFiles = useCallback(
+    async (page = 1) => {
+      if (page === 1) {
+        setLoading(true);
       } else {
-        const errorMessage = typeof response.error === 'string' ? response.error : "Failed to load files";
+        setLoadingMore(true);
+      }
+      setError(null);
+
+      try {
+        const response = await api.files.list({
+          page: page,
+          limit: FILES_PER_PAGE,
+        });
+
+        if (response.success && response.data) {
+          const data = response.data as any;
+          setFiles(data.items || []);
+          setTotalFiles(data.total || data.items?.length || 0);
+        } else {
+          const errorMessage =
+            typeof response.error === "string" ? response.error : "Failed to load files";
+          setError(errorMessage);
+          stableShowError("Failed to load files", errorMessage);
+        }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Failed to load files";
         setError(errorMessage);
         stableShowError("Failed to load files", errorMessage);
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to load files";
-      setError(errorMessage);
-      stableShowError("Failed to load files", errorMessage);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }, [api, stableShowError]); // ✅ FIXED: Remove searchTerm from dependencies to prevent infinite loop
+    },
+    [api, stableShowError],
+  ); // ✅ FIXED: Remove searchTerm from dependencies to prevent infinite loop
 
   // FIXED: Separate useEffect for initial load and page changes
   useEffect(() => {
@@ -523,7 +521,7 @@ export default function FilesPage() {
       const timeoutId = setTimeout(() => {
         fetchFiles(1);
       }, 300);
-      
+
       return () => clearTimeout(timeoutId);
     }
     // Return undefined for the case when isReady && user is false
@@ -535,7 +533,12 @@ export default function FilesPage() {
     try {
       const raw = sessionStorage.getItem("pdftrackr:flash");
       if (raw) {
-        const flash = JSON.parse(raw) as { type: string; title: string; message?: string; ts?: number };
+        const flash = JSON.parse(raw) as {
+          type: string;
+          title: string;
+          message?: string;
+          ts?: number;
+        };
         sessionStorage.removeItem("pdftrackr:flash");
         if (flash?.title) {
           showSuccessRef.current(flash.title, flash.message);
@@ -549,72 +552,82 @@ export default function FilesPage() {
     setSearchTerm(value);
   }, []); // ✅ FIXED: No dependencies needed
 
-  const handleShareClick = useCallback(async (file: File) => {
-    setSharingFiles(prev => new Set(prev).add(file.id));
-    
-    try {
-      setSelectedFile(file);
-      setShareModalOpen(true);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to open share modal";
-      stableShowError("Share failed", errorMessage);
-    } finally {
-      setSharingFiles(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(file.id);
-        return newSet;
-      });
-    }
-  }, [stableShowError]);
+  const handleShareClick = useCallback(
+    async (file: File) => {
+      setSharingFiles((prev) => new Set(prev).add(file.id));
+
+      try {
+        setSelectedFile(file);
+        setShareModalOpen(true);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Failed to open share modal";
+        stableShowError("Share failed", errorMessage);
+      } finally {
+        setSharingFiles((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(file.id);
+          return newSet;
+        });
+      }
+    },
+    [stableShowError],
+  );
 
   const handleShareSuccess = useCallback(() => {
     fetchFiles(currentPage);
     stableShowSuccess("Share link created successfully");
   }, [fetchFiles, currentPage, stableShowSuccess]);
 
-  const handleDeleteFile = useCallback(async (fileId: number) => {
-    if (!confirm("Are you sure you want to delete this file? This action cannot be undone.")) {
-      return;
-    }
-
-    setDeletingFiles(prev => new Set(prev).add(fileId));
-
-    try {
-      const response = await api.files.delete(fileId);
-      if (response.success) {
-        await fetchFiles(currentPage);
-        stableShowSuccess("File deleted successfully");
-      } else {
-        const errorMessage = typeof response.error === 'string' ? response.error : "Failed to delete file";
-        stableShowError("Delete failed", errorMessage);
+  const handleDeleteFile = useCallback(
+    async (fileId: number) => {
+      if (!confirm("Are you sure you want to delete this file? This action cannot be undone.")) {
+        return;
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to delete file";
-      stableShowError("Delete failed", errorMessage);
-    } finally {
-      setDeletingFiles(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(fileId);
-        return newSet;
-      });
-    }
-  }, [api, fetchFiles, currentPage, stableShowError, stableShowSuccess]);
+
+      setDeletingFiles((prev) => new Set(prev).add(fileId));
+
+      try {
+        const response = await api.files.delete(fileId);
+        if (response.success) {
+          await fetchFiles(currentPage);
+          stableShowSuccess("File deleted successfully");
+        } else {
+          const errorMessage =
+            typeof response.error === "string" ? response.error : "Failed to delete file";
+          stableShowError("Delete failed", errorMessage);
+        }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Failed to delete file";
+        stableShowError("Delete failed", errorMessage);
+      } finally {
+        setDeletingFiles((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(fileId);
+          return newSet;
+        });
+      }
+    },
+    [api, fetchFiles, currentPage, stableShowError, stableShowSuccess],
+  );
 
   const handleViewFile = useCallback((fileId: number) => {
     window.location.href = `/dashboard/files/${fileId}`;
   }, []);
 
-  const handlePageChange = useCallback((page: number) => {
-    setCurrentPage(page);
-    // Announce page change to screen readers
-    const announcement = document.createElement('div');
-    announcement.setAttribute('aria-live', 'polite');
-    announcement.setAttribute('aria-atomic', 'true');
-    announcement.className = 'sr-only';
-    announcement.textContent = `Page ${page} of ${totalPages}`;
-    document.body.appendChild(announcement);
-    setTimeout(() => document.body.removeChild(announcement), 1000);
-  }, [totalPages]);
+  const handlePageChange = useCallback(
+    (page: number) => {
+      setCurrentPage(page);
+      // Announce page change to screen readers
+      const announcement = document.createElement("div");
+      announcement.setAttribute("aria-live", "polite");
+      announcement.setAttribute("aria-atomic", "true");
+      announcement.className = "sr-only";
+      announcement.textContent = `Page ${page} of ${totalPages}`;
+      document.body.appendChild(announcement);
+      setTimeout(() => document.body.removeChild(announcement), 1000);
+    },
+    [totalPages],
+  );
 
   const handleRetry = useCallback(() => {
     setError(null);
@@ -622,10 +635,9 @@ export default function FilesPage() {
   }, [fetchFiles, currentPage]);
 
   // FIXED: Client-side filtering since server doesn't support search yet
-  const filteredFiles = useMemo(() => 
-    files.filter((file) =>
-      file.title?.toLowerCase().includes(searchTerm.toLowerCase()),
-    ), [files, searchTerm]
+  const filteredFiles = useMemo(
+    () => files.filter((file) => file.title?.toLowerCase().includes(searchTerm.toLowerCase())),
+    [files, searchTerm],
   );
 
   // Show loading state while Clerk is initializing
@@ -659,7 +671,10 @@ export default function FilesPage() {
         <div className="space-y-4 sm:space-y-0 sm:flex sm:justify-between sm:items-center">
           <div className="flex-1 sm:max-w-sm">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" aria-hidden="true" />
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5"
+                aria-hidden="true"
+              />
               <input
                 id="file-search"
                 name="fileSearch"
@@ -673,8 +688,8 @@ export default function FilesPage() {
             </div>
           </div>
           <div className="flex justify-end">
-            <Link 
-              href="/dashboard/files/upload" 
+            <Link
+              href="/dashboard/files/upload"
               className="btn-primary btn-lg w-full sm:w-auto flex items-center justify-center min-h-[44px]"
             >
               <Plus className="h-5 w-5 mr-2" aria-hidden="true" />
@@ -695,9 +710,9 @@ export default function FilesPage() {
           ) : error ? (
             <ErrorState error={error} onRetry={handleRetry} />
           ) : filteredFiles.length === 0 ? (
-            <EmptyState 
-              hasFiles={files.length > 0} 
-              onUpload={() => window.location.href = '/dashboard/files/upload'} 
+            <EmptyState
+              hasFiles={files.length > 0}
+              onUpload={() => (window.location.href = "/dashboard/files/upload")}
             />
           ) : (
             <>
@@ -714,7 +729,7 @@ export default function FilesPage() {
                   />
                 ))}
               </div>
-              
+
               {/* Pagination */}
               <Pagination
                 currentPage={currentPage}

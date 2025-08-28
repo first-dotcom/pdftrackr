@@ -1,5 +1,3 @@
-import { Briefcase, Users, Laptop, GraduationCap } from "lucide-react";
-
 const useCases = [
   {
     title: "Sales Professionals",
@@ -7,7 +5,7 @@ const useCases = [
     icon: "📊",
   },
   {
-    title: "Legal Professionals", 
+    title: "Legal Professionals",
     description: "Send confidential documents with password protection and audit trails",
     icon: "⚖️",
   },
@@ -52,7 +50,10 @@ export default function UseCases() {
         <div className="mt-10">
           <div className="space-y-10 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-x-8 md:gap-y-10">
             {useCases.map((useCase) => (
-              <div key={useCase.title} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
+              <div
+                key={useCase.title}
+                className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
+              >
                 <div className="flex items-center justify-center h-12 w-12 rounded-md bg-primary-100 text-primary-600 mb-4 text-2xl">
                   {useCase.icon}
                 </div>

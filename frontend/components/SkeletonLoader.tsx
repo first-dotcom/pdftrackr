@@ -80,9 +80,7 @@ export default function SkeletonLoader({ type, count = 1, className = "" }: Skel
     return (
       <div className={`grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 ${className}`}>
         {items.map((i) => (
-          <div key={i}>
-            {renderSkeleton()}
-          </div>
+          <div key={i}>{renderSkeleton()}</div>
         ))}
       </div>
     );
@@ -94,9 +92,7 @@ export default function SkeletonLoader({ type, count = 1, className = "" }: Skel
         <div className="card-body">
           <div className="divide-y divide-gray-200">
             {items.map((i) => (
-              <div key={i}>
-                {renderSkeleton()}
-              </div>
+              <div key={i}>{renderSkeleton()}</div>
             ))}
           </div>
         </div>
@@ -107,9 +103,7 @@ export default function SkeletonLoader({ type, count = 1, className = "" }: Skel
   return (
     <div className={`space-y-6 ${className}`}>
       {items.map((i) => (
-        <div key={i}>
-          {renderSkeleton()}
-        </div>
+        <div key={i}>{renderSkeleton()}</div>
       ))}
     </div>
   );

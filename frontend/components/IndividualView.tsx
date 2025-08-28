@@ -1,12 +1,24 @@
 "use client";
 
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { MagnifyingGlassIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { apiClient } from '../lib/api-client';
-import { PaginatedSessionsResponse, AppliedFilters } from '../../shared/types/api';
-import LoadingSpinner from './LoadingSpinner';
-import { formatViewTime } from '../utils/formatters';
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/outline";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import type { AppliedFilters, PaginatedSessionsResponse } from "../../shared/types/api";
+import { apiClient } from "../lib/api-client";
+import { formatViewTime } from "../utils/formatters";
+import LoadingSpinner from "./LoadingSpinner";
 
 interface IndividualViewProps {
   fileId: number;
@@ -16,12 +28,12 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
   const [data, setData] = useState<PaginatedSessionsResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Filter state
   const [filters, setFilters] = useState<AppliedFilters>({});
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  
+
   // Expanded rows state
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
@@ -29,16 +41,19 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
     try {
       setLoading(true);
       setError(null);
-      
-      const response = await apiClient.analytics.individual(fileId, { ...filters, page: currentPage });
-      
+
+      const response = await apiClient.analytics.individual(fileId, {
+        ...filters,
+        page: currentPage,
+      });
+
       if (response.success && response.data) {
         setData(response.data as PaginatedSessionsResponse);
       } else {
-        setError('Failed to load individual analytics data');
+        setError("Failed to load individual analytics data");
       }
     } catch (err) {
-      setError('Error loading individual analytics data');
+      setError("Error loading individual analytics data");
     } finally {
       setLoading(false);
     }
@@ -49,9 +64,9 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
   }, [fetchData]);
 
   const handleFilterChange = useCallback((key: keyof AppliedFilters, value: string) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [key]: value || undefined
+      [key]: value || undefined,
     }));
   }, []);
 
@@ -60,7 +75,7 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
   }, []);
 
   const toggleRowExpansion = useCallback((sessionId: string) => {
-    setExpandedRows(prev => {
+    setExpandedRows((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(sessionId)) {
         newSet.delete(sessionId);
@@ -78,7 +93,7 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
         totalSessions: 0,
         totalDuration: 0,
         avgSessionTime: 0,
-        totalPageViews: 0
+        totalPageViews: 0,
       };
     }
 
@@ -91,19 +106,19 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
       totalSessions,
       totalDuration,
       avgSessionTime,
-      totalPageViews
+      totalPageViews,
     };
   };
 
   // Create chart data for a specific user's sessions (same format as AggregateView)
   const getUserChartData = (session: any) => {
     if (!session.pages || session.pages.length === 0) return [];
-    
+
     return session.pages
       .map((page: any) => ({
         page: `Page ${page.pageNumber}`,
         avgTime: Number(page.avgDuration) || 0,
-        pageNumber: page.pageNumber
+        pageNumber: page.pageNumber,
       }))
       .sort((a: any, b: any) => a.pageNumber - b.pageNumber);
   };
@@ -153,12 +168,14 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
       {/* Unified Header */}
       <div className="px-6 py-4 border-b bg-gray-50">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">Individual Analytics (Per-File User Behavior)</h3>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Individual Analytics (Per-File User Behavior)
+          </h3>
           <button
             onClick={() => setShowFilters(!showFilters)}
             className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
           >
-            <span>{showFilters ? 'Hide' : 'Show'} Filters</span>
+            <span>{showFilters ? "Hide" : "Show"} Filters</span>
           </button>
         </div>
       </div>
@@ -173,8 +190,8 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
             name="emailSearch"
             type="text"
             placeholder="Search by email..."
-            value={filters.email || ''}
-            onChange={(e) => handleFilterChange('email', e.target.value)}
+            value={filters.email || ""}
+            onChange={(e) => handleFilterChange("email", e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
@@ -183,57 +200,81 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
         {showFilters && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div>
-              <label htmlFor="device-filter" className="block text-sm font-medium text-gray-700 mb-1">Device</label>
+              <label
+                htmlFor="device-filter"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Device
+              </label>
               <select
                 id="device-filter"
                 name="deviceFilter"
-                value={filters.device || ''}
-                onChange={(e) => handleFilterChange('device', e.target.value)}
+                value={filters.device || ""}
+                onChange={(e) => handleFilterChange("device", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Devices</option>
-                {(data.filters?.available?.devices || []).map(device => (
-                  <option key={device} value={device}>{device}</option>
+                {(data.filters?.available?.devices || []).map((device) => (
+                  <option key={device} value={device}>
+                    {device}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label htmlFor="country-filter" className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+              <label
+                htmlFor="country-filter"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Country
+              </label>
               <select
                 id="country-filter"
                 name="countryFilter"
-                value={filters.country || ''}
-                onChange={(e) => handleFilterChange('country', e.target.value)}
+                value={filters.country || ""}
+                onChange={(e) => handleFilterChange("country", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Countries</option>
-                {(data.filters?.available?.countries || []).map(country => (
-                  <option key={country} value={country}>{country}</option>
+                {(data.filters?.available?.countries || []).map((country) => (
+                  <option key={country} value={country}>
+                    {country}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label htmlFor="date-from-filter" className="block text-sm font-medium text-gray-700 mb-1">Date From</label>
+              <label
+                htmlFor="date-from-filter"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Date From
+              </label>
               <input
                 id="date-from-filter"
                 name="dateFromFilter"
                 type="date"
-                value={filters.dateFrom || ''}
-                onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+                value={filters.dateFrom || ""}
+                onChange={(e) => handleFilterChange("dateFrom", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label htmlFor="date-to-filter" className="block text-sm font-medium text-gray-700 mb-1">Date To</label>
+              <label
+                htmlFor="date-to-filter"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Date To
+              </label>
               <input
                 id="date-to-filter"
                 name="dateToFilter"
                 type="date"
-                value={filters.dateTo || ''}
-                onChange={(e) => handleFilterChange('dateTo', e.target.value)}
+                value={filters.dateTo || ""}
+                onChange={(e) => handleFilterChange("dateTo", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -241,11 +282,8 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
         )}
 
         {/* Clear Filters */}
-        {Object.keys(filters).some(key => filters[key as keyof AppliedFilters]) && (
-          <button
-            onClick={clearFilters}
-            className="text-sm text-gray-600 hover:text-gray-800"
-          >
+        {Object.keys(filters).some((key) => filters[key as keyof AppliedFilters]) && (
+          <button onClick={clearFilters} className="text-sm text-gray-600 hover:text-gray-800">
             Clear all filters
           </button>
         )}
@@ -288,16 +326,18 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
                       <div className="flex-shrink-0 h-10 w-10">
                         <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
                           <span className="text-sm font-medium text-gray-700">
-                            {session.viewerEmail ? session.viewerEmail.charAt(0).toUpperCase() : 'U'}
+                            {session.viewerEmail
+                              ? session.viewerEmail.charAt(0).toUpperCase()
+                              : "U"}
                           </span>
                         </div>
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">
-                          {session.viewerEmail || 'Anonymous User'}
+                          {session.viewerEmail || "Anonymous User"}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {session.viewerName || 'No name provided'}
+                          {session.viewerName || "No name provided"}
                         </div>
                       </div>
                     </div>
@@ -309,10 +349,10 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
                     {formatViewTime(session.totalDuration)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {session.device || 'Unknown'}
+                    {session.device || "Unknown"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {session.country || 'Unknown'}
+                    {session.country || "Unknown"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {session.pages.length} pages
@@ -328,39 +368,49 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
                         <ChevronRightIcon className="h-4 w-4" />
                       )}
                       <span className="ml-1">
-                        {expandedRows.has(session.sessionId) ? 'Hide' : 'Show'} Analytics
+                        {expandedRows.has(session.sessionId) ? "Hide" : "Show"} Analytics
                       </span>
                     </button>
                   </td>
                 </tr>
-                
+
                 {/* Expanded Row - User's Page Analytics */}
                 {expandedRows.has(session.sessionId) && (
                   <tr>
                     <td colSpan={7} className="px-6 py-4 bg-gray-50">
                       {session.pages.length > 0 ? (
                         <ResponsiveContainer width="100%" height={320}>
-                          <LineChart data={getUserChartData(session)} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                          <LineChart
+                            data={getUserChartData(session)}
+                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                          >
                             <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis 
-                              dataKey="page" 
+                            <XAxis
+                              dataKey="page"
                               tick={{ fontSize: 12 }}
-                              interval={Math.max(1, Math.floor(getUserChartData(session).length / 10))}
+                              interval={Math.max(
+                                1,
+                                Math.floor(getUserChartData(session).length / 10),
+                              )}
                             />
-                            <YAxis 
+                            <YAxis
                               tick={{ fontSize: 12 }}
-                              label={{ value: 'Time (seconds)', angle: -90, position: 'insideLeft' }}
+                              label={{
+                                value: "Time (seconds)",
+                                angle: -90,
+                                position: "insideLeft",
+                              }}
                             />
-                            <Tooltip 
-                              formatter={(value: any) => [`${value} seconds`, 'Average Time']}
+                            <Tooltip
+                              formatter={(value: any) => [`${value} seconds`, "Average Time"]}
                               labelFormatter={(label) => `Page ${label}`}
                             />
-                            <Line 
-                              type="monotone" 
-                              dataKey="avgTime" 
-                              stroke="#3B82F6" 
+                            <Line
+                              type="monotone"
+                              dataKey="avgTime"
+                              stroke="#3B82F6"
                               strokeWidth={2}
-                              dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
+                              dot={{ fill: "#3B82F6", strokeWidth: 2, r: 4 }}
                             />
                           </LineChart>
                         </ResponsiveContainer>
@@ -373,14 +423,14 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
           </tbody>
         </table>
       </div>
-      
+
       {/* Pagination */}
       {data.pagination && data.pagination.totalPages > 1 && (
         <div className="px-6 py-4 border-t bg-gray-50">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-700">
-              Showing {((data.pagination.page - 1) * data.pagination.limit) + 1} to{' '}
-              {Math.min(data.pagination.page * data.pagination.limit, data.pagination.total)} of{' '}
+              Showing {(data.pagination.page - 1) * data.pagination.limit + 1} to{" "}
+              {Math.min(data.pagination.page * data.pagination.limit, data.pagination.total)} of{" "}
               {data.pagination.total} results
             </div>
             <div className="flex space-x-2">

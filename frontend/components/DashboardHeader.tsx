@@ -1,12 +1,12 @@
 "use client";
 
+import { useAdmin } from "@/hooks/useAdmin";
 import { UserButton } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs";
-import { usePathname } from "next/navigation";
-import { Menu, Shield, Settings, LayoutDashboard, FileText } from "lucide-react";
-import Link from "next/link";
 import { clsx } from "clsx";
-import { useAdmin } from "@/hooks/useAdmin";
+import { FileText, LayoutDashboard, Menu, Settings, Shield } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import Logo from "./Logo";
 
 interface DashboardHeaderProps {
@@ -69,11 +69,16 @@ export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderPr
 
             {/* Desktop Navigation Tabs */}
             <nav className="hidden lg:flex space-x-8 ml-8">
-              {[...navigation, ...(isAdmin ? [{ name: "Admin", href: "/dashboard/admin", icon: Shield }] : [])].map((item) => {
-                const isActive = pathname === item.href || 
+              {[
+                ...navigation,
+                ...(isAdmin ? [{ name: "Admin", href: "/dashboard/admin", icon: Shield }] : []),
+              ].map((item) => {
+                const isActive =
+                  pathname === item.href ||
                   (item.href === "/dashboard/files" && pathname.startsWith("/dashboard/files")) ||
-                  (item.href === "/dashboard/settings" && pathname.startsWith("/dashboard/settings"));
-                
+                  (item.href === "/dashboard/settings" &&
+                    pathname.startsWith("/dashboard/settings"));
+
                 return (
                   <Link
                     key={item.name}
@@ -82,7 +87,7 @@ export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderPr
                       "flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-md transition-colors",
                       isActive
                         ? "text-primary-600 bg-primary-50 border-primary-200"
-                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50",
                     )}
                   >
                     <item.icon className="h-4 w-4" />
@@ -103,8 +108,8 @@ export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderPr
           </div>
 
           <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
-            <UserButton 
-              afterSignOutUrl="/" 
+            <UserButton
+              afterSignOutUrl="/"
               appearance={{
                 elements: {
                   avatarBox: "w-7 h-7 sm:w-8 sm:h-8 rounded-full",

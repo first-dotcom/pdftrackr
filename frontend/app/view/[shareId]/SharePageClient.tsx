@@ -1,10 +1,9 @@
 "use client";
 
-import { config } from "@/lib/config";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { useApi } from "@/hooks/useApi";
 import { formatFileSize } from "@/utils/formatters";
-import ErrorBoundary from "@/components/ErrorBoundary";
-import { lazy, Suspense } from "react";
+import { Suspense, lazy } from "react";
 
 // Lazy load PDF viewer for better performance
 const SecurePDFViewer = lazy(() => import("@/components/SecurePDFViewer"));
@@ -70,8 +69,6 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
   const [error, setError] = useState<string | null>(null);
   const [showAccessForm, setShowAccessForm] = useState(false);
   const [showPDFViewer, setShowPDFViewer] = useState(false);
-
-
 
   // Access form state
   const [password, setPassword] = useState("");
@@ -162,14 +159,6 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
     }
   };
 
-  const handleDownload = () => {
-    // Download functionality will be handled by SecurePDFViewer
-    // This is now just a placeholder for any future download UI
-    console.log("Download requested - handled by PDF viewer");
-  };
-
-
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -210,11 +199,7 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
           <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
             <div className="text-center mb-6">
               <div className="w-16 h-16 mx-auto mb-4">
-                <img
-                  src="/logo.png"
-                  alt="PDFTrackr Logo"
-                  className="w-16 h-16 mx-auto"
-                />
+                <img src="/logo.png" alt="PDFTrackr Logo" className="w-16 h-16 mx-auto" />
               </div>
               <h1 className="text-2xl font-semibold text-gray-900">{shareData.shareLink.title}</h1>
               {shareData.shareLink.description && (
@@ -233,12 +218,6 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
                 <span className="text-gray-500">Size:</span>
                 <span className="font-medium">{formatFileSize(shareData.shareLink.file.size)}</span>
               </div>
-              {shareData.shareLink.viewCount > 0 && (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">Views:</span>
-                  <span className="font-medium">{shareData.shareLink.viewCount}</span>
-                </div>
-              )}
             </div>
 
             <form onSubmit={handleAccess} className="space-y-4">
@@ -281,16 +260,16 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Password <span className="text-red-500">*</span>
                   </label>
-                                    <input
-                      id="password-input"
-                      name="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="input w-full border border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-200 focus:ring-opacity-50 text-sm text-gray-900 placeholder-gray-400"
-                      placeholder="Enter password"
-                      required
-                    />
+                  <input
+                    id="password-input"
+                    name="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="input w-full border border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-200 focus:ring-opacity-50 text-sm text-gray-900 placeholder-gray-400"
+                    placeholder="Enter password"
+                    required
+                  />
                 </div>
               )}
 
@@ -332,28 +311,29 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
     return (
       <>
         <ErrorBoundary>
-          <Suspense fallback={
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading PDF viewer...</p>
+          <Suspense
+            fallback={
+              <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading PDF viewer...</p>
+                </div>
               </div>
-            </div>
-          }>
+            }
+          >
             <SecurePDFViewer
-            shareId={shareId}
-            sessionId={accessData.sessionId}
-            password={password}
-            email={email}
-
-            watermarkEmail={shareData?.shareLink.watermarkEnabled ? watermarkEmail : undefined}
-            watermarkTime={shareData?.shareLink.watermarkEnabled ? watermarkTime : undefined}
-            downloadEnabled={accessData.downloadEnabled}
-            onError={(errorMsg) => {
-              setError(errorMsg);
-              setShowPDFViewer(false);
-            }}
-            onLoadSuccess={() => {          }}
+              shareId={shareId}
+              sessionId={accessData.sessionId}
+              password={password}
+              email={email}
+              watermarkEmail={shareData?.shareLink.watermarkEnabled ? watermarkEmail : undefined}
+              watermarkTime={shareData?.shareLink.watermarkEnabled ? watermarkTime : undefined}
+              downloadEnabled={accessData.downloadEnabled}
+              onError={(errorMsg) => {
+                setError(errorMsg);
+                setShowPDFViewer(false);
+              }}
+              onLoadSuccess={() => {}}
             />
           </Suspense>
         </ErrorBoundary>

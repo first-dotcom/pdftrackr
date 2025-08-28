@@ -1,7 +1,7 @@
 "use client";
 
-import { Component, type ReactNode } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
+import { Component, type ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
@@ -47,15 +47,13 @@ export default class ErrorBoundary extends Component<Props, State> {
             <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-4">
               <AlertTriangle className="h-6 w-6 text-red-600" aria-hidden="true" />
             </div>
-            
+
             <div className="text-center">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Something went wrong
-              </h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Something went wrong</h3>
               <p className="text-sm text-gray-500 mb-6">
                 We encountered an unexpected error. Please try refreshing the page.
               </p>
-              
+
               <div className="space-y-3">
                 <button
                   onClick={this.handleRetry}
@@ -64,7 +62,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                   <RefreshCw className="h-4 w-4 mr-2" aria-hidden="true" />
                   Try Again
                 </button>
-                
+
                 <button
                   onClick={() => window.location.reload()}
                   className="w-full btn-outline btn-md"
@@ -72,8 +70,8 @@ export default class ErrorBoundary extends Component<Props, State> {
                   Refresh Page
                 </button>
               </div>
-              
-              {process.env.NODE_ENV === 'development' && this.state.error && (
+
+              {process.env.NODE_ENV === "development" && this.state.error && (
                 <details className="mt-6 text-left">
                   <summary className="text-sm font-medium text-gray-700 cursor-pointer">
                     Error Details (Development)
@@ -100,5 +98,3 @@ export default class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
-
-

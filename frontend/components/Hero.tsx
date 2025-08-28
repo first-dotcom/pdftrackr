@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Gift, CreditCard, Shield } from "lucide-react";
+import { ArrowRight, CreditCard, Gift, Shield } from "lucide-react";
 import Link from "next/link";
 import WaitlistModal from "./WaitlistModal";
 
@@ -17,13 +17,18 @@ export default function Hero() {
               </h1>
 
               <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                PDFTrackr provides professional PDF tracking and analytics to see who's reading your documents. Track PDF views, capture emails, and control access with our secure sharing platform. 500MB free storage, no credit card required.
+                PDFTrackr provides professional PDF tracking and analytics to see who's reading your
+                documents. Track PDF views, capture emails, and control access with our secure
+                sharing platform. 500MB free storage, no credit card required.
               </p>
 
               <p className="mt-2 text-sm text-gray-500 sm:max-w-xl sm:mx-auto lg:mx-0">
                 Need more than 500MB?{" "}
                 <button
-                  onClick={() => document.getElementById("waitlist-modal")?.classList.remove("hidden")}
+                  type="button"
+                  onClick={() =>
+                    document.getElementById("waitlist-modal")?.classList.remove("hidden")
+                  }
                   className="text-primary-600 hover:text-primary-700 underline"
                 >
                   Join the waitlist for Pro plans launching Q4 2025
@@ -81,7 +86,7 @@ export default function Hero() {
                 </div>
               </div>
             </div>
-            
+
             {/* Badges */}
             <div className="flex flex-wrap gap-2 justify-center">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">

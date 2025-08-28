@@ -1,9 +1,19 @@
-import { z } from "zod";
 import type { UserPlan, WaitlistPlan } from "@/shared/types";
+import { z } from "zod";
 
 // Plan Validation Schemas
-export const userPlanSchema = z.enum(["free", "starter", "pro", "business"]) satisfies z.ZodType<UserPlan>;
-export const waitlistPlanSchema = z.enum(["starter", "pro", "business", "either"]) satisfies z.ZodType<WaitlistPlan>;
+export const userPlanSchema = z.enum([
+  "free",
+  "starter",
+  "pro",
+  "business",
+]) satisfies z.ZodType<UserPlan>;
+export const waitlistPlanSchema = z.enum([
+  "starter",
+  "pro",
+  "business",
+  "either",
+]) satisfies z.ZodType<WaitlistPlan>;
 
 // Helper function for plan validation
 export const validatePlan = (plan: string): { valid: boolean; error?: string } => {

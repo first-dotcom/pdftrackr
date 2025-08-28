@@ -1,9 +1,4 @@
-import {
-  Lock,
-  BarChart3,
-  Briefcase,
-  CheckCircle,
-} from "lucide-react";
+import { BarChart3, Briefcase, CheckCircle, Lock } from "lucide-react";
 
 const featureGroups = [
   {

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Bell, X, CheckCircle } from "lucide-react";
 import { useApi } from "@/hooks/useApi";
 import { sanitizeUserInput } from "@/utils/security";
+import { Bell, CheckCircle, X } from "lucide-react";
+import { useState } from "react";
 
 export default function WaitlistModal() {
   const [email, setEmail] = useState("");
@@ -39,9 +39,10 @@ export default function WaitlistModal() {
           closeModal();
         }, 3000);
       } else {
-        const errorMessage = typeof response.error === 'string' 
-          ? response.error 
-          : response.error?.message || "Failed to join waitlist. Please try again.";
+        const errorMessage =
+          typeof response.error === "string"
+            ? response.error
+            : response.error?.message || "Failed to join waitlist. Please try again.";
         setError(errorMessage);
       }
     } catch (error) {
@@ -146,11 +147,7 @@ export default function WaitlistModal() {
               </div>
 
               <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="flex-1 btn-outline btn-md"
-                >
+                <button type="button" onClick={closeModal} className="flex-1 btn-outline btn-md">
                   Cancel
                 </button>
                 <button
@@ -176,9 +173,7 @@ export default function WaitlistModal() {
               <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-50 to-green-100 rounded-full flex items-center justify-center mb-4">
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                You're on the list!
-              </h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">You're on the list!</h3>
               <p className="text-gray-600 mb-4">
                 We'll email you when paid plans launch in Q3 2025.
               </p>

@@ -1,6 +1,6 @@
+import Logo from "@/components/Logo";
 import { SignUp } from "@clerk/nextjs";
 import type { Metadata } from "next";
-import Logo from "@/components/Logo";
 
 export const metadata: Metadata = {
   title: "Sign Up - PDFTrackr",
@@ -20,9 +20,7 @@ export default function Page() {
           <div className="mx-auto mb-6">
             <Logo size="xl" />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
-            PDFTrackr
-          </h1>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">PDFTrackr</h1>
           <h2 className="text-xl sm:text-2xl font-semibold text-gray-700 mb-2">
             Create your account
           </h2>
@@ -30,7 +28,7 @@ export default function Page() {
             Start sharing and tracking your PDFs with powerful analytics.
           </p>
         </div>
-        
+
         <SignUp
           appearance={{
             elements: {
@@ -38,14 +36,19 @@ export default function Page() {
               card: "shadow-xl border border-gray-200 bg-white/80 backdrop-blur-sm",
               headerTitle: "text-2xl font-bold text-gray-900",
               headerSubtitle: "text-gray-600 text-sm",
-              formButtonPrimary: "bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md",
-              formButtonSecondary: "bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-lg transition-colors duration-200",
-              footerActionLink: "text-primary-600 hover:text-primary-700 font-medium transition-colors duration-200",
-              formFieldInput: "border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200",
+              formButtonPrimary:
+                "bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md",
+              formButtonSecondary:
+                "bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-lg transition-colors duration-200",
+              footerActionLink:
+                "text-primary-600 hover:text-primary-700 font-medium transition-colors duration-200",
+              formFieldInput:
+                "border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200",
               formFieldLabel: "text-sm font-medium text-gray-700 mb-2",
               dividerLine: "bg-gray-200",
               dividerText: "text-gray-500 text-sm font-medium",
-              socialButtonsBlockButton: "border border-gray-300 rounded-lg px-4 py-3 hover:bg-gray-50 transition-colors duration-200",
+              socialButtonsBlockButton:
+                "border border-gray-300 rounded-lg px-4 py-3 hover:bg-gray-50 transition-colors duration-200",
               socialButtonsBlockButtonText: "text-gray-700 font-medium",
               formFieldLabelRow: "mb-2",
               formFieldInputShowPasswordButton: "text-gray-500 hover:text-gray-700",

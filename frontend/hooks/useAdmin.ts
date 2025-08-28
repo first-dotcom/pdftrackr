@@ -21,8 +21,8 @@ export function useAdmin() {
         }
 
         // Get user profile which includes admin status
-        const response = await fetch('/api/users/profile', {
-          headers: { 'Authorization': `Bearer ${token}` },
+        const response = await fetch("/api/users/profile", {
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         if (response.ok) {
@@ -32,7 +32,7 @@ export function useAdmin() {
           setIsAdmin(false);
         }
       } catch (error) {
-        console.error('Failed to check admin status:', error);
+        console.error("Failed to check admin status:", error);
         setIsAdmin(false);
       } finally {
         setLoading(false);

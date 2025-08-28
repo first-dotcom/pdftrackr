@@ -26,7 +26,7 @@ const getApiUrl = () => {
   if (typeof window !== "undefined") {
     return "";
   }
-  
+
   // If we're server-side (SSR, API routes), use the environment variable
   // which should be set to 'backend' in Docker
   return env.NEXT_PUBLIC_API_URL;
