@@ -13,6 +13,7 @@ import { initializeDatabase } from "./utils/database";
 import { logger } from "./utils/logger";
 import { connectRedis } from "./utils/redis";
 import { scheduleDataRetentionCleanup } from "./jobs/dataRetentionCleanup";
+import { scheduleSessionCleanup } from "./jobs/sessionCleanup";
 
 import analyticsRoutes from "./routes/analytics";
 import analyticsTrackingRoutes from "./routes/analyticsTracking";
@@ -261,6 +262,8 @@ async function startServer() {
 
     // Schedule data retention cleanup job
     scheduleDataRetentionCleanup();
+    // Schedule session cleanup job
+    scheduleSessionCleanup();
 
     const port = config.server.port;
     app.listen(port, () => {

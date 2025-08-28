@@ -250,8 +250,6 @@ export default function SecurePDFViewer({
   );
 
   const trackPageView = async (page: number, totalPages: number, isPageExit = false) => {
-    console.log("trackPageView called:", page, totalPages, isPageExit, "SessionId:", sessionId, "ShareId:", shareId);
-
     // Validate parameters
     if (!page || page <= 0 || !totalPages || totalPages <= 0 || page > totalPages) {
       console.warn(`Invalid page view tracking parameters: page=${page}, totalPages=${totalPages}`);
@@ -295,17 +293,13 @@ export default function SecurePDFViewer({
       isPageExit, // Mark if this is a page exit
     };
 
-    console.log("Sending page view data:", pageViewData);
-
     // Send analytics to backend with retry logic and local storage fallback
     try {
-      console.log("Attempting to send page view to backend...");
-      const result = await retryWithBackoff(
+      await retryWithBackoff(
         () => apiClient.analytics.trackPageView(pageViewData),
         0,
         "Page view tracking",
       );
-      console.log("Page view tracking successful:", result);
     } catch (error) {
       console.error("Page view tracking failed after all retries, storing locally:", error);
       storeFailedAnalytics(pageViewData, "pageView");
@@ -348,7 +342,6 @@ export default function SecurePDFViewer({
         0,
         "Session end tracking",
       );
-      console.log("Session end tracking successful:", sessionEndData);
     } catch (error) {
       console.error("Session end tracking failed after all retries, storing locally:", error);
       storeFailedAnalytics(sessionEndData, "sessionEnd");
@@ -475,8 +468,8 @@ export default function SecurePDFViewer({
       totalPages: numPages,
     }));
 
-    // Track initial page view with delay to ensure sessionId is ready
-    setTimeout(() => trackPageView(1, numPages, false), 500);
+            // Track initial page view
+        trackPageView(1, numPages, false);
 
     onLoadSuccess?.();
   };
@@ -493,8 +486,8 @@ export default function SecurePDFViewer({
       if (newPage !== prev && numPages > 0) {
         // Track exit from current page with actual duration
         trackPageView(prev, numPages, true);
-        // Track entry to new page with longer delay to ensure sessionId is ready
-        setTimeout(() => trackPageView(newPage, numPages, false), 200);
+        // Track entry to new page
+        setTimeout(() => trackPageView(newPage, numPages, false), 100);
       }
       return newPage;
     });
@@ -507,8 +500,8 @@ export default function SecurePDFViewer({
       if (newPage !== prev) {
         // Track exit from current page with actual duration
         trackPageView(prev, numPages, true);
-        // Track entry to new page with longer delay to ensure sessionId is ready
-        setTimeout(() => trackPageView(newPage, numPages, false), 200);
+        // Track entry to new page
+        setTimeout(() => trackPageView(newPage, numPages, false), 100);
       }
       return newPage;
     });
@@ -588,18 +581,7 @@ export default function SecurePDFViewer({
 
           <span className="text-sm text-gray-600">
             Page {pageNumber} of {numPages || "?"}
-            {process.env.NODE_ENV === 'development' && (
-              <button
-                onClick={() => {
-                  console.log("Manual tracking test");
-                  trackPageView(pageNumber, numPages, false);
-                }}
-                className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded"
-                title="Test tracking"
-              >
-                Test
-              </button>
-            )}
+
           </span>
 
           <button

@@ -338,7 +338,7 @@ router.get(
 
     // Cache key based on user and time range
     const cacheKey = `dashboard:${userId}:${days}d`;
-    const CACHE_TTL = 60; // 1 minute (reduced for more responsive updates)
+    const CACHE_TTL = 30; // 30 seconds (reduced for more responsive updates)
 
     try {
       // Try to get cached data first
@@ -880,7 +880,7 @@ router.get(
     };
 
     // Cache the response for 2 minutes (shorter TTL for analytics)
-    await setCache(cacheKey, JSON.stringify(responseData), 120);
+    await setCache(cacheKey, JSON.stringify(responseData), 30);
 
     res.json(responseData);
   })
@@ -940,7 +940,7 @@ router.get(
           }
         }
       };
-      await setCache(cacheKey, JSON.stringify(emptyResponse), 300);
+      await setCache(cacheKey, JSON.stringify(emptyResponse), 30);
       res.json(emptyResponse);
       return;
     }
@@ -1107,7 +1107,7 @@ router.get(
     const result = await getSessionsWithPageData(fileId, userId, req.query, true); // true = averaged
 
     // Cache the response
-    await setCache(cacheKey, JSON.stringify(result), 300);
+    await setCache(cacheKey, JSON.stringify(result), 30);
 
     res.json(result);
   })
