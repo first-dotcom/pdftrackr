@@ -1,0 +1,306 @@
+import Link from "next/link";
+import { ArrowLeft, Gift, CheckCircle, Shield, BarChart3, Mail, Lock, Clock } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Free PDF Tracking - Track PDF Views & Analytics | No Credit Card Required",
+  description: "Get free PDF tracking with PDFTrackr. Track PDF views, capture emails, and get analytics without paying a dime. 500MB free storage, no credit card required. Start tracking your documents today.",
+  keywords: [
+    "free PDF tracking",
+    "PDF tracking free",
+    "free PDF analytics",
+    "track PDF views free",
+    "free document tracking",
+    "PDF viewer tracking free",
+    "free PDF security",
+    "no credit card PDF tracking"
+  ],
+  openGraph: {
+    title: "Free PDF Tracking - Track PDF Views & Analytics | No Credit Card Required",
+    description: "Get free PDF tracking with PDFTrackr. Track PDF views, capture emails, and get analytics without paying a dime. 500MB free storage, no credit card required.",
+    type: "website",
+  },
+};
+
+const features = [
+  {
+    icon: Gift,
+    title: "500MB Free Storage",
+    description: "Upload and track unlimited PDFs with 500MB of free storage space. No hidden fees or storage limits."
+  },
+  {
+    icon: CheckCircle,
+    title: "No Credit Card Required",
+    description: "Start tracking PDFs immediately without providing any payment information. Our free plan is truly free."
+  },
+  {
+    icon: BarChart3,
+    title: "Full Analytics Dashboard",
+    description: "Get comprehensive analytics including view counts, engagement time, geographic data, and page-by-page insights."
+  },
+  {
+    icon: Mail,
+    title: "Email Capture",
+    description: "Capture viewer email addresses before they access your documents. Perfect for lead generation and building your audience."
+  },
+  {
+    icon: Lock,
+    title: "Password Protection",
+    description: "Secure your PDFs with password protection. Control who can access your documents and when."
+  },
+  {
+    icon: Shield,
+    title: "Virus Scanning",
+    description: "Every uploaded PDF is automatically scanned for viruses and malware to keep your documents safe."
+  },
+  {
+    icon: Clock,
+    title: "Link Expiration",
+    description: "Set custom expiration dates for your document links. Perfect for time-sensitive content."
+  }
+];
+
+const comparisonData = [
+  {
+    feature: "Free Storage",
+    pdfTrackr: "500MB",
+    competitors: "50-100MB",
+    winner: "pdfTrackr"
+  },
+  {
+    feature: "Credit Card Required",
+    pdfTrackr: "No",
+    competitors: "Often Yes",
+    winner: "pdfTrackr"
+  },
+  {
+    feature: "Email Capture",
+    pdfTrackr: "Included",
+    competitors: "Premium Feature",
+    winner: "pdfTrackr"
+  },
+  {
+    feature: "Password Protection",
+    pdfTrackr: "Included",
+    competitors: "Premium Feature",
+    winner: "pdfTrackr"
+  },
+  {
+    feature: "Virus Scanning",
+    pdfTrackr: "Included",
+    competitors: "Sometimes",
+    winner: "pdfTrackr"
+  },
+  {
+    feature: "Analytics Dashboard",
+    pdfTrackr: "Full Access",
+    competitors: "Limited",
+    winner: "pdfTrackr"
+  }
+];
+
+export default function FreePdfTrackingPage() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <div className="mb-8">
+          <Link href="/" className="inline-flex items-center text-gray-600 hover:text-gray-900">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Home
+          </Link>
+        </div>
+        
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Free PDF Tracking - Track PDF Views & Analytics
+          </h1>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Get professional PDF tracking and analytics completely free. No credit card required, no hidden fees, no limitations. Start tracking your documents in minutes.
+          </p>
+        </div>
+
+        {/* Hero CTA */}
+        <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-lg p-8 mb-12 text-center text-white">
+          <h2 className="text-2xl font-bold mb-4">Start Free PDF Tracking Today</h2>
+          <p className="text-lg mb-6 opacity-90">
+            500MB free storage • No credit card required • Full analytics included
+          </p>
+          <Link
+            href="/sign-up"
+            className="inline-flex items-center px-8 py-4 bg-white text-primary-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            Get Started Free
+            <Gift className="ml-2 h-5 w-5" />
+          </Link>
+        </div>
+
+        {/* Features Grid */}
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
+            Everything You Need for Free PDF Tracking
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
+              <div key={index} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                <div className="flex items-center mb-4">
+                  <feature.icon className="h-8 w-8 text-primary-600 mr-3" />
+                  <h3 className="text-lg font-semibold text-gray-900">{feature.title}</h3>
+                </div>
+                <p className="text-gray-600">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* How It Works */}
+        <div className="bg-white rounded-lg p-8 mb-16 shadow-sm">
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
+            How Free PDF Tracking Works
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="bg-primary-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-bold text-primary-600">1</span>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Your PDF</h3>
+              <p className="text-gray-600">
+                Upload any PDF document to PDFTrackr. Our platform automatically scans for viruses and prepares it for secure sharing.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="bg-primary-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-bold text-primary-600">2</span>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Share Securely</h3>
+              <p className="text-gray-600">
+                Get a secure link to share your PDF. Add password protection, email capture, or set expiration dates as needed.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="bg-primary-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-bold text-primary-600">3</span>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Track & Analyze</h3>
+              <p className="text-gray-600">
+                Monitor views, engagement, and analytics in real-time. See who's reading your documents and how they interact with them.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Comparison Table */}
+        <div className="bg-white rounded-lg p-8 mb-16 shadow-sm">
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
+            Why Choose PDFTrackr for Free PDF Tracking?
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-4 px-4 font-semibold text-gray-900">Feature</th>
+                  <th className="text-center py-4 px-4 font-semibold text-primary-600">PDFTrackr Free</th>
+                  <th className="text-center py-4 px-4 font-semibold text-gray-600">Other Platforms</th>
+                </tr>
+              </thead>
+              <tbody>
+                {comparisonData.map((row, index) => (
+                  <tr key={index} className="border-b border-gray-100">
+                    <td className="py-4 px-4 font-medium text-gray-900">{row.feature}</td>
+                    <td className="py-4 px-4 text-center">
+                      <span className="inline-flex items-center">
+                        {row.pdfTrackr}
+                        {row.winner === "pdfTrackr" && (
+                          <CheckCircle className="h-5 w-5 text-green-500 ml-2" />
+                        )}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4 text-center text-gray-600">{row.competitors}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Use Cases */}
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
+            Perfect for These Use Cases
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-white rounded-lg p-6 shadow-sm text-center">
+              <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                <span className="text-blue-600 font-bold">📊</span>
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Business Reports</h3>
+              <p className="text-sm text-gray-600">Track engagement with quarterly reports, proposals, and presentations</p>
+            </div>
+            <div className="bg-white rounded-lg p-6 shadow-sm text-center">
+              <div className="bg-green-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                <span className="text-green-600 font-bold">📚</span>
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Educational Content</h3>
+              <p className="text-sm text-gray-600">Monitor student engagement with course materials and study guides</p>
+            </div>
+            <div className="bg-white rounded-lg p-6 shadow-sm text-center">
+              <div className="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                <span className="text-purple-600 font-bold">💼</span>
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Lead Generation</h3>
+              <p className="text-sm text-gray-600">Capture emails and track engagement with marketing materials</p>
+            </div>
+            <div className="bg-white rounded-lg p-6 shadow-sm text-center">
+              <div className="bg-orange-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                <span className="text-orange-600 font-bold">🔒</span>
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Secure Sharing</h3>
+              <p className="text-sm text-gray-600">Protect sensitive documents with password protection and access controls</p>
+            </div>
+          </div>
+        </div>
+
+        {/* FAQ Section */}
+        <div className="bg-white rounded-lg p-8 mb-16 shadow-sm">
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
+            Frequently Asked Questions
+          </h2>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Is PDF tracking really free?</h3>
+              <p className="text-gray-600">Yes! PDFTrackr offers a generous free plan with 500MB storage, full analytics, email capture, and security features. No credit card required to get started.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What's the catch?</h3>
+              <p className="text-gray-600">There's no catch. We believe in providing value first. Our free plan includes everything you need to start tracking PDFs effectively. Pro plans will be available later for advanced features.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How long can I use the free plan?</h3>
+              <p className="text-gray-600">The free plan is available indefinitely. You can use it as long as you want with no time restrictions or hidden fees.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What happens when I reach 500MB?</h3>
+              <p className="text-gray-600">You can delete old files to free up space, or wait for our Pro plans to launch in Q4 2025 for unlimited storage and advanced features.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Final CTA */}
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">
+            Ready to Start Free PDF Tracking?
+          </h2>
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            Join thousands of users who are already tracking their PDFs with PDFTrackr. Get started in minutes with no credit card required.
+          </p>
+          <Link
+            href="/sign-up"
+            className="inline-flex items-center px-8 py-4 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors"
+          >
+            Start Free PDF Tracking Now
+            <ArrowLeft className="ml-2 h-5 w-5 rotate-180" />
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,5 +1,24 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "PDF Sharing Terms of Service - Document Tracking & Analytics",
+  description: "PDFTrackr's terms of service govern the secure sharing and tracking of PDF documents. Our platform provides professional PDF analytics while ensuring legal compliance and user protection.",
+  keywords: [
+    "PDF sharing terms",
+    "document tracking terms",
+    "PDF service agreement",
+    "PDF terms of service",
+    "document analytics terms",
+    "PDF tracking terms"
+  ],
+  openGraph: {
+    title: "PDF Sharing Terms of Service - Document Tracking & Analytics",
+    description: "PDFTrackr's terms of service govern the secure sharing and tracking of PDF documents. Our platform provides professional PDF analytics while ensuring legal compliance and user protection.",
+    type: "article",
+  },
+};
 
 export default function TermsPage() {
   return (
@@ -13,7 +32,7 @@ export default function TermsPage() {
         </div>
         
         <div className="bg-white shadow-sm rounded-lg p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Terms of Service</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">PDF Sharing Terms of Service - Document Tracking & Analytics</h1>
           
           <div className="prose prose-gray max-w-none">
             <p className="text-gray-600 mb-6">
@@ -22,7 +41,7 @@ export default function TermsPage() {
             
             <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4">Acceptance of Terms</h2>
             <p className="text-gray-600 mb-4">
-              By accessing and using PDFTrackr, you accept and agree to be bound by the terms and provision of this agreement.
+              PDFTrackr's terms of service govern the secure sharing and tracking of PDF documents. Our platform provides professional PDF analytics while ensuring legal compliance and user protection. By accessing and using PDFTrackr, you accept and agree to be bound by the terms and provision of this agreement. Learn more about our <a href="/secure-pdf-sharing-guide" className="text-blue-600 hover:underline">secure sharing features</a> and <a href="/free-pdf-tracking" className="text-blue-600 hover:underline">free PDF tracking</a> capabilities.
             </p>
             
             <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4">Use License</h2>

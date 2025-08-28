@@ -1,5 +1,24 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "PDF Privacy Policy - Secure Document Sharing & GDPR Compliance",
+  description: "PDFTrackr's privacy policy ensures your documents and data remain secure when sharing PDFs online. Our GDPR-compliant platform protects your privacy while providing powerful PDF analytics and tracking features.",
+  keywords: [
+    "PDF privacy policy",
+    "secure PDF sharing privacy",
+    "GDPR compliant PDF tool",
+    "PDF data protection",
+    "document privacy policy",
+    "PDF security privacy"
+  ],
+  openGraph: {
+    title: "PDF Privacy Policy - Secure Document Sharing & GDPR Compliance",
+    description: "PDFTrackr's privacy policy ensures your documents and data remain secure when sharing PDFs online. Our GDPR-compliant platform protects your privacy while providing powerful PDF analytics and tracking features.",
+    type: "article",
+  },
+};
 
 export default function PrivacyPage() {
   return (
@@ -13,7 +32,7 @@ export default function PrivacyPage() {
         </div>
         
         <div className="bg-white shadow-sm rounded-lg p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Privacy Policy</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">PDF Privacy Policy - Secure Document Sharing & GDPR Compliance</h1>
           
           <div className="prose prose-gray max-w-none">
             <p className="text-gray-600 mb-6">
@@ -22,7 +41,7 @@ export default function PrivacyPage() {
             
             <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4">1. Introduction</h2>
             <p className="text-gray-600 mb-4">
-              PDFTrackr ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our PDF sharing and analytics platform.
+              PDFTrackr's privacy policy ensures your documents and data remain secure when sharing PDFs online. Our GDPR-compliant platform protects your privacy while providing powerful PDF analytics and tracking features. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our PDF sharing and analytics platform. For more information about our tracking capabilities, see our <a href="/how-to-track-pdf-views" className="text-blue-600 hover:underline">PDF tracking guide</a> and <a href="/pdf-tracking-faq" className="text-blue-600 hover:underline">FAQ page</a>.
             </p>
             
             <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4">2. Information We Collect</h2>

@@ -3,6 +3,25 @@ import { ArrowLeft } from "lucide-react";
 import DataRightsForm from "@/components/DataRightsForm";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "PDF Data Rights - GDPR Compliance for Document Sharing",
+  description: "Exercise your GDPR data rights for PDF documents shared through PDFTrackr. Request access, deletion, or export of your personal data and document analytics.",
+  keywords: [
+    "PDF data rights",
+    "GDPR PDF tool",
+    "document privacy rights",
+    "PDF GDPR compliance",
+    "document data rights",
+    "PDF privacy rights"
+  ],
+  openGraph: {
+    title: "PDF Data Rights - GDPR Compliance for Document Sharing",
+    description: "Exercise your GDPR data rights for PDF documents shared through PDFTrackr. Request access, deletion, or export of your personal data and document analytics.",
+    type: "article",
+  },
+};
 
 export default async function DataRightsPage() {
   const { userId } = auth();
@@ -20,10 +39,9 @@ export default async function DataRightsPage() {
         </div>
         
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Your Data Rights</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">PDF Data Rights - GDPR Compliance for Document Sharing</h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Under the General Data Protection Regulation (GDPR), you have specific rights regarding your personal data. 
-            Use this form to exercise those rights.
+            Exercise your GDPR data rights for PDF documents shared through PDFTrackr. Request access, deletion, or export of your personal data and document analytics. Under the General Data Protection Regulation (GDPR), you have specific rights regarding your personal data. Use this form to exercise those rights.
           </p>
         </div>
 
