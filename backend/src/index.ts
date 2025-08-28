@@ -127,28 +127,17 @@ app.use(
         );
       }
 
-          // Production: Strict origin checking
-    if (config.env === "production") {
-      // Allow requests without origin (server-to-server, health checks, etc.)
+      // Allow requests without origin (server-to-server, health checks, metrics, etc.)
       if (!origin) {
         return callback(null, true);
       }
-      if (!allowedOrigins.includes(origin)) {
-        logger.warn("Blocked CORS request from unauthorized origin", { origin });
-        return callback(new Error("Not allowed by CORS"));
-      }
-    }
 
-      // Development: More permissive for local development
-      if (config.env === "development" && !origin) {
-        return callback(null, true);
-      }
-
+      // Check if origin is allowed
       if (allowedOrigins.includes(origin)) {
-        callback(null, true);
+        return callback(null, true);
       } else {
-        logger.warn("Blocked CORS request", { origin, allowedOrigins });
-        callback(new Error("Not allowed by CORS"));
+        logger.warn("Blocked CORS request from unauthorized origin", { origin, allowedOrigins });
+        return callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true,

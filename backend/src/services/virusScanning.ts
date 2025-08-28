@@ -206,14 +206,19 @@ class PDFScanningService {
   private ensureTempDirectory() {
     try {
       if (!fs.existsSync(this.tempDir)) {
-        fs.mkdirSync(this.tempDir, { recursive: true, mode: 0o700 }); // Secure: owner only
+        fs.mkdirSync(this.tempDir, { recursive: true, mode: 0o750 }); // Secure: owner + group read/execute
         logger.info(`Created secure temporary directory: ${this.tempDir}`);
       }
       
       // Verify we can write to the directory
-      const testFile = path.join(this.tempDir, '.test_write');
+      const testFile = path.join(this.tempDir, `.test_write_${Date.now()}_${Math.random().toString(36).substring(7)}`);
       fs.writeFileSync(testFile, 'test');
-      fs.unlinkSync(testFile);
+      try {
+        fs.unlinkSync(testFile);
+      } catch (unlinkError) {
+        // Ignore unlink errors - file might have been deleted by another process
+        logger.debug(`Test file cleanup failed (ignored): ${unlinkError}`);
+      }
       
       logger.info(`Temporary directory is writable: ${this.tempDir}`);
     } catch (error) {
@@ -223,7 +228,7 @@ class PDFScanningService {
       this.tempDir = '/tmp/pdftrackr_uploads';
       try {
         if (!fs.existsSync(this.tempDir)) {
-          fs.mkdirSync(this.tempDir, { recursive: true, mode: 0o700 }); // Secure: owner only
+          fs.mkdirSync(this.tempDir, { recursive: true, mode: 0o750 }); // Secure: owner + group read/execute
         }
         logger.info(`Using secure system temp directory: ${this.tempDir}`);
       } catch (fallbackError) {
@@ -233,7 +238,7 @@ class PDFScanningService {
         this.tempDir = path.join(process.cwd(), 'temp_uploads');
         try {
           if (!fs.existsSync(this.tempDir)) {
-            fs.mkdirSync(this.tempDir, { recursive: true, mode: 0o700 }); // Secure: owner only
+            fs.mkdirSync(this.tempDir, { recursive: true, mode: 0o750 }); // Secure: owner + group read/execute
           }
           logger.info(`Using secure fallback temp directory: ${this.tempDir}`);
         } catch (finalError) {
@@ -319,8 +324,8 @@ class PDFScanningService {
         try {
           await fs.promises.writeFile(tempFilePath, input);
           
-          // Set secure file permissions: owner read/write only
-          await fs.promises.chmod(tempFilePath, 0o600);
+                // Set file permissions: owner read/write, others read
+      await fs.promises.chmod(tempFilePath, 0o644);
           
           logger.debug(`Created secure temporary file for ClamAV scan: ${tempFilePath}`);
           
