@@ -4,6 +4,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import DashboardHeader from "@/components/DashboardHeader";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import FeedbackModal from "@/components/FeedbackModal";
 import WaitlistModal from "@/components/WaitlistModal";
 
 import { useAuth } from "@clerk/nextjs";
@@ -69,6 +70,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Removed floating upload button - redundant with header button */}
       <WaitlistModal />
+      <FeedbackModal />
     </div>
   );
 }

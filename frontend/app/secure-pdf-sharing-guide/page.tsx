@@ -5,7 +5,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Secure PDF Sharing Guide - Protect Your Documents with Professional Tools",
   description:
-    "Learn how to share PDFs securely while maintaining control over who accesses your documents. Comprehensive guide to password protection, access controls, and security best practices.",
+    "Learn how to share PDFs securely with enterprise-grade protection. Get password protection, access controls, and virus scanning. Free secure PDF sharing with 500MB storage, no credit card required.",
   keywords: [
     "secure PDF sharing guide",
     "PDF security best practices",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Secure PDF Sharing Guide - Protect Your Documents with Professional Tools",
     description:
-      "Learn how to share PDFs securely while maintaining control over who accesses your documents. Comprehensive guide to password protection, access controls, and security best practices.",
+      "Learn how to share PDFs securely with enterprise-grade protection. Get password protection, access controls, and virus scanning. Free secure PDF sharing with 500MB storage, no credit card required.",
     type: "article",
   },
 };
@@ -193,7 +193,7 @@ export default function SecurePdfSharingGuidePage() {
               <li>Scan for viruses and malware</li>
               <li>Apply encryption to your document</li>
               <li>Generate a secure sharing link</li>
-              <li>Set up tracking and analytics</li>
+              <li>Set up <Link href="/how-to-track-pdf-views" className="text-primary-600 hover:text-primary-700 underline">tracking and analytics</Link></li>
             </ul>
 
             <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
@@ -325,6 +325,41 @@ export default function SecurePdfSharingGuidePage() {
                     professional security features.
                   </p>
                 </div>
+              </div>
+            </div>
+
+            {/* Related Guides Section */}
+            <div className="bg-gray-50 rounded-lg p-6 mb-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Related Guides</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Link
+                  href="/how-to-track-pdf-views"
+                  className="block p-4 bg-white rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
+                >
+                  <h4 className="font-medium text-gray-900 mb-2">How to Track PDF Views</h4>
+                  <p className="text-sm text-gray-600">Complete step-by-step guide to PDF tracking setup and implementation.</p>
+                </Link>
+                <Link
+                  href="/pdf-analytics-tutorial"
+                  className="block p-4 bg-white rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
+                >
+                  <h4 className="font-medium text-gray-900 mb-2">PDF Analytics Tutorial</h4>
+                  <p className="text-sm text-gray-600">Master document insights and performance tracking with comprehensive analytics.</p>
+                </Link>
+                <Link
+                  href="/free-pdf-tracking"
+                  className="block p-4 bg-white rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
+                >
+                  <h4 className="font-medium text-gray-900 mb-2">Free PDF Tracking</h4>
+                  <p className="text-sm text-gray-600">Start tracking PDFs for free with 500MB storage and no credit card required.</p>
+                </Link>
+                <Link
+                  href="/pdf-tracking-faq"
+                  className="block p-4 bg-white rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
+                >
+                  <h4 className="font-medium text-gray-900 mb-2">PDF Tracking FAQ</h4>
+                  <p className="text-sm text-gray-600">Get answers to common questions about PDF tracking and document analytics.</p>
+                </Link>
               </div>
             </div>
 

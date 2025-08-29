@@ -1,11 +1,13 @@
 import { ArrowLeft, Clock, Download, Eye, HelpCircle, Mail, Shield } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import Script from "next/script";
+import RelatedGuides from "@/components/RelatedGuides";
 
 export const metadata: Metadata = {
   title: "PDF Tracking FAQ - Common Questions About Document Analytics & Security",
   description:
-    "Get answers to common questions about PDF tracking, document analytics, and secure sharing. Learn how PDF tracking works, privacy concerns, and best practices for document security.",
+    "Get instant answers to PDF tracking questions. Learn how to track PDF views, understand privacy concerns, and master document analytics. Free PDF tracking with no credit card required.",
   keywords: [
     "PDF tracking FAQ",
     "can a downloaded pdf be tracked",
@@ -19,7 +21,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "PDF Tracking FAQ - Common Questions About Document Analytics & Security",
     description:
-      "Get answers to common questions about PDF tracking, document analytics, and secure sharing. Learn how PDF tracking works, privacy concerns, and best practices for document security.",
+      "Get instant answers to PDF tracking questions. Learn how to track PDF views, understand privacy concerns, and master document analytics. Free PDF tracking with no credit card required.",
     type: "article",
   },
 };
@@ -131,7 +133,7 @@ const faqData = [
       {
         question: "Is PDF tracking free?",
         answer:
-          "PDFTrackr offers a generous free plan with 500MB storage, basic tracking features, and essential analytics. No credit card is required to get started. For advanced features and higher storage limits, we offer Pro plans starting Q4 2025.",
+          "Yes! PDFTrackr offers a generous free plan with 500MB storage, basic tracking features, and essential analytics. No credit card is required to get started. For advanced features and higher storage limits, we offer Pro plans starting Q4 2025.",
       },
       {
         question: "What's included in the free plan?",
@@ -148,8 +150,95 @@ const faqData = [
 ];
 
 export default function FAQPage() {
+  // FAQ Schema structured data
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Can a downloaded PDF be tracked?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, PDFs can be tracked even after download, but it depends on the tracking method used. PDFTrackr uses link-based tracking, which means once someone downloads your PDF, you can still track when they access it through the original link. However, if they share the downloaded file directly, that activity won't be tracked. For maximum tracking, we recommend using view-only mode to prevent downloads."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can you see who has opened a PDF?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, with PDFTrackr you can see detailed information about who has opened your PDFs. Our platform tracks viewer email addresses (when email gating is enabled), geographic location, device information, and viewing patterns. You'll know exactly who accessed your documents, when they viewed them, and how long they spent reading."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does PDF tracking work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PDFTrackr uses secure link-based tracking. When you upload a PDF, we create a unique, secure URL that viewers access instead of downloading the file directly. This allows us to track views, engagement time, geographic location, and other analytics while keeping your document secure and protected."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is PDF tracking legal and ethical?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, PDF tracking is legal when done transparently and ethically. PDFTrackr is GDPR-compliant and requires explicit consent for analytics tracking. We recommend informing recipients about tracking in your privacy policy and obtaining consent where required by law. Our platform includes built-in privacy controls and data retention policies."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How secure is PDF tracking?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PDFTrackr provides enterprise-grade security for your documents. All data is encrypted using TLS/SSL protocols, files are virus-scanned automatically, and we implement strict access controls. Your documents are stored in secure cloud infrastructure with regular security audits and compliance with industry standards."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What analytics can I see with PDF tracking?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PDFTrackr provides comprehensive analytics including total views, unique visitors, average session duration, page-by-page engagement, geographic distribution, device and browser information, and completion rates. You can export this data for further analysis and reporting."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does email capture work with PDF tracking?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PDFTrackr's email gating feature requires viewers to provide their email address before accessing your document. This is perfect for lead generation and building your email list. The email capture is GDPR-compliant and includes consent management features."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is PDF tracking free?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! PDFTrackr offers a generous free plan with 500MB storage, basic tracking features, and essential analytics. No credit card is required to get started. For advanced features and higher storage limits, we offer Pro plans starting Q4 2025."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What's included in the free plan?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Our free plan includes 500MB storage, password protection, email capture, basic analytics, virus scanning, and GDPR compliance. You can track unlimited documents and get started immediately without any payment information."
+        }
+      }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* FAQ Schema structured data */}
+      <Script
+        id="faq-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      
       <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <Link href="/" className="inline-flex items-center text-gray-600 hover:text-gray-900">
@@ -241,6 +330,8 @@ export default function FAQPage() {
                 </div>
               </div>
             </div>
+
+            <RelatedGuides className="mt-8" />
 
             <div className="text-center mt-8">
               <Link

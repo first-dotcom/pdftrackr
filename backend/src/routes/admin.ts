@@ -2,7 +2,7 @@ import { Router } from "express";
 import { eq, sql } from "drizzle-orm";
 import { authenticate } from "../middleware/auth";
 import { createRateLimit } from "../middleware/security";
-import { users, files, viewSessions, waitlist } from "../models/schema";
+import { users, files, viewSessions, waitlist, feedback } from "../models/schema";
 import { db } from "../utils/database";
 import { logger } from "../utils/logger";
 import { CustomError } from "../middleware/errorHandler";
@@ -30,6 +30,7 @@ router.get("/stats", adminRateLimit, authenticate, requireAdmin, async (req, res
     const [filesCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(files);
     const [viewsCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(viewSessions);
     const [waitlistCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(waitlist);
+    const [feedbackCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(feedback);
     
     // Get total storage used from database
     const [storageResult] = await db.select({ 
@@ -85,6 +86,7 @@ router.get("/stats", adminRateLimit, authenticate, requireAdmin, async (req, res
         totalFiles: filesCount.count,
         totalViews: viewsCount.count,
         totalWaitlist: waitlistCount.count,
+        totalFeedback: feedbackCount.count,
         storageUsed,
         doSpacesUsage,
         storageLimit: config.storage.limitBytes ?? null,
@@ -158,6 +160,36 @@ router.get("/waitlist", adminRateLimit, authenticate, requireAdmin, async (req, 
   } catch (error) {
     logger.error("Failed to get admin waitlist", { error });
     next(new CustomError("Failed to get waitlist", 500));
+  }
+});
+
+// GET /api/admin/feedback - Get all feedback entries
+router.get("/feedback", adminRateLimit, authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const feedbackEntries = await db
+      .select({
+        id: feedback.id,
+        userId: feedback.userId,
+        message: feedback.message,
+        rating: feedback.rating,
+        category: feedback.category,
+        status: feedback.status,
+        adminNotes: feedback.adminNotes,
+        createdAt: feedback.createdAt,
+        updatedAt: feedback.updatedAt,
+        userEmail: users.email,
+      })
+      .from(feedback)
+      .leftJoin(users, eq(feedback.userId, users.id))
+      .orderBy(feedback.createdAt);
+
+    res.json({
+      success: true,
+      data: feedbackEntries,
+    });
+  } catch (error) {
+    logger.error("Failed to get admin feedback", { error });
+    next(new CustomError("Failed to get feedback", 500));
   }
 });
 

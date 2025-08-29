@@ -328,6 +328,47 @@ export default function FreePdfTrackingPage() {
           </div>
         </div>
 
+        {/* Related Guides Section */}
+        <div className="bg-white rounded-lg p-8 mb-16 shadow-sm">
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
+            Learn More About PDF Tracking
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Link
+              href="/how-to-track-pdf-views"
+              className="block p-6 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
+            >
+              <h3 className="font-semibold text-gray-900 mb-2">How to Track PDF Views</h3>
+              <p className="text-sm text-gray-600 mb-3">Complete step-by-step guide to PDF tracking setup and implementation.</p>
+              <span className="text-primary-600 text-sm font-medium">Read Guide →</span>
+            </Link>
+            <Link
+              href="/secure-pdf-sharing-guide"
+              className="block p-6 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
+            >
+              <h3 className="font-semibold text-gray-900 mb-2">Secure PDF Sharing Guide</h3>
+              <p className="text-sm text-gray-600 mb-3">Learn best practices for secure document sharing and access control.</p>
+              <span className="text-primary-600 text-sm font-medium">Read Guide →</span>
+            </Link>
+            <Link
+              href="/pdf-analytics-tutorial"
+              className="block p-6 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
+            >
+              <h3 className="font-semibold text-gray-900 mb-2">PDF Analytics Tutorial</h3>
+              <p className="text-sm text-gray-600 mb-3">Master document insights and performance tracking with comprehensive analytics.</p>
+              <span className="text-primary-600 text-sm font-medium">Read Guide →</span>
+            </Link>
+            <Link
+              href="/pdf-tracking-faq"
+              className="block p-6 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
+            >
+              <h3 className="font-semibold text-gray-900 mb-2">PDF Tracking FAQ</h3>
+              <p className="text-sm text-gray-600 mb-3">Get answers to common questions about PDF tracking and document analytics.</p>
+              <span className="text-primary-600 text-sm font-medium">Read FAQ →</span>
+            </Link>
+          </div>
+        </div>
+
         {/* Final CTA */}
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">

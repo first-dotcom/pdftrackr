@@ -1,11 +1,12 @@
 import { ArrowLeft, BarChart3, Download, Eye, Lock, Mail } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "How to Track PDF Views - Complete Guide to Document Analytics",
   description:
-    "Learn how to track PDF views and gain valuable insights into document engagement. Step-by-step guide to PDF tracking, analytics setup, and performance optimization.",
+    "Learn how to track PDF views step-by-step. Get professional PDF tracking with 500MB free storage, no credit card required. Start tracking your documents in minutes with comprehensive analytics.",
   keywords: [
     "how to track PDF views",
     "PDF tracking guide",
@@ -19,14 +20,84 @@ export const metadata: Metadata = {
   openGraph: {
     title: "How to Track PDF Views - Complete Guide to Document Analytics",
     description:
-      "Learn how to track PDF views and gain valuable insights into document engagement. Step-by-step guide to PDF tracking, analytics setup, and performance optimization.",
+      "Learn how to track PDF views step-by-step. Get professional PDF tracking with 500MB free storage, no credit card required. Start tracking your documents in minutes with comprehensive analytics.",
     type: "article",
   },
 };
 
 export default function HowToTrackPdfViewsPage() {
+  // HowTo Schema structured data
+  const howToSchema = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to Track PDF Views",
+    "description": "Complete step-by-step guide to tracking PDF views and gaining valuable insights into document engagement",
+    "image": "https://pdftrackr.com/logo.png",
+    "totalTime": "PT10M",
+    "estimatedCost": {
+      "@type": "MonetaryAmount",
+      "currency": "USD",
+      "value": "0"
+    },
+    "supply": [
+      {
+        "@type": "HowToSupply",
+        "name": "PDF document"
+      },
+      {
+        "@type": "HowToSupply", 
+        "name": "PDFTrackr account (free)"
+      }
+    ],
+    "tool": [
+      {
+        "@type": "HowToTool",
+        "name": "PDFTrackr platform"
+      }
+    ],
+    "step": [
+      {
+        "@type": "HowToStep",
+        "name": "Choose a PDF Tracking Tool",
+        "text": "Select a professional PDF tracking platform like PDFTrackr that offers comprehensive analytics including real-time view tracking, page-by-page engagement metrics, geographic location insights, device and browser analytics, email capture capabilities, and security features like password protection.",
+        "url": "https://pdftrackr.com/how-to-track-pdf-views#step1"
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Upload Your PDF Document",
+        "text": "Upload your PDF to the tracking platform. PDFTrackr automatically scans files for viruses and prepares them for secure sharing. The platform supports various file sizes and maintains document quality.",
+        "url": "https://pdftrackr.com/how-to-track-pdf-views#step2"
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Configure Tracking Settings",
+        "text": "Set up your tracking preferences including view tracking for total views and unique visitors, download control to choose if viewers can download or only view online, email capture to require email addresses before document access, and password protection to add passwords for restricted access.",
+        "url": "https://pdftrackr.com/how-to-track-pdf-views#step3"
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Share Your Tracked PDF",
+        "text": "Generate a secure sharing link and distribute it to your audience. PDFTrackr provides customizable links that you can share via email, social media, or embed on your website.",
+        "url": "https://pdftrackr.com/how-to-track-pdf-views#step4"
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Monitor Analytics Dashboard",
+        "text": "Access your analytics dashboard to view comprehensive insights including view counts, page analytics, geographic data, device information, time analytics, and engagement metrics like session duration and completion rates.",
+        "url": "https://pdftrackr.com/how-to-track-pdf-views#step5"
+      }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* HowTo Schema structured data */}
+      <Script
+        id="howto-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
+      />
+      
       <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <Link href="/" className="inline-flex items-center text-gray-600 hover:text-gray-900">
@@ -79,7 +150,7 @@ export default function HowToTrackPdfViewsPage() {
               Step-by-Step Guide to PDF Tracking
             </h2>
 
-            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
+            <h3 id="step1" className="text-xl font-semibold text-gray-900 mt-6 mb-3">
               Step 1: Choose a PDF Tracking Tool
             </h3>
             <p className="text-gray-600 mb-4">
@@ -95,7 +166,7 @@ export default function HowToTrackPdfViewsPage() {
               <li>Security features like password protection</li>
             </ul>
 
-            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
+            <h3 id="step2" className="text-xl font-semibold text-gray-900 mt-6 mb-3">
               Step 2: Upload Your PDF Document
             </h3>
             <p className="text-gray-600 mb-4">
@@ -104,7 +175,7 @@ export default function HowToTrackPdfViewsPage() {
               and maintains document quality.
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
+            <h3 id="step3" className="text-xl font-semibold text-gray-900 mt-6 mb-3">
               Step 3: Configure Tracking Settings
             </h3>
             <p className="text-gray-600 mb-4">Set up your tracking preferences:</p>
@@ -145,7 +216,7 @@ export default function HowToTrackPdfViewsPage() {
               </div>
             </div>
 
-            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
+            <h3 id="step4" className="text-xl font-semibold text-gray-900 mt-6 mb-3">
               Step 4: Share Your Tracked PDF
             </h3>
             <p className="text-gray-600 mb-4">
@@ -154,7 +225,7 @@ export default function HowToTrackPdfViewsPage() {
               website.
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
+            <h3 id="step5" className="text-xl font-semibold text-gray-900 mt-6 mb-3">
               Step 5: Monitor Analytics Dashboard
             </h3>
             <p className="text-gray-600 mb-4">
@@ -267,6 +338,41 @@ export default function HowToTrackPdfViewsPage() {
                     today.
                   </p>
                 </div>
+              </div>
+            </div>
+
+            {/* Related Guides Section */}
+            <div className="bg-gray-50 rounded-lg p-6 mb-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Related Guides</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Link
+                  href="/secure-pdf-sharing-guide"
+                  className="block p-4 bg-white rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
+                >
+                  <h4 className="font-medium text-gray-900 mb-2">Secure PDF Sharing Guide</h4>
+                  <p className="text-sm text-gray-600">Learn best practices for secure document sharing and access control.</p>
+                </Link>
+                <Link
+                  href="/pdf-analytics-tutorial"
+                  className="block p-4 bg-white rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
+                >
+                  <h4 className="font-medium text-gray-900 mb-2">PDF Analytics Tutorial</h4>
+                  <p className="text-sm text-gray-600">Master document insights and performance tracking with comprehensive analytics.</p>
+                </Link>
+                <Link
+                  href="/free-pdf-tracking"
+                  className="block p-4 bg-white rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
+                >
+                  <h4 className="font-medium text-gray-900 mb-2">Free PDF Tracking</h4>
+                  <p className="text-sm text-gray-600">Start tracking PDFs for free with 500MB storage and no credit card required.</p>
+                </Link>
+                <Link
+                  href="/pdf-tracking-faq"
+                  className="block p-4 bg-white rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
+                >
+                  <h4 className="font-medium text-gray-900 mb-2">PDF Tracking FAQ</h4>
+                  <p className="text-sm text-gray-600">Get answers to common questions about PDF tracking and document analytics.</p>
+                </Link>
               </div>
             </div>
 
