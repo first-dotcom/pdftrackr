@@ -1,7 +1,7 @@
 "use client";
 
 import { apiClient } from "@/lib/api-client";
-import { type AggregateAnalytics, PageStats } from "@/shared/types/api";
+import { type AggregateAnalytics } from "@/shared/types/api";
 import { formatViewTime } from "@/utils/formatters";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
@@ -25,16 +25,13 @@ export default function AggregateView({ fileId, totalPages, days = 30 }: Aggrega
   const [data, setData] = useState<AggregateAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [pageRange, setPageRange] = useState<{ start: number; end: number }>({ start: 1, end: 50 });
 
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Use page range for optimization
-      const pageRangeParam = `${pageRange.start}-${pageRange.end}`;
-      const response = await apiClient.analytics.aggregate(fileId, days, pageRangeParam);
+      const response = await apiClient.analytics.aggregate(fileId, days);
 
       if (response.success && response.data) {
         setData(response.data as AggregateAnalytics);
@@ -46,7 +43,7 @@ export default function AggregateView({ fileId, totalPages, days = 30 }: Aggrega
     } finally {
       setLoading(false);
     }
-  }, [fileId, days, pageRange]);
+  }, [fileId, days]);
 
   useEffect(() => {
     fetchData();
@@ -99,53 +96,6 @@ export default function AggregateView({ fileId, totalPages, days = 30 }: Aggrega
 
   return (
     <div className="space-y-6">
-      {/* Page Range Controls for Large Documents */}
-      {totalPages > 50 && (
-        <div className="bg-white p-4 rounded-lg border">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium text-gray-900">Page Range</h4>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600">Pages:</span>
-                <input
-                  type="number"
-                  min="1"
-                  max={totalPages}
-                  value={pageRange.start}
-                  onChange={(e) =>
-                    setPageRange((prev) => ({
-                      ...prev,
-                      start: Math.max(1, parseInt(e.target.value) || 1),
-                    }))
-                  }
-                  className="w-16 px-2 py-1 text-sm border border-gray-300 rounded"
-                />
-                <span className="text-sm text-gray-600">to</span>
-                <input
-                  type="number"
-                  min={pageRange.start}
-                  max={totalPages}
-                  value={pageRange.end}
-                  onChange={(e) =>
-                    setPageRange((prev) => ({
-                      ...prev,
-                      end: Math.min(totalPages, parseInt(e.target.value) || prev.end),
-                    }))
-                  }
-                  className="w-16 px-2 py-1 text-sm border border-gray-300 rounded"
-                />
-              </div>
-              <button
-                onClick={fetchData}
-                className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Load
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Reading Time Chart */}
       <div className="bg-white p-6 rounded-lg border">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Reading Time by Page</h3>

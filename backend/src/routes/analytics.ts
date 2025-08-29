@@ -864,7 +864,7 @@ router.get(
     const pageStats = pageStatsResult.map(stat => ({
       pageNumber: stat.pageNumber,
       totalViews: Number(stat.totalViews) || 0,
-      avgDuration: Math.max(0.001, Number(stat.avgDuration) || 0)
+      avgDuration: Number(stat.avgDuration) || 0  // Keep decimal precision like individual view
     }));
 
     const responseData = {
@@ -1244,7 +1244,7 @@ async function getSessionsWithPageData(
       }
       pageViewsBySession.get(pv.sessionId)!.push({
         pageNumber: pv.pageNumber,
-        avgDuration: Math.round(Number(pv.avgDuration) || 0),
+        avgDuration: Number(pv.avgDuration) || 0,  // Keep decimal precision
         totalViews: Number(pv.totalViews) || 0,
 
       });

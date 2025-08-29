@@ -46,13 +46,13 @@ export const getProgressColor = (percentage: number): string => {
   return "bg-primary-600";
 };
 
-// View time formatting - consistent seconds/minutes display
+// View time formatting - precise seconds/minutes display with decimals
 export const formatViewTime = (seconds: number): string => {
   if (seconds < 0) {
     return "0s";
   }
   if (seconds < 60) {
-    return `${Math.round(seconds)}s`;
+    return `${seconds.toFixed(3)}s`;
   }
 
   const minutes = Math.floor(seconds / 60);
@@ -61,7 +61,7 @@ export const formatViewTime = (seconds: number): string => {
   if (remainingSeconds === 0) {
     return `${minutes}m`;
   }
-  return `${minutes}m ${Math.round(remainingSeconds)}s`;
+  return `${minutes}m ${remainingSeconds.toFixed(3)}s`;
 };
 
 // Percentage formatting with bounds checking

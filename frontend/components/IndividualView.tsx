@@ -402,8 +402,8 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
                               }}
                             />
                             <Tooltip
-                              formatter={(value: any) => [`${value} seconds`, "Average Time"]}
-                              labelFormatter={(label) => `Page ${label}`}
+                              formatter={(value: any) => [formatViewTime(value), "Average Time"]}
+                              labelFormatter={(label) => label}
                             />
                             <Line
                               type="monotone"
