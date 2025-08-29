@@ -64,7 +64,7 @@ export default function ConsentBanner() {
             We use Google Analytics and other cookies to analyze site usage and improve our service.
             This includes collecting data about page views, time spent, and geographic location. You
             can choose to accept or decline these cookies.{" "}
-            <a href="/privacy" className="underline hover:text-gray-300">
+                          <a href="/pdf-privacy-policy" className="underline hover:text-gray-300">
               Privacy Policy
             </a>{" "}
             •{" "}

@@ -114,7 +114,7 @@ export default async function DataRightsPage() {
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-500">
             Need help? See our{" "}
-            <a href="/privacy" className="text-blue-600 hover:underline">
+                          <a href="/pdf-privacy-policy" className="text-blue-600 hover:underline">
               Privacy Policy
             </a>
             .

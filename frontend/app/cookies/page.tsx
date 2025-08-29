@@ -331,7 +331,7 @@ export default function CookiesPage() {
                 Data Rights form
               </a>{" "}
               or see our{" "}
-              <a href="/privacy" className="underline">
+              <a href="/pdf-privacy-policy" className="underline">
                 Privacy Policy
               </a>
               .

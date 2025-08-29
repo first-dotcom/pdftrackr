@@ -308,7 +308,7 @@ export default function DataRightsForm() {
               Data Rights Request form
             </a>{" "}
             or see our{" "}
-            <a href="/privacy" className="underline">
+                          <a href="/pdf-privacy-policy" className="underline">
               Privacy Policy
             </a>{" "}
             for details on how to exercise your rights.
