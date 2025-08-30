@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import FeedbackModal from "@/components/FeedbackModal";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -53,7 +54,7 @@ export const metadata: Metadata = {
     siteName: "PDFTrackr",
     images: [
       {
-        url: "/logo.png",
+        url: "https://pdftrackr.com/logo.png",
         width: 1200,
         height: 630,
         alt: "PDFTrackr - PDF Tracking and Analytics Platform",
@@ -65,7 +66,7 @@ export const metadata: Metadata = {
     title: "PDFTrackr - PDF Tracking & Analytics | Secure Document Sharing Platform",
     description:
       "Track PDF views, capture emails, and control access with our secure sharing platform. Professional PDF analytics with 500MB free storage.",
-    images: ["/logo.png"],
+    images: ["https://pdftrackr.com/logo.png"],
     creator: "@pdftrackr",
   },
   robots: {
@@ -81,6 +82,24 @@ export const metadata: Metadata = {
   },
 };
 
+// Organization Schema for Google Search Results
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "PDFTrackr",
+  "url": "https://pdftrackr.com",
+  "logo": "https://pdftrackr.com/logo.png",
+  "description": "PDFTrackr provides professional PDF tracking and analytics to see who's reading your documents. Track PDF views, capture emails, and control access with our secure sharing platform.",
+  "sameAs": [
+    "https://twitter.com/pdftrackr"
+  ],
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "customer service",
+    "url": "https://pdftrackr.com"
+  }
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -90,6 +109,19 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <head>
+          {/* Organization Schema for Google Search Results */}
+          <Script
+            id="organization-schema"
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+          />
+          
+          {/* Favicon Links - Following favicon generator instructions */}
+          <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+          <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+          <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+          <link rel="manifest" href="/site.webmanifest" />
+          
           {/* Google tag (gtag.js) */}
           <script async src="https://www.googletagmanager.com/gtag/js?id=G-0D0FQG4352"></script>
           <script

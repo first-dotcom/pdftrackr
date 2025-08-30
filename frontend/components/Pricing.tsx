@@ -3,6 +3,7 @@
 import { getFileSizeLimitDisplay } from "@/shared/types";
 import { Check } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
 import WaitlistModal from "./WaitlistModal";
 
 const plans = [
@@ -93,6 +94,8 @@ const plans = [
 ];
 
 export default function Pricing() {
+  const { isSignedIn } = useAuth();
+
   return (
     <section id="pricing" className="bg-white py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -127,14 +130,14 @@ export default function Pricing() {
                 </p>
                 {plan.available ? (
                   <Link
-                    href={plan.href}
+                    href={plan.name === "Free" ? (isSignedIn ? "/dashboard" : "/sign-up") : plan.href}
                     className={`mt-8 block w-full py-2 px-4 border border-transparent rounded-md text-sm font-medium text-center ${
                       plan.featured
                         ? "bg-primary-600 text-white hover:bg-primary-700"
                         : "bg-primary-50 text-primary-700 hover:bg-primary-100"
                     }`}
                   >
-                    {plan.cta}
+                    {plan.name === "Free" ? (isSignedIn ? "Go to Dashboard" : plan.cta) : plan.cta}
                   </Link>
                 ) : (
                   <div className="mt-8">

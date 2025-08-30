@@ -35,24 +35,12 @@ const featureGroups = [
         title: "Page Analytics",
         description: "Know which pages get the most attention",
       },
-      {
-        title: "Geographic Insights",
-        description: "Discover where your readers are located",
-      },
-      {
-        title: "Device & Browser",
-        description: "Understand how documents are accessed",
-      },
     ],
   },
   {
     icon: Briefcase,
     title: "Professional Tools",
     features: [
-      {
-        title: "Watermarking",
-        description: "Add watermarks to viewed documents",
-      },
       {
         title: "Link Management",
         description: "Update or revoke access anytime",
