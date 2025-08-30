@@ -8,17 +8,6 @@ import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 
-// Simple debounce utility
-function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number,
-): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout;
-  return (...args: Parameters<T>) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-}
 
 // Set up PDF.js worker (same as test page)
 pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
@@ -89,12 +78,16 @@ export default function SecurePDFViewer({
 
   // 📊 NEW: Activity tracking state
   const [lastActivityTime, setLastActivityTime] = useState<number>(Date.now());
+  const [isUserActive, setIsUserActive] = useState<boolean>(true);
+  const [sessionEndTracked, setSessionEndTracked] = useState<boolean>(false);
 
-  // 📊 NEW: Activity tracking function
+  // 📊 NEW: Enhanced activity tracking function
   const trackUserActivity = useCallback(() => {
-    setLastActivityTime(Date.now());
+    const now = Date.now();
+    setLastActivityTime(now);
+    setIsUserActive(true);
 
-    // Send activity heartbeat
+    // Send activity heartbeat more frequently
     if (sessionId) {
       apiClient.analytics
         .updateSessionActivity({
@@ -125,7 +118,7 @@ export default function SecurePDFViewer({
     });
   }, [sessionData]);
 
-  // 📊 NEW: Activity tracking setup
+  // 📊 NEW: Real-time activity monitoring
   useEffect(() => {
     const events = ["scroll", "mousemove", "click", "keypress"];
 
@@ -306,7 +299,12 @@ export default function SecurePDFViewer({
     }
   };
 
-  const trackSessionEnd = async (retryCount = 0) => {
+  const trackSessionEnd = useCallback(async (retryCount = 0) => {
+    if (sessionEndTracked) {
+      console.log("Session end already tracked, skipping");
+      return;
+    }
+
     const rawDurationSeconds = Math.round((Date.now() - sessionData.startTime) / 1000);
 
     // Quality filter: Only track sessions with meaningful engagement
@@ -317,19 +315,24 @@ export default function SecurePDFViewer({
       console.log(
         `Session too short (${rawDurationSeconds}s) or no pages viewed (${sessionData.pagesViewed.size}), skipping session end tracking`,
       );
+      setSessionEndTracked(true);
       return;
     }
 
     // Track exit from current page before ending session
     if (pageNumber > 0 && numPages > 0) {
-      await trackPageView(pageNumber, numPages, true);
+      try {
+        await trackPageView(pageNumber, numPages, true);
+      } catch (error) {
+        console.warn("Failed to track final page exit:", error);
+      }
     }
 
     const sessionEndData = {
       shareId,
       email,
       sessionId,
-      durationSeconds: rawDurationSeconds, // Use actual duration
+      durationSeconds: rawDurationSeconds,
       pagesViewed: sessionData.pagesViewed.size,
       totalPages: sessionData.totalPages,
       maxPageReached: sessionData.maxPageReached,
@@ -342,11 +345,14 @@ export default function SecurePDFViewer({
         0,
         "Session end tracking",
       );
+      setSessionEndTracked(true);
+      console.log("Session end tracked successfully");
     } catch (error) {
       console.error("Session end tracking failed after all retries, storing locally:", error);
       storeFailedAnalytics(sessionEndData, "sessionEnd");
+      setSessionEndTracked(true);
     }
-  };
+  }, [sessionData, pageNumber, numPages, shareId, email, sessionId, sessionEndTracked]);
 
   // Session is already created on backend when share link is accessed
   // No need to create another session here
@@ -364,55 +370,95 @@ export default function SecurePDFViewer({
     }
   }, [sessionId, retryFailedAnalytics]);
 
-  // Track session end with optimized event handling
+  // 📊 NEW: Enhanced session end tracking with multiple strategies
   useEffect(() => {
     let hasTrackedEnd = false;
 
-    const handleBeforeUnload = () => {
-      if (!hasTrackedEnd) {
+    // Strategy 1: beforeunload (most reliable for desktop)
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!hasTrackedEnd && !sessionEndTracked) {
         hasTrackedEnd = true;
-        trackSessionEnd();
+        // Use sendBeacon for more reliable delivery
+        const sessionEndData = {
+          shareId,
+          email,
+          sessionId,
+          durationSeconds: Math.round((Date.now() - sessionData.startTime) / 1000),
+          pagesViewed: sessionData.pagesViewed.size,
+          totalPages: sessionData.totalPages,
+          maxPageReached: sessionData.maxPageReached,
+          timestamp: new Date().toISOString(),
+        };
+        
+        // Try sendBeacon first (more reliable for page unload)
+        if (navigator.sendBeacon) {
+          const blob = new Blob([JSON.stringify(sessionEndData)], {
+            type: 'application/json',
+          });
+          navigator.sendBeacon(`${config.api.url}/api/analytics/session-end`, blob);
+        } else {
+          // Fallback to synchronous tracking
+          trackSessionEnd();
+        }
       }
     };
 
+    // Strategy 2: visibilitychange (good for mobile)
     const handleVisibilityChange = () => {
-      if (document.hidden && !hasTrackedEnd) {
+      if (document.hidden && !hasTrackedEnd && !sessionEndTracked) {
         hasTrackedEnd = true;
         trackSessionEnd();
       }
     };
 
-    // Debounced session end tracking for better performance
-    const debouncedSessionEnd = debounce(() => {
-      if (!hasTrackedEnd) {
+    // Strategy 3: pagehide (more reliable than beforeunload on mobile)
+    const handlePageHide = () => {
+      if (!hasTrackedEnd && !sessionEndTracked) {
         hasTrackedEnd = true;
         trackSessionEnd();
       }
-    }, 2000); // 2 second debounce
+    };
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    // Strategy 4: unload (fallback)
+    const handleUnload = () => {
+      if (!hasTrackedEnd && !sessionEndTracked) {
+        hasTrackedEnd = true;
+        trackSessionEnd();
+      }
+    };
 
-    // Set up periodic session end check (every 30 seconds)
+    // Strategy 5: Periodic session end check (every 15 seconds)
     const interval = setInterval(() => {
       const currentDuration = Math.round((Date.now() - sessionData.startTime) / 1000);
-      if (currentDuration > 30) {
-        // Only check after 30 seconds
-        debouncedSessionEnd();
+      if (currentDuration > 15 && !hasTrackedEnd && !sessionEndTracked) {
+        // Check if user has been inactive for too long
+        const timeSinceLastActivity = Date.now() - lastActivityTime;
+        if (timeSinceLastActivity > 60000) { // 1 minute of inactivity
+          hasTrackedEnd = true;
+          trackSessionEnd();
+        }
       }
-    }, 30000);
+    }, 15000);
+
+    // Add all event listeners
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("pagehide", handlePageHide);
+    window.addEventListener("unload", handleUnload);
 
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pagehide", handlePageHide);
+      window.removeEventListener("unload", handleUnload);
       clearInterval(interval);
 
-      // Track session end when component unmounts (if not already tracked)
-      if (!hasTrackedEnd) {
+      // Final attempt when component unmounts
+      if (!hasTrackedEnd && !sessionEndTracked) {
         trackSessionEnd();
       }
     };
-  }, [sessionData.totalPages, sessionData.maxPageReached]);
+  }, [sessionData, trackSessionEnd, sessionEndTracked, lastActivityTime]);
 
   // Initialize PDF URL
   useEffect(() => {

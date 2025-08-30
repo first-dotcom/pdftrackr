@@ -1,12 +1,12 @@
+import { eq } from "drizzle-orm";
 import { Router } from "express";
 import type { Request, Response } from "express";
 import { asyncHandler } from "../middleware/errorHandler";
 import { createRateLimit, normalizeIp } from "../middleware/security";
-import { auditService } from "../services/auditService";
-import { logger } from "../utils/logger";
-import { db } from "../utils/database";
 import { pageViews, viewSessions } from "../models/schema";
-import { eq } from "drizzle-orm";
+import { auditService } from "../services/auditService";
+import { db } from "../utils/database";
+import { logger } from "../utils/logger";
 
 const router: Router = Router();
 
@@ -14,7 +14,7 @@ const router: Router = Router();
 const analyticsRateLimit = createRateLimit(
   60 * 1000, // 1 minute window
   100, // 100 requests per minute per IP
-  "Too many analytics requests"
+  "Too many analytics requests",
 );
 
 // 📊 SESSION START TRACKING
@@ -27,14 +27,14 @@ router.post(
   analyticsRateLimit,
   normalizeIp,
   asyncHandler(async (req: Request, res: Response) => {
-    const { 
-      shareId, 
-      email, 
-      page, 
-      totalPages, 
+    const {
+      shareId,
+      email,
+      page,
+      totalPages,
       sessionId,
       // NEW: Enhanced tracking data
-      duration
+      duration,
     } = req.body;
 
     if (!shareId || !page || !totalPages) {
@@ -45,33 +45,44 @@ router.post(
       return;
     }
 
+    const pageNum = parseInt(page);
+    const totalPagesNum = parseInt(totalPages);
+    const durationNum = duration ? Math.max(0, Math.round(Number(duration))) : 0;
+
+    if (isNaN(pageNum) || pageNum <= 0 || pageNum > totalPagesNum) {
+      logger.warn("Invalid page number", { page, totalPages, shareId });
+      res.status(400).json({
+        success: false,
+        error: "Invalid page number",
+      });
+      return;
+    }
+
     try {
       // Update file's page count if this is the first time we're seeing it
       // Don't await this to avoid blocking page view tracking
-      auditService.updateFilePageCount(shareId, parseInt(totalPages))
-        .catch(error => {
-          logger.error('Failed to update file page count:', error);
-        });
+      auditService.updateFilePageCount(shareId, totalPagesNum).catch((error) => {
+        logger.error("Failed to update file page count:", error);
+      });
 
       // Store enhanced data in pageViews table if sessionId is provided
       if (sessionId) {
         try {
           await db.insert(pageViews).values({
             sessionId,
-            pageNumber: parseInt(page),
-            // duration now sent in milliseconds; store as milliseconds
-            duration: duration ? Math.max(0, Math.round(Number(duration))) : 0,
+            pageNumber: pageNum,
+            duration: durationNum,
             viewedAt: new Date(),
           });
-          
-          logger.debug(`Enhanced page view stored: ${shareId} page ${page} - duration: ${duration}s`);
+
+          logger.debug(`Page view stored: ${shareId} page ${pageNum} - duration: ${durationNum}ms`);
         } catch (dbError) {
-          logger.warn('Failed to store enhanced page view data:', dbError);
+          logger.warn("Failed to store enhanced page view data:", dbError);
           // Continue with audit logging even if enhanced data fails
         }
       }
 
-      logger.debug(`Page view tracked: ${shareId} page ${page}/${totalPages}`);
+      logger.debug(`Page view tracked: ${shareId} page ${pageNum}/${totalPagesNum}`);
 
       res.json({
         success: true,
@@ -84,7 +95,7 @@ router.post(
         error: "Failed to track page view",
       });
     }
-  })
+  }),
 );
 
 // 📊 SESSION END TRACKING
@@ -93,15 +104,40 @@ router.post(
   analyticsRateLimit,
   normalizeIp,
   asyncHandler(async (req: Request, res: Response) => {
-    const { 
-      shareId, 
-      email, 
-      sessionId, 
-      durationSeconds, 
-      pagesViewed, 
-      totalPages, 
-      maxPageReached 
-    } = req.body;
+    let sessionData: any;
+
+    // Handle both regular POST data and sendBeacon Blob data
+    if (req.headers["content-type"]?.includes("application/json")) {
+      // Regular JSON POST request
+      sessionData = req.body;
+    } else if (
+      req.headers["content-type"]?.includes("text/plain") ||
+      req.headers["content-type"]?.includes("application/octet-stream")
+    ) {
+      // sendBeacon request - data is sent as Blob
+      try {
+        const rawData = await new Promise<string>((resolve, reject) => {
+          let data = "";
+          req.on("data", (chunk) => (data += chunk));
+          req.on("end", () => resolve(data));
+          req.on("error", reject);
+        });
+        sessionData = JSON.parse(rawData);
+      } catch (error) {
+        logger.error("Failed to parse sendBeacon data:", error);
+        res.status(400).json({
+          success: false,
+          error: "Invalid sendBeacon data format",
+        });
+        return;
+      }
+    } else {
+      // Fallback to regular body parsing
+      sessionData = req.body;
+    }
+
+    const { shareId, email, sessionId, durationSeconds, pagesViewed, totalPages, maxPageReached } =
+      sessionData;
 
     if (!shareId || durationSeconds === undefined || !maxPageReached) {
       res.status(400).json({
@@ -116,7 +152,7 @@ router.post(
         shareId,
         email,
         ip: req.ip,
-        userAgent: req.get('User-Agent') || '',
+        userAgent: req.get("User-Agent") || "",
         durationSeconds: parseInt(durationSeconds),
         pagesViewed: parseInt(pagesViewed) || 1,
         totalPages: parseInt(totalPages) || 1,
@@ -124,7 +160,9 @@ router.post(
         sessionId: sessionId,
       });
 
-      logger.debug(`Session end tracked: ${shareId} - ${durationSeconds}s, ${maxPageReached}/${totalPages} pages`);
+      logger.debug(
+        `Session end tracked: ${shareId} - ${durationSeconds}s, ${maxPageReached}/${totalPages} pages`,
+      );
 
       res.json({
         success: true,
@@ -137,7 +175,7 @@ router.post(
         error: "Failed to track session end",
       });
     }
-  })
+  }),
 );
 
 // 📊 SESSION ACTIVITY TRACKING (Heartbeat)
@@ -146,11 +184,7 @@ router.post(
   analyticsRateLimit,
   normalizeIp,
   asyncHandler(async (req: Request, res: Response) => {
-    const { 
-      sessionId, 
-      lastActiveAt, 
-      currentPage
-    } = req.body;
+    const { sessionId, lastActiveAt, currentPage } = req.body;
 
     if (!sessionId || !lastActiveAt) {
       res.status(400).json({
@@ -183,7 +217,7 @@ router.post(
         error: "Failed to update session activity",
       });
     }
-  })
+  }),
 );
 
 // 📊 RETURN VISIT TRACKING
@@ -207,7 +241,7 @@ router.post(
         shareId,
         email,
         ip: req.ip,
-        userAgent: req.get('User-Agent') || '',
+        userAgent: req.get("User-Agent") || "",
         totalVisits: parseInt(totalVisits),
         daysSinceFirst: parseInt(daysSinceFirst) || 0,
       });
@@ -225,7 +259,7 @@ router.post(
         error: "Failed to track return visit",
       });
     }
-  })
+  }),
 );
 
 // 📊 ANALYTICS DASHBOARD DATA
@@ -258,7 +292,7 @@ router.get(
         error: "Failed to get document stats",
       });
     }
-  })
+  }),
 );
 
 // 📊 USER ENGAGEMENT PROFILE
@@ -299,7 +333,7 @@ router.get(
         error: "Failed to get user profile",
       });
     }
-  })
+  }),
 );
 
 // Removed complex analytics endpoints - keeping only essential tracking
