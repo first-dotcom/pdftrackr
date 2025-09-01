@@ -24,9 +24,26 @@ const featureGroups = [
     ],
   },
   {
-    title: "Simple Tools",
-    description: "Easy-to-use tools that help you understand how your documents are being used",
     icon: BarChart3,
+    title: "Simple Analytics",
+    features: [
+      {
+        title: "View Tracking",
+        description: "See exactly who viewed your documents and when",
+      },
+      {
+        title: "Page Analytics",
+        description: "Track which pages get the most attention",
+      },
+      {
+        title: "Geographic Data",
+        description: "Understand where your viewers are located",
+      },
+      {
+        title: "Device Insights",
+        description: "See what devices your viewers are using",
+      },
+    ],
   },
   {
     icon: Briefcase,

@@ -43,7 +43,7 @@ export default function LearnMoreSection({
     }
   ];
 
-  const displayGuides = guides || defaultGuides;
+  const displayGuides = guides && guides.length > 0 ? guides : defaultGuides;
 
   return (
     <div className={`bg-white rounded-lg p-8 mb-16 shadow-sm ${className}`}>
