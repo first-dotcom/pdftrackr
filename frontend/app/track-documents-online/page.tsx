@@ -1,11 +1,13 @@
 import { ArrowLeft, BarChart3, CheckCircle, Clock, Cloud, Globe, Monitor, Shield, Smartphone, Users } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import CTAButton from "@/components/CTAButton";
+import LearnMoreSection from "@/components/LearnMoreSection";
 
 export const metadata: Metadata = {
-  title: "Track Documents Online - Cloud-Based Document Analytics & Management",
+  title: "Track Documents Online - Simple Cloud Analytics for Freelancers",
   description:
-    "Track documents online with PDFTrackr's cloud-based platform. Access real-time analytics from anywhere, collaborate across devices, and manage document engagement through our secure web dashboard. 500MB free storage, no credit card required.",
+    "Track documents online with ease. Affordable cloud analytics for freelancers—no complex setup, no enterprise tools required.",
   keywords: [
     "track documents online",
     "online document tracking",
@@ -142,10 +144,10 @@ export default function TrackDocumentsOnlinePage() {
 
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Track Documents Online - Cloud-Based Document Analytics & Management
+            Track Documents Online - Simple Cloud Analytics for Freelancers
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Access your document analytics from anywhere with our secure cloud platform. Monitor engagement in real-time, collaborate across devices, and manage your document strategy through our intuitive web dashboard.
+            Access your document insights from anywhere. No complex setup or expensive software needed. Perfect for freelancers who want to track client documents without the hassle.
           </p>
         </div>
 
@@ -296,45 +298,35 @@ export default function TrackDocumentsOnlinePage() {
         </div>
 
         {/* Related Guides Section */}
-        <div className="bg-white rounded-lg p-8 mb-16 shadow-sm">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
-            Learn More About Document Tracking
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Link
-              href="/how-to-track-pdf-views"
-              className="block p-6 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
-            >
-              <h3 className="font-semibold text-gray-900 mb-2">How to Track PDF Views</h3>
-              <p className="text-sm text-gray-600 mb-3">Complete step-by-step guide to PDF tracking setup and implementation.</p>
-              <span className="text-primary-600 text-sm font-medium">Read Guide →</span>
-            </Link>
-            <Link
-              href="/pdf-analytics-tutorial"
-              className="block p-6 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
-            >
-              <h3 className="font-semibold text-gray-900 mb-2">PDF Analytics Tutorial</h3>
-              <p className="text-sm text-gray-600 mb-3">Master document insights and performance tracking with comprehensive analytics.</p>
-              <span className="text-primary-600 text-sm font-medium">Read Tutorial →</span>
-            </Link>
-            <Link
-              href="/free-pdf-tracking"
-              className="block p-6 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
-            >
-              <h3 className="font-semibold text-gray-900 mb-2">Free PDF Tracking</h3>
-              <p className="text-sm text-gray-600 mb-3">Start tracking PDFs for free with 500MB storage and no credit card required.</p>
-              <span className="text-primary-600 text-sm font-medium">Learn More →</span>
-            </Link>
-            <Link
-              href="/secure-pdf-sharing-guide"
-              className="block p-6 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
-            >
-              <h3 className="font-semibold text-gray-900 mb-2">Secure PDF Sharing Guide</h3>
-              <p className="text-sm text-gray-600 mb-3">Learn best practices for secure document sharing and access control.</p>
-              <span className="text-primary-600 text-sm font-medium">Read Guide →</span>
-            </Link>
-          </div>
-        </div>
+        <LearnMoreSection 
+          title="Learn More About Document Tracking"
+          guides={[
+            {
+              href: "/how-to-track-pdf-views",
+              title: "How to Track PDF Views",
+              description: "Complete step-by-step guide to PDF tracking setup and implementation.",
+              label: "Read Guide"
+            },
+            {
+              href: "/pdf-analytics-tutorial",
+              title: "PDF Analytics Tutorial",
+              description: "Master document insights and performance tracking with comprehensive analytics.",
+              label: "Read Tutorial"
+            },
+            {
+              href: "/free-pdf-tracking",
+              title: "Free PDF Tracking",
+              description: "Start tracking PDFs for free with 500MB storage and no credit card required.",
+              label: "Learn More"
+            },
+            {
+              href: "/secure-pdf-sharing-guide",
+              title: "Secure PDF Sharing Guide",
+              description: "Learn best practices for secure document sharing and access control.",
+              label: "Read Guide"
+            }
+          ]}
+        />
 
         {/* Final CTA */}
         <div className="text-center">
@@ -344,13 +336,9 @@ export default function TrackDocumentsOnlinePage() {
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
             Join thousands of users who are already tracking their documents online with PDFTrackr. Get started in minutes with no software installation required.
           </p>
-          <Link
-            href="/sign-up"
-            className="inline-flex items-center px-8 py-4 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors"
-          >
+          <CTAButton size="lg">
             Start Tracking Documents Online Now
-            <ArrowLeft className="ml-2 h-5 w-5 rotate-180" />
-          </Link>
+          </CTAButton>
         </div>
       </div>
     </div>

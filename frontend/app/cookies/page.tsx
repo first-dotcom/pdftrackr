@@ -1,5 +1,7 @@
 import { ArrowLeft } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
+import LearnMoreSection from "@/components/LearnMoreSection";
 
 export default function CookiesPage() {
   return (
@@ -352,6 +354,37 @@ export default function CookiesPage() {
             </div>
           </div>
         </div>
+
+        {/* Related Guides Section */}
+        <LearnMoreSection 
+          title="Learn More About PDF Tracking"
+          guides={[
+            {
+              href: "/pdf-privacy-policy",
+              title: "PDF Privacy Policy",
+              description: "Learn about our privacy practices and how we protect your data.",
+              label: "Read Policy"
+            },
+            {
+              href: "/pdf-sharing-terms",
+              title: "PDF Sharing Terms",
+              description: "Understand the terms and conditions for using our PDF sharing service.",
+              label: "Read Terms"
+            },
+            {
+              href: "/data-rights",
+              title: "Data Rights",
+              description: "Exercise your GDPR data rights and manage your personal information.",
+              label: "Learn More"
+            },
+            {
+              href: "/free-pdf-tracking",
+              title: "Free PDF Tracking",
+              description: "Start tracking PDFs for free with 500MB storage and no credit card required.",
+              label: "Learn More"
+            }
+          ]}
+        />
       </div>
     </div>
   );

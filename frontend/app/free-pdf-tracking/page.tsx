@@ -1,6 +1,8 @@
 import { ArrowLeft, BarChart3, CheckCircle, Clock, Gift, Lock, Mail, Shield } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import CTAButton from "@/components/CTAButton";
+import LearnMoreSection from "@/components/LearnMoreSection";
 
 export const metadata: Metadata = {
   title: "Free PDF Tracking - Track PDF Views & Analytics | No Credit Card Required",
@@ -21,6 +23,7 @@ export const metadata: Metadata = {
     description:
       "Get free PDF tracking with PDFTrackr. Track PDF views, capture emails, and get analytics without paying a dime. 500MB free storage, no credit card required.",
     type: "website",
+    url: "https://pdftrackr.com/free-pdf-tracking",
   },
 };
 
@@ -135,13 +138,12 @@ export default function FreePdfTrackingPage() {
           <p className="text-lg mb-6 opacity-90">
             500MB free storage • No credit card required • Full analytics included
           </p>
-          <Link
-            href="/sign-up"
-            className="inline-flex items-center px-8 py-4 bg-white text-primary-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            Get Started Free
-            <Gift className="ml-2 h-5 w-5" />
-          </Link>
+          <div className="text-center">
+            <CTAButton size="lg" variant="secondary">
+              Get Started Free
+              <Gift className="ml-2 h-5 w-5" />
+            </CTAButton>
+          </div>
         </div>
 
         {/* Features Grid */}
@@ -329,45 +331,35 @@ export default function FreePdfTrackingPage() {
         </div>
 
         {/* Related Guides Section */}
-        <div className="bg-white rounded-lg p-8 mb-16 shadow-sm">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
-            Learn More About PDF Tracking
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Link
-              href="/how-to-track-pdf-views"
-              className="block p-6 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
-            >
-              <h3 className="font-semibold text-gray-900 mb-2">How to Track PDF Views</h3>
-              <p className="text-sm text-gray-600 mb-3">Complete step-by-step guide to PDF tracking setup and implementation.</p>
-              <span className="text-primary-600 text-sm font-medium">Read Guide →</span>
-            </Link>
-            <Link
-              href="/secure-pdf-sharing-guide"
-              className="block p-6 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
-            >
-              <h3 className="font-semibold text-gray-900 mb-2">Secure PDF Sharing Guide</h3>
-              <p className="text-sm text-gray-600 mb-3">Learn best practices for secure document sharing and access control.</p>
-              <span className="text-primary-600 text-sm font-medium">Read Guide →</span>
-            </Link>
-            <Link
-              href="/pdf-analytics-tutorial"
-              className="block p-6 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
-            >
-              <h3 className="font-semibold text-gray-900 mb-2">PDF Analytics Tutorial</h3>
-              <p className="text-sm text-gray-600 mb-3">Master document insights and performance tracking with comprehensive analytics.</p>
-              <span className="text-primary-600 text-sm font-medium">Read Guide →</span>
-            </Link>
-            <Link
-              href="/pdf-tracking-faq"
-              className="block p-6 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
-            >
-              <h3 className="font-semibold text-gray-900 mb-2">PDF Tracking FAQ</h3>
-              <p className="text-sm text-gray-600 mb-3">Get answers to common questions about PDF tracking and document analytics.</p>
-              <span className="text-primary-600 text-sm font-medium">Read FAQ →</span>
-            </Link>
-          </div>
-        </div>
+        <LearnMoreSection 
+          title="Learn More About PDF Tracking"
+          guides={[
+            {
+              href: "/how-to-track-pdf-views",
+              title: "How to Track PDF Views",
+              description: "Complete step-by-step guide to PDF tracking setup and implementation.",
+              label: "Read Guide"
+            },
+            {
+              href: "/secure-pdf-sharing-guide",
+              title: "Secure PDF Sharing Guide",
+              description: "Learn best practices for secure document sharing and access control.",
+              label: "Read Guide"
+            },
+            {
+              href: "/pdf-analytics-tutorial",
+              title: "PDF Analytics Tutorial",
+              description: "Master document insights and performance tracking with comprehensive analytics.",
+              label: "Read Tutorial"
+            },
+            {
+              href: "/pdf-tracking-faq",
+              title: "PDF Tracking FAQ",
+              description: "Get answers to common questions about PDF tracking and document analytics.",
+              label: "Read FAQ"
+            }
+          ]}
+        />
 
         {/* Final CTA */}
         <div className="text-center">
@@ -375,16 +367,11 @@ export default function FreePdfTrackingPage() {
             Ready to Start Free PDF Tracking?
           </h2>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Join thousands of users who are already tracking their PDFs with PDFTrackr. Get started
-            in minutes with no credit card required.
+            Join thousands of users who are already tracking their PDFs for free with PDFTrackr. No credit card required.
           </p>
-          <Link
-            href="/sign-up"
-            className="inline-flex items-center px-8 py-4 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors"
-          >
+          <CTAButton size="lg">
             Start Free PDF Tracking Now
-            <ArrowLeft className="ml-2 h-5 w-5 rotate-180" />
-          </Link>
+          </CTAButton>
         </div>
       </div>
     </div>

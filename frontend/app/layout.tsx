@@ -117,10 +117,13 @@ export default function RootLayout({
           />
           
           {/* Favicon Links - Following favicon generator instructions */}
+          <link rel="icon" type="image/x-icon" href="/favicon.ico" />
           <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
           <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
           <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
           <link rel="manifest" href="/site.webmanifest" />
+          <meta name="msapplication-TileColor" content="#3B82F6" />
+          <meta name="theme-color" content="#3B82F6" />
           
           {/* Google tag (gtag.js) */}
           <script async src="https://www.googletagmanager.com/gtag/js?id=G-0D0FQG4352"></script>

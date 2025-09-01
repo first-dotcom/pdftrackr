@@ -1,24 +1,26 @@
 "use client";
 
-import { useAuth, useUser } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import { Menu, Upload, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import Logo from "./Logo";
+import CTAButton from "./CTAButton";
 
 export default function Header() {
+  const { isSignedIn } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { isSignedIn, isLoaded } = useAuth();
-  const { user } = useUser();
 
   return (
-    <header className="bg-white border-b border-gray-200">
+    <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/">
-            <Logo size="lg" />
-          </Link>
+          <div className="flex-shrink-0">
+            <Link href="/" className="flex items-center">
+              <Logo size="md" />
+            </Link>
+          </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
@@ -34,9 +36,9 @@ export default function Header() {
                 <Link href="/sign-in" className="text-gray-600 hover:text-gray-900">
                   Sign In
                 </Link>
-                <Link href="/sign-up" className="btn-primary btn-sm">
+                <CTAButton size="sm">
                   Get Started
-                </Link>
+                </CTAButton>
               </>
             ) : (
               // Authenticated user navigation
@@ -51,9 +53,9 @@ export default function Header() {
                 <Link href="/dashboard/settings" className="text-gray-600 hover:text-gray-900">
                   Settings
                 </Link>
-                <Link href="/dashboard" className="btn-primary btn-sm">
+                <CTAButton size="sm">
                   Dashboard
-                </Link>
+                </CTAButton>
               </>
             )}
           </nav>
@@ -96,13 +98,11 @@ export default function Header() {
                   >
                     Sign In
                   </Link>
-                  <Link
-                    href="/sign-up"
-                    className="btn-primary btn-sm w-fit"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Get Started
-                  </Link>
+                  <div onClick={() => setIsMenuOpen(false)}>
+                    <CTAButton size="sm">
+                      Get Started
+                    </CTAButton>
+                  </div>
                 </>
               ) : (
                 // Authenticated user mobile navigation
@@ -122,13 +122,11 @@ export default function Header() {
                   >
                     Settings
                   </Link>
-                  <Link
-                    href="/dashboard"
-                    className="btn-primary btn-sm w-fit"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Dashboard
-                  </Link>
+                  <div onClick={() => setIsMenuOpen(false)}>
+                    <CTAButton size="sm">
+                      Dashboard
+                    </CTAButton>
+                  </div>
                 </>
               )}
             </nav>

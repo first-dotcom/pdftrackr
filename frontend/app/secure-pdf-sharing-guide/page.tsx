@@ -1,11 +1,13 @@
 import { ArrowLeft, Clock, Download, Eye, Lock, Mail, Shield, Users } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import CTAButton from "@/components/CTAButton";
+import LearnMoreSection from "@/components/LearnMoreSection";
 
 export const metadata: Metadata = {
   title: "Secure PDF Sharing Guide - Protect Your Documents with Professional Tools",
   description:
-    "Learn how to share PDFs securely with enterprise-grade protection. Get password protection, access controls, and virus scanning. Free secure PDF sharing with 500MB storage, no credit card required.",
+    "Keep client PDFs secure without the hassle. Simple, affordable sharing tools for freelancers and small teams.",
   keywords: [
     "secure PDF sharing guide",
     "PDF security best practices",
@@ -37,14 +39,14 @@ export default function SecurePdfSharingGuidePage() {
 
         <div className="bg-white shadow-sm rounded-lg p-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">
-            Secure PDF Sharing Guide - Protect Your Documents with Professional Tools
+            Secure PDF Sharing Guide - Simple Protection for Freelancer Documents
           </h1>
 
           <div className="prose prose-gray max-w-none">
             <p className="text-lg text-gray-600 mb-6">
-              Learn how to share PDFs securely while maintaining control over who accesses your
-              documents. This comprehensive guide covers password protection, access controls,
-              tracking, and best practices for secure document sharing in professional environments.
+              Keep your client documents safe without breaking the bank. Learn simple security
+              practices that work for freelancers and small teams. Start protecting your PDFs for
+              free.
             </p>
 
             <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-8">
@@ -193,7 +195,15 @@ export default function SecurePdfSharingGuidePage() {
               <li>Scan for viruses and malware</li>
               <li>Apply encryption to your document</li>
               <li>Generate a secure sharing link</li>
-              <li>Set up <Link href="/how-to-track-pdf-views" className="text-primary-600 hover:text-primary-700 underline">tracking and analytics</Link></li>
+              <li>
+                Set up{" "}
+                <Link
+                  href="/how-to-track-pdf-views"
+                  className="text-primary-600 hover:text-primary-700 underline"
+                >
+                  tracking and analytics
+                </Link>
+              </li>
             </ul>
 
             <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
@@ -329,47 +339,47 @@ export default function SecurePdfSharingGuidePage() {
             </div>
 
             {/* Related Guides Section */}
-            <div className="bg-gray-50 rounded-lg p-6 mb-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Related Guides</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Link
-                  href="/how-to-track-pdf-views"
-                  className="block p-4 bg-white rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
-                >
-                  <h4 className="font-medium text-gray-900 mb-2">How to Track PDF Views</h4>
-                  <p className="text-sm text-gray-600">Complete step-by-step guide to PDF tracking setup and implementation.</p>
-                </Link>
-                <Link
-                  href="/pdf-analytics-tutorial"
-                  className="block p-4 bg-white rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
-                >
-                  <h4 className="font-medium text-gray-900 mb-2">PDF Analytics Tutorial</h4>
-                  <p className="text-sm text-gray-600">Master document insights and performance tracking with comprehensive analytics.</p>
-                </Link>
-                <Link
-                  href="/free-pdf-tracking"
-                  className="block p-4 bg-white rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
-                >
-                  <h4 className="font-medium text-gray-900 mb-2">Free PDF Tracking</h4>
-                  <p className="text-sm text-gray-600">Start tracking PDFs for free with 500MB storage and no credit card required.</p>
-                </Link>
-                <Link
-                  href="/pdf-tracking-faq"
-                  className="block p-4 bg-white rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
-                >
-                  <h4 className="font-medium text-gray-900 mb-2">PDF Tracking FAQ</h4>
-                  <p className="text-sm text-gray-600">Get answers to common questions about PDF tracking and document analytics.</p>
-                </Link>
-              </div>
-            </div>
+            <LearnMoreSection 
+              title="Related Guides"
+              guides={[
+                {
+                  href: "/how-to-track-pdf-views",
+                  title: "How to Track PDF Views",
+                  description: "Complete step-by-step guide to PDF tracking setup and implementation.",
+                  label: "Read Guide"
+                },
+                {
+                  href: "/pdf-analytics-tutorial",
+                  title: "PDF Analytics Tutorial",
+                  description: "Master document insights and performance tracking with comprehensive analytics.",
+                  label: "Read Tutorial"
+                },
+                {
+                  href: "/free-pdf-tracking",
+                  title: "Free PDF Tracking",
+                  description: "Start tracking PDFs for free with 500MB storage and no credit card required.",
+                  label: "Learn More"
+                },
+                {
+                  href: "/pdf-tracking-faq",
+                  title: "PDF Tracking FAQ",
+                  description: "Get answers to common questions about PDF tracking and document analytics.",
+                  label: "Read FAQ"
+                }
+              ]}
+            />
 
-            <div className="text-center mt-8">
-              <Link
-                href="/sign-up"
-                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
-              >
-                Start Secure PDF Sharing Free
-              </Link>
+            {/* Final CTA */}
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                Ready to Secure Your PDF Sharing?
+              </h2>
+              <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+                Start protecting your client documents with PDFTrackr's secure sharing features. Get started for free with 500MB storage.
+              </p>
+              <CTAButton size="lg">
+                Start Secure PDF Sharing Now
+              </CTAButton>
             </div>
           </div>
         </div>

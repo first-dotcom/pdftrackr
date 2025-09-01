@@ -3,8 +3,7 @@ Allow: /
 Disallow: /dashboard/
 Disallow: /api/
 Disallow: /_next/
-Disallow: /sign-in
-Disallow: /sign-up
+Disallow: /test-pdf/
 
 # Allow indexing of shared PDF view pages
 Allow: /view/

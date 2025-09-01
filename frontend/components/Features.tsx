@@ -24,22 +24,13 @@ const featureGroups = [
     ],
   },
   {
+    title: "Simple Tools",
+    description: "Easy-to-use tools that help you understand how your documents are being used",
     icon: BarChart3,
-    title: "Live Analytics",
-    features: [
-      {
-        title: "View Tracking",
-        description: "See total views and unique visitors",
-      },
-      {
-        title: "Page Analytics",
-        description: "Know which pages get the most attention",
-      },
-    ],
   },
   {
     icon: Briefcase,
-    title: "Professional Tools",
+    title: "Simple Tools",
     features: [
       {
         title: "Link Management",
@@ -69,7 +60,7 @@ export default function Features() {
             Everything You Need to Share & Track PDFs
           </p>
           <p className="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
-            Professional tools that help you understand how your documents are being used
+            Simple tools that help you understand how your documents are being used
           </p>
         </div>
 

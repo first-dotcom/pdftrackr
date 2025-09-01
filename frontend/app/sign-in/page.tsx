@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Sign In - PDFTrackr",
-  description: "Sign in to your PDFTrackr account to manage your PDF sharing and analytics.",
+  description: "Sign in to your PDFTrackr account to manage your PDF tracking and analytics for freelancers and small teams.",
   robots: "noindex, nofollow",
   alternates: {
     canonical: "https://pdftrackr.com/sign-in",

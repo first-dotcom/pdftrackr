@@ -2,12 +2,13 @@ import { ArrowLeft, Clock, Download, Eye, HelpCircle, Mail, Shield } from "lucid
 import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
-import RelatedGuides from "@/components/RelatedGuides";
+import CTAButton from "@/components/CTAButton";
+import LearnMoreSection from "@/components/LearnMoreSection";
 
 export const metadata: Metadata = {
   title: "PDF Tracking FAQ - Common Questions About Document Analytics & Security",
   description:
-    "Get instant answers to PDF tracking questions. Learn how to track PDF views, understand privacy concerns, and master document analytics. Free PDF tracking with no credit card required.",
+    "Quick answers to PDF tracking questions. Simple, clear help for freelancers and small businesses—start tracking for free.",
   keywords: [
     "PDF tracking FAQ",
     "can a downloaded pdf be tracked",
@@ -282,64 +283,47 @@ export default function FAQPage() {
               ))}
             </div>
 
-            <div className="bg-blue-50 border-l-4 border-blue-400 p-6 mt-8">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <HelpCircle className="h-5 w-5 text-blue-400" />
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                    Still Have Questions?
-                  </h3>
-                  <p className="text-blue-700 mb-4">
-                    Can't find the answer you're looking for? Our support team is here to help with
-                    any questions about PDF tracking, security, or our platform features.
-                  </p>
-                  <div className="space-y-2">
-                    <p className="text-sm text-blue-600">
-                      • Check our{" "}
-                      <Link
-                        href="/how-to-track-pdf-views"
-                        className="underline hover:text-blue-800"
-                      >
-                        PDF tracking guide
-                      </Link>{" "}
-                      for detailed instructions
-                    </p>
-                    <p className="text-sm text-blue-600">
-                      • Learn about{" "}
-                      <Link
-                        href="/secure-pdf-sharing-guide"
-                        className="underline hover:text-blue-800"
-                      >
-                        secure PDF sharing
-                      </Link>{" "}
-                      best practices
-                    </p>
-                    <p className="text-sm text-blue-600">
-                      • Master{" "}
-                      <Link
-                        href="/pdf-analytics-tutorial"
-                        className="underline hover:text-blue-800"
-                      >
-                        PDF analytics
-                      </Link>{" "}
-                      and insights
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <LearnMoreSection 
+              title="Related Guides"
+              guides={[
+                {
+                  href: "/how-to-track-pdf-views",
+                  title: "How to Track PDF Views",
+                  description: "Complete step-by-step guide to PDF tracking setup and implementation.",
+                  label: "Read Guide"
+                },
+                {
+                  href: "/secure-pdf-sharing-guide",
+                  title: "Secure PDF Sharing Guide",
+                  description: "Learn best practices for secure document sharing and access control.",
+                  label: "Read Guide"
+                },
+                {
+                  href: "/pdf-analytics-tutorial",
+                  title: "PDF Analytics Tutorial",
+                  description: "Master document insights and performance tracking with comprehensive analytics.",
+                  label: "Read Tutorial"
+                },
+                {
+                  href: "/free-pdf-tracking",
+                  title: "Free PDF Tracking",
+                  description: "Start tracking PDFs for free with 500MB storage and no credit card required.",
+                  label: "Learn More"
+                }
+              ]}
+            />
 
-            <RelatedGuides className="mt-8" />
-
-            <div className="text-center mt-8">
-              <Link
-                href="/sign-up"
-                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
-              >
-                Start PDF Tracking Free
-              </Link>
+            {/* Final CTA */}
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                Ready to Start Tracking PDFs?
+              </h2>
+              <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+                Get started with PDFTrackr's PDF tracking features. Free 500MB storage, no credit card required.
+              </p>
+              <CTAButton size="lg">
+                Start PDF Tracking Now
+              </CTAButton>
             </div>
           </div>
         </div>

@@ -10,11 +10,13 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import CTAButton from "@/components/CTAButton";
+import LearnMoreSection from "@/components/LearnMoreSection";
 
 export const metadata: Metadata = {
-  title: "PDF Analytics Tutorial - Master Document Insights and Performance Tracking",
+  title: "PDF Analytics Tutorial - Simple Insights for Freelancers & Small Teams",
   description:
-    "Master PDF analytics to understand document performance and optimize your content strategy. Get comprehensive analytics with 500MB free storage, no credit card required. Start analyzing your PDFs today.",
+    "Master PDF analytics without the complexity. Simple insights built for freelancers, consultants, and small teams.",
   keywords: [
     "PDF analytics tutorial",
     "PDF analytics guide",
@@ -46,15 +48,12 @@ export default function PdfAnalyticsTutorialPage() {
 
         <div className="bg-white shadow-sm rounded-lg p-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">
-            PDF Analytics Tutorial - Master Document Insights and Performance Tracking
+            PDF Analytics Tutorial - Simple Insights for Freelancers & Small Teams
           </h1>
 
           <div className="prose prose-gray max-w-none">
             <p className="text-lg text-gray-600 mb-6">
-              Master PDF analytics to understand how your documents perform and engage your
-              audience. This comprehensive tutorial covers key metrics, data interpretation, and how
-              to use analytics to optimize your PDF content strategy for better results and
-              engagement.
+              Master PDF analytics without the complexity. Learn how to understand document performance and optimize your content strategy. Perfect for consultants and solopreneurs.
             </p>
 
             <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-8">
@@ -422,47 +421,47 @@ export default function PdfAnalyticsTutorialPage() {
             </div>
 
             {/* Related Guides Section */}
-            <div className="bg-gray-50 rounded-lg p-6 mb-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Related Guides</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Link
-                  href="/how-to-track-pdf-views"
-                  className="block p-4 bg-white rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
-                >
-                  <h4 className="font-medium text-gray-900 mb-2">How to Track PDF Views</h4>
-                  <p className="text-sm text-gray-600">Complete step-by-step guide to PDF tracking setup and implementation.</p>
-                </Link>
-                <Link
-                  href="/secure-pdf-sharing-guide"
-                  className="block p-4 bg-white rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
-                >
-                  <h4 className="font-medium text-gray-900 mb-2">Secure PDF Sharing Guide</h4>
-                  <p className="text-sm text-gray-600">Learn best practices for secure document sharing and access control.</p>
-                </Link>
-                <Link
-                  href="/free-pdf-tracking"
-                  className="block p-4 bg-white rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
-                >
-                  <h4 className="font-medium text-gray-900 mb-2">Free PDF Tracking</h4>
-                  <p className="text-sm text-gray-600">Start tracking PDFs for free with 500MB storage and no credit card required.</p>
-                </Link>
-                <Link
-                  href="/pdf-tracking-faq"
-                  className="block p-4 bg-white rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
-                >
-                  <h4 className="font-medium text-gray-900 mb-2">PDF Tracking FAQ</h4>
-                  <p className="text-sm text-gray-600">Get answers to common questions about PDF tracking and document analytics.</p>
-                </Link>
-              </div>
-            </div>
+            <LearnMoreSection 
+              title="Related Guides"
+              guides={[
+                {
+                  href: "/how-to-track-pdf-views",
+                  title: "How to Track PDF Views",
+                  description: "Complete step-by-step guide to PDF tracking setup and implementation.",
+                  label: "Read Guide"
+                },
+                {
+                  href: "/secure-pdf-sharing-guide",
+                  title: "Secure PDF Sharing Guide",
+                  description: "Learn best practices for secure document sharing and access control.",
+                  label: "Read Guide"
+                },
+                {
+                  href: "/free-pdf-tracking",
+                  title: "Free PDF Tracking",
+                  description: "Start tracking PDFs for free with 500MB storage and no credit card required.",
+                  label: "Learn More"
+                },
+                {
+                  href: "/pdf-tracking-faq",
+                  title: "PDF Tracking FAQ",
+                  description: "Get answers to common questions about PDF tracking and document analytics.",
+                  label: "Read FAQ"
+                }
+              ]}
+            />
 
-            <div className="text-center mt-8">
-              <Link
-                href="/sign-up"
-                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
-              >
-                Start PDF Analytics Free
-              </Link>
+            {/* Final CTA */}
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                Ready to Master PDF Analytics?
+              </h2>
+              <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+                Start using PDFTrackr's analytics to understand your document performance. Get started for free with 500MB storage.
+              </p>
+              <CTAButton size="lg">
+                Start Using PDF Analytics Now
+              </CTAButton>
             </div>
           </div>
         </div>

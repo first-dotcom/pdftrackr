@@ -16,7 +16,7 @@ export default function Footer() {
               <Logo size="lg" variant="white" />
             </Link>
             <p className="text-gray-400 text-base">
-              Secure PDF sharing and analytics platform for professionals and businesses.
+              Secure PDF sharing and analytics platform for freelancers and small teams.
             </p>
           </div>
 

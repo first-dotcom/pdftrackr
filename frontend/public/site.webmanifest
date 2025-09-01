@@ -1,7 +1,7 @@
 {
   "name": "PDFTrackr - PDF Tracking & Analytics",
   "short_name": "PDFTrackr",
-  "description": "Professional PDF tracking and analytics platform for secure document sharing",
+  "description": "Simple PDF tracking and analytics platform for freelancers and small teams",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

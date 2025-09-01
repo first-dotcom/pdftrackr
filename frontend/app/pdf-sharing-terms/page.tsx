@@ -1,11 +1,12 @@
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import LearnMoreSection from "@/components/LearnMoreSection";
 
 export const metadata: Metadata = {
-  title: "PDF Sharing Terms of Service - Document Tracking & Analytics",
+  title: "PDF Sharing Terms - Simple Service Agreement for Freelancers",
   description:
-    "PDFTrackr's terms of service govern the secure sharing and tracking of PDF documents. Our platform provides professional PDF analytics while ensuring legal compliance and user protection.",
+    "Clear, straightforward terms for freelancers. Simple agreement for sharing and tracking PDFs without legal jargon.",
   keywords: [
     "PDF sharing terms",
     "document tracking terms",
@@ -35,10 +36,14 @@ export default function PdfSharingTermsPage() {
 
         <div className="bg-white shadow-sm rounded-lg p-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">
-            PDF Sharing Terms of Service - Document Tracking & Analytics
+            PDF Sharing Terms - Simple Service Agreement for Freelancers
           </h1>
 
           <div className="prose prose-gray max-w-none">
+            <p className="text-lg text-gray-600 mb-6">
+              Clear, straightforward terms for sharing and tracking PDFs. Our simple service agreement protects freelancers and small teams while ensuring legal compliance. No complex legal jargon.
+            </p>
+
             <p className="text-gray-600 mb-6">
               <strong>Last updated:</strong> August 2025
             </p>
@@ -100,6 +105,37 @@ export default function PdfSharingTermsPage() {
             </p>
           </div>
         </div>
+
+        {/* Learn More Section */}
+        <LearnMoreSection 
+          title="Learn More About PDF Tracking"
+          guides={[
+            {
+              href: "/document-tracking-system",
+              title: "Document Tracking System",
+              description: "Learn about our comprehensive document tracking system for freelancers and small teams.",
+              label: "Learn More"
+            },
+            {
+              href: "/track-documents-online",
+              title: "Track Documents Online",
+              description: "Discover how to track documents online with our cloud-based platform.",
+              label: "Learn More"
+            },
+            {
+              href: "/secure-pdf-sharing-guide",
+              title: "Secure PDF Sharing Guide",
+              description: "Learn best practices for secure document sharing and access control.",
+              label: "Read Guide"
+            },
+            {
+              href: "/free-pdf-tracking",
+              title: "Free PDF Tracking",
+              description: "Start tracking PDFs for free with 500MB storage and no credit card required.",
+              label: "Learn More"
+            }
+          ]}
+        />
       </div>
     </div>
   );

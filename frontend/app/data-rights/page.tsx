@@ -22,6 +22,10 @@ export const metadata: Metadata = {
     description:
       "Exercise your GDPR data rights for PDF documents shared through PDFTrackr. Request access, deletion, or export of your personal data and document analytics.",
     type: "article",
+    url: "https://pdftrackr.com/data-rights",
+  },
+  alternates: {
+    canonical: "https://pdftrackr.com/data-rights",
   },
 };
 

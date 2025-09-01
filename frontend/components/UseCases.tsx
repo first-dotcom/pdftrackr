@@ -1,49 +1,36 @@
 const useCases = [
   {
-    title: "Sales Professionals",
-    description: "Share proposals and contracts securely with live tracking",
-    icon: "📊",
-  },
-  {
-    title: "Legal Professionals",
-    description: "Send confidential documents with password protection and audit trails",
-    icon: "⚖️",
-  },
-  {
-    title: "HR Departments",
-    description: "Distribute employee documents with email capture and analytics",
-    icon: "👥",
-  },
-  {
-    title: "Marketing Teams",
-    description: "Track engagement on whitepapers and case studies",
-    icon: "📈",
-  },
-  {
-    title: "Consultants",
-    description: "Deliver reports with professional branding and insights",
+    title: "Freelancers",
+    description: "Track client proposals and see who's reading your work",
     icon: "💼",
   },
   {
-    title: "Educators",
-    description: "Share course materials with student progress tracking",
-    icon: "🎓",
+    title: "Consultants",
+    description: "Deliver reports with simple branding and insights",
+    icon: "📊",
+  },
+  {
+    title: "Small Teams",
+    description: "Share documents securely with your team and clients",
+    icon: "👥",
+  },
+  {
+    title: "Solopreneurs",
+    description: "Understand how your content performs with simple analytics",
+    icon: "🚀",
   },
 ];
 
 export default function UseCases() {
   return (
-    <section className="py-12 bg-gray-50">
+    <section className="py-12 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="lg:text-center">
-          <h2 className="text-base text-primary-600 font-semibold tracking-wide uppercase">
-            Use Cases
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            Perfect For Every Freelancer
           </h2>
-          <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-            Perfect For Every Professional
-          </p>
-          <p className="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
-            See how different professionals use PDFTrackr to share documents smarter
+          <p className="text-xl text-gray-600 mb-12">
+            See how different freelancers use PDFTrackr to share documents smarter
           </p>
         </div>
 

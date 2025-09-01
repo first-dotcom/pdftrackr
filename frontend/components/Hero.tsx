@@ -1,29 +1,32 @@
 "use client";
 
-import { ArrowRight, CreditCard, Gift, Shield } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { useAuth } from "@clerk/nextjs";
-import WaitlistModal from "./WaitlistModal";
+import CTAButton from "./CTAButton";
 
-export default function Hero() {
-  const { isSignedIn } = useAuth();
+interface HeroProps {
+  isSignedIn?: boolean;
+}
 
+export default function Hero({ isSignedIn = false }: HeroProps) {
   return (
-    <section className="relative bg-white overflow-hidden">
-      <div className="mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Desktop Layout: Main content with demo */}
+    <section className="relative overflow-hidden bg-white">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50"></div>
+      
+      {/* Content */}
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Desktop Layout: Side by side */}
         <div className="hidden lg:flex lg:items-center lg:py-16 lg:gap-8 lg:max-w-6xl lg:mx-auto">
           {/* Main Content - Takes most of the space */}
           <div className="flex-1 lg:max-w-3xl">
-            <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-              <span className="block">PDF Tracking & Analytics</span>
-              <span className="block text-primary-600">- Secure Document Sharing Platform</span>
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+              PDF Tracking & Analytics - Simple Document Sharing for Freelancers
             </h1>
-
-            <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl md:mt-5 md:text-xl">
-              PDFTrackr provides professional PDF tracking and analytics to see who's reading your
+            <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
+              PDFTrackr provides simple PDF tracking and analytics to see who's reading your
               documents. Track PDF views, capture emails, and control access with our secure
-              sharing platform. 500MB free storage, no credit card required.
+              sharing platform. Perfect for freelancers, consultants, and small teams.
             </p>
 
             <p className="mt-2 text-sm text-gray-500 sm:max-w-xl">
@@ -40,15 +43,9 @@ export default function Hero() {
             </p>
 
             <div className="mt-5 sm:mt-8 sm:flex sm:justify-start">
-              <div className="rounded-md shadow">
-                <Link
-                  href={isSignedIn ? "/dashboard" : "/sign-up"}
-                  className="w-full flex items-center justify-center px-6 py-2.5 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 md:py-3 md:px-8"
-                >
-                  {isSignedIn ? "Go to Dashboard" : "Start Free - No Card Required"}
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </div>
+              <CTAButton size="lg">
+                {isSignedIn ? "Go to Dashboard" : "Start Free - No Card Required"}
+              </CTAButton>
 
               <div className="mt-3 sm:mt-0 sm:ml-3">
                 <Link
@@ -96,13 +93,13 @@ export default function Hero() {
             <div className="text-center">
               <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl">
                 <span className="block">PDF Tracking & Analytics</span>
-                <span className="block text-primary-600">- Secure Document Sharing Platform</span>
+                <span className="block text-primary-600">- Simple Document Sharing for Freelancers</span>
               </h1>
 
               <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto">
-                PDFTrackr provides professional PDF tracking and analytics to see who's reading your
+                PDFTrackr provides simple PDF tracking and analytics to see who's reading your
                 documents. Track PDF views, capture emails, and control access with our secure
-                sharing platform. 500MB free storage, no credit card required.
+                sharing platform. Perfect for freelancers, consultants, and small teams.
               </p>
 
               <p className="mt-2 text-sm text-gray-500 sm:max-w-xl sm:mx-auto">
@@ -119,15 +116,9 @@ export default function Hero() {
               </p>
 
               <div className="mt-5 sm:mt-8 sm:flex sm:justify-center">
-                <div className="rounded-md shadow">
-                  <Link
-                    href={isSignedIn ? "/dashboard" : "/sign-up"}
-                    className="w-full flex items-center justify-center px-6 py-2.5 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 md:py-3 md:px-8"
-                  >
-                    {isSignedIn ? "Go to Dashboard" : "Start Free - No Card Required"}
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </div>
+                <CTAButton size="lg">
+                  {isSignedIn ? "Go to Dashboard" : "Start Free - No Card Required"}
+                </CTAButton>
 
                 <div className="mt-3 sm:mt-0 sm:ml-3">
                   <Link
@@ -142,7 +133,6 @@ export default function Hero() {
           </div>
         </div>
       </div>
-      <WaitlistModal />
     </section>
   );
 }

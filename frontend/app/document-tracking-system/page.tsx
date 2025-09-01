@@ -1,11 +1,25 @@
-import { ArrowLeft, BarChart3, CheckCircle, Clock, Database, FileText, Lock, Settings, Shield, TrendingUp, Users, Zap } from "lucide-react";
+import {
+  ArrowLeft,
+  BarChart3,
+  CheckCircle,
+  Clock,
+  Database,
+  FileText,
+  Lock,
+  Settings,
+  Shield,
+  TrendingUp,
+  Users,
+  Zap,
+} from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import CTAButton from "@/components/CTAButton";
 
 export const metadata: Metadata = {
-  title: "Document Tracking System - Enterprise PDF Analytics & Management Platform",
+  title: "Document Tracking System - Simple PDF Analytics for Freelancers & Small Teams",
   description:
-    "PDFTrackr's comprehensive document tracking system provides enterprise-grade analytics, bulk management, and systematic workflow automation. Track, analyze, and optimize document performance across your organization. 500MB free storage, no credit card required.",
+    "Track client documents with simple PDF analytics. Built for freelancers and small teams who need insights without enterprise complexity.",
   keywords: [
     "document tracking system",
     "PDF tracking system",
@@ -78,7 +92,8 @@ const systemFeatures = [
 const enterpriseCapabilities = [
   {
     title: "Scalable Infrastructure",
-    description: "Handle thousands of documents and users with our enterprise-grade infrastructure.",
+    description:
+      "Handle thousands of documents and users with our enterprise-grade infrastructure.",
     icon: CheckCircle,
   },
   {
@@ -93,7 +108,8 @@ const enterpriseCapabilities = [
   },
   {
     title: "Compliance Ready",
-    description: "Meet GDPR, HIPAA, and other regulatory requirements with built-in compliance features.",
+    description:
+      "Meet GDPR, HIPAA, and other regulatory requirements with built-in compliance features.",
     icon: CheckCircle,
   },
 ];
@@ -102,27 +118,32 @@ const workflowStages = [
   {
     step: "1",
     title: "Document Upload & Organization",
-    description: "Upload documents to the system and organize them with custom categories, tags, and metadata for systematic management.",
+    description:
+      "Upload documents to the system and organize them with custom categories, tags, and metadata for systematic management.",
   },
   {
     step: "2",
     title: "Tracking Configuration",
-    description: "Configure tracking parameters, security settings, and access controls for each document or document group.",
+    description:
+      "Configure tracking parameters, security settings, and access controls for each document or document group.",
   },
   {
     step: "3",
     title: "Distribution & Sharing",
-    description: "Share documents through secure links, email campaigns, or direct integration with your existing communication systems.",
+    description:
+      "Share documents through secure links, email campaigns, or direct integration with your existing communication systems.",
   },
   {
     step: "4",
     title: "Analytics & Monitoring",
-    description: "Monitor real-time analytics, track engagement patterns, and generate comprehensive reports on document performance.",
+    description:
+      "Monitor real-time analytics, track engagement patterns, and generate comprehensive reports on document performance.",
   },
   {
     step: "5",
     title: "Optimization & Iteration",
-    description: "Use analytics insights to optimize content, improve engagement, and refine your document strategy systematically.",
+    description:
+      "Use analytics insights to optimize content, improve engagement, and refine your document strategy systematically.",
   },
 ];
 
@@ -130,28 +151,32 @@ const useCases = [
   {
     icon: "🏢",
     title: "Enterprise Organizations",
-    description: "Manage compliance documents, track policy distribution, and monitor internal communication across large organizations.",
+    description:
+      "Manage compliance documents, track policy distribution, and monitor internal communication across large organizations.",
     color: "bg-blue-100",
     textColor: "text-blue-600",
   },
   {
     icon: "📊",
     title: "Marketing Teams",
-    description: "Track campaign materials, monitor lead magnet performance, and optimize content strategy with systematic analytics.",
+    description:
+      "Track campaign materials, monitor lead magnet performance, and optimize content strategy with systematic analytics.",
     color: "bg-green-100",
     textColor: "text-green-600",
   },
   {
     icon: "🎓",
     title: "Educational Institutions",
-    description: "Manage course materials, track student engagement, and optimize educational content delivery across departments.",
+    description:
+      "Manage course materials, track student engagement, and optimize educational content delivery across departments.",
     color: "bg-purple-100",
     textColor: "text-purple-600",
   },
   {
     icon: "⚖️",
     title: "Legal & Compliance",
-    description: "Track legal document distribution, monitor compliance materials, and maintain audit trails for regulatory requirements.",
+    description:
+      "Track legal document distribution, monitor compliance materials, and maintain audit trails for regulatory requirements.",
     color: "bg-orange-100",
     textColor: "text-orange-600",
   },
@@ -170,26 +195,27 @@ export default function DocumentTrackingSystemPage() {
 
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Document Tracking System - Enterprise PDF Analytics & Management Platform
+            Document Tracking System - PDF Analytics & Management Platform
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            PDFTrackr's comprehensive document tracking system provides enterprise-grade analytics, bulk management, and systematic workflow automation. Track, analyze, and optimize document performance across your organization.
+            Track your client documents with ease. Get powerful analytics without the enterprise
+            complexity. Perfect for consultants, solopreneurs, and small teams who need to
+            understand document engagement.
           </p>
         </div>
 
         {/* Hero CTA */}
         <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-lg p-8 mb-12 text-center text-white">
-          <h2 className="text-2xl font-bold mb-4">Start Using Our Document Tracking System Today</h2>
+          <h2 className="text-2xl font-bold mb-4">
+            Start Using Our Document Tracking System Today
+          </h2>
           <p className="text-lg mb-6 opacity-90">
             Enterprise-grade platform • Systematic workflows • Bulk management • 500MB free storage
           </p>
-          <Link
-            href="/sign-up"
-            className="inline-flex items-center px-8 py-4 bg-white text-primary-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
-          >
+          <CTAButton size="lg" variant="secondary">
             Get Started Free
             <Database className="ml-2 h-5 w-5" />
-          </Link>
+          </CTAButton>
         </div>
 
         {/* System Features Grid */}
@@ -256,7 +282,9 @@ export default function DocumentTrackingSystemPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {useCases.map((useCase, index) => (
               <div key={index} className="bg-white rounded-lg p-6 shadow-sm text-center">
-                <div className={`${useCase.color} rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4`}>
+                <div
+                  className={`${useCase.color} rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4`}
+                >
                   <span className={`text-xl font-bold ${useCase.textColor}`}>{useCase.icon}</span>
                 </div>
                 <h3 className="font-semibold text-gray-900 mb-2">{useCase.title}</h3>
@@ -361,7 +389,9 @@ export default function DocumentTrackingSystemPage() {
                 Can I manage multiple documents at once?
               </h3>
               <p className="text-gray-600">
-                Yes! PDFTrackr's document tracking system supports bulk operations. You can upload multiple documents, apply tracking settings across entire document sets, and manage them systematically from a single dashboard.
+                Yes! PDFTrackr's document tracking system supports bulk operations. You can upload
+                multiple documents, apply tracking settings across entire document sets, and manage
+                them systematically from a single dashboard.
               </p>
             </div>
             <div>
@@ -369,7 +399,10 @@ export default function DocumentTrackingSystemPage() {
                 How does the systematic workflow work?
               </h3>
               <p className="text-gray-600">
-                Our system follows a structured 5-stage workflow: upload and organize, configure tracking, distribute and share, monitor analytics, and optimize based on insights. This systematic approach ensures consistent document management across your organization.
+                Our system follows a structured 5-stage workflow: upload and organize, configure
+                tracking, distribute and share, monitor analytics, and optimize based on insights.
+                This systematic approach ensures consistent document management across your
+                organization.
               </p>
             </div>
             <div>
@@ -377,7 +410,9 @@ export default function DocumentTrackingSystemPage() {
                 Can multiple team members access the system?
               </h3>
               <p className="text-gray-600">
-                Absolutely! PDFTrackr supports multi-user access with role-based permissions. You can grant different access levels to team members, allowing collaboration while maintaining security and control over sensitive documents.
+                Absolutely! PDFTrackr supports multi-user access with role-based permissions. You
+                can grant different access levels to team members, allowing collaboration while
+                maintaining security and control over sensitive documents.
               </p>
             </div>
             <div>
@@ -385,7 +420,10 @@ export default function DocumentTrackingSystemPage() {
                 Is the system suitable for enterprise organizations?
               </h3>
               <p className="text-gray-600">
-                Yes! PDFTrackr is built for enterprise use with scalable infrastructure, API integration capabilities, custom branding options, and compliance-ready features. Our system can handle thousands of documents and users with enterprise-grade security.
+                Yes! PDFTrackr is built for enterprise use with scalable infrastructure, API
+                integration capabilities, custom branding options, and compliance-ready features.
+                Our system can handle thousands of documents and users with enterprise-grade
+                security.
               </p>
             </div>
           </div>
@@ -402,7 +440,9 @@ export default function DocumentTrackingSystemPage() {
               className="block p-6 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
             >
               <h3 className="font-semibold text-gray-900 mb-2">Track Documents Online</h3>
-              <p className="text-sm text-gray-600 mb-3">Learn about our cloud-based platform for online document tracking and analytics.</p>
+              <p className="text-sm text-gray-600 mb-3">
+                Learn about our cloud-based platform for online document tracking and analytics.
+              </p>
               <span className="text-primary-600 text-sm font-medium">Learn More →</span>
             </Link>
             <Link
@@ -410,7 +450,9 @@ export default function DocumentTrackingSystemPage() {
               className="block p-6 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
             >
               <h3 className="font-semibold text-gray-900 mb-2">PDF Analytics Tutorial</h3>
-              <p className="text-sm text-gray-600 mb-3">Master document insights and performance tracking with comprehensive analytics.</p>
+              <p className="text-sm text-gray-600 mb-3">
+                Master document insights and performance tracking with comprehensive analytics.
+              </p>
               <span className="text-primary-600 text-sm font-medium">Read Tutorial →</span>
             </Link>
             <Link
@@ -418,7 +460,9 @@ export default function DocumentTrackingSystemPage() {
               className="block p-6 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
             >
               <h3 className="font-semibold text-gray-900 mb-2">How to Track PDF Views</h3>
-              <p className="text-sm text-gray-600 mb-3">Complete step-by-step guide to PDF tracking setup and implementation.</p>
+              <p className="text-sm text-gray-600 mb-3">
+                Complete step-by-step guide to PDF tracking setup and implementation.
+              </p>
               <span className="text-primary-600 text-sm font-medium">Read Guide →</span>
             </Link>
             <Link
@@ -426,7 +470,9 @@ export default function DocumentTrackingSystemPage() {
               className="block p-6 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
             >
               <h3 className="font-semibold text-gray-900 mb-2">Free PDF Tracking</h3>
-              <p className="text-sm text-gray-600 mb-3">Start tracking PDFs for free with 500MB storage and no credit card required.</p>
+              <p className="text-sm text-gray-600 mb-3">
+                Start tracking PDFs for free with 500MB storage and no credit card required.
+              </p>
               <span className="text-primary-600 text-sm font-medium">Learn More →</span>
             </Link>
           </div>
@@ -438,7 +484,8 @@ export default function DocumentTrackingSystemPage() {
             Ready to Implement Our Document Tracking System?
           </h2>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Join enterprise organizations that trust PDFTrackr for their document tracking needs. Get started with our systematic approach to document management and analytics.
+            Join enterprise organizations that trust PDFTrackr for their document tracking needs.
+            Get started with our systematic approach to document management and analytics.
           </p>
           <Link
             href="/sign-up"
@@ -452,4 +499,3 @@ export default function DocumentTrackingSystemPage() {
     </div>
   );
 }
-

@@ -1,11 +1,12 @@
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import LearnMoreSection from "@/components/LearnMoreSection";
 
 export const metadata: Metadata = {
-  title: "PDF Privacy Policy - Secure Document Sharing & GDPR Compliance",
+  title: "PDF Privacy Policy - Simple Privacy Protection for Freelancers",
   description:
-    "PDFTrackr's privacy policy ensures your documents and data remain secure when sharing PDFs online. Our GDPR-compliant platform protects your privacy while providing powerful PDF analytics and tracking features.",
+    "Our simple privacy policy explains how freelancer documents are protected. Transparent, GDPR-compliant, easy to understand.",
   keywords: [
     "PDF privacy policy",
     "secure PDF sharing privacy",
@@ -39,6 +40,12 @@ export default function PdfPrivacyPolicyPage() {
           </h1>
 
           <div className="prose prose-gray max-w-none">
+            <p className="text-lg text-gray-600 mb-6">
+              Understand how we protect your documents and data. Our simple, transparent privacy
+              policy ensures your client work stays secure. GDPR-compliant protection for
+              freelancers and small teams.
+            </p>
+
             <p className="text-gray-600 mb-6">
               <strong>Last updated:</strong> August 25, 2025
             </p>
@@ -402,6 +409,37 @@ export default function PdfPrivacyPolicyPage() {
             </p>
           </div>
         </div>
+
+        {/* Learn More Section */}
+        <LearnMoreSection 
+          title="Learn More About PDF Tracking"
+          guides={[
+            {
+              href: "/document-tracking-system",
+              title: "Document Tracking System",
+              description: "Learn about our comprehensive document tracking system for freelancers and small teams.",
+              label: "Learn More"
+            },
+            {
+              href: "/track-documents-online",
+              title: "Track Documents Online",
+              description: "Discover how to track documents online with our cloud-based platform.",
+              label: "Learn More"
+            },
+            {
+              href: "/secure-pdf-sharing-guide",
+              title: "Secure PDF Sharing Guide",
+              description: "Learn best practices for secure document sharing and access control.",
+              label: "Read Guide"
+            },
+            {
+              href: "/free-pdf-tracking",
+              title: "Free PDF Tracking",
+              description: "Start tracking PDFs for free with 500MB storage and no credit card required.",
+              label: "Learn More"
+            }
+          ]}
+        />
       </div>
     </div>
   );

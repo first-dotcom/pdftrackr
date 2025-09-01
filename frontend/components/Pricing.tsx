@@ -5,6 +5,7 @@ import { Check } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import WaitlistModal from "./WaitlistModal";
+import CTAButton from "./CTAButton";
 
 const plans = [
   {
@@ -129,16 +130,24 @@ export default function Pricing() {
                   <span className="text-base font-medium text-gray-600">/month</span>
                 </p>
                 {plan.available ? (
-                  <Link
-                    href={plan.name === "Free" ? (isSignedIn ? "/dashboard" : "/sign-up") : plan.href}
-                    className={`mt-8 block w-full py-2 px-4 border border-transparent rounded-md text-sm font-medium text-center ${
-                      plan.featured
-                        ? "bg-primary-600 text-white hover:bg-primary-700"
-                        : "bg-primary-50 text-primary-700 hover:bg-primary-100"
-                    }`}
-                  >
-                    {plan.name === "Free" ? (isSignedIn ? "Go to Dashboard" : plan.cta) : plan.cta}
-                  </Link>
+                  plan.name === "Free" ? (
+                    <div className="mt-8">
+                      <CTAButton size="md" className="w-full">
+                        {isSignedIn ? "Go to Dashboard" : plan.cta}
+                      </CTAButton>
+                    </div>
+                  ) : (
+                    <Link
+                      href={plan.href}
+                      className={`mt-8 block w-full py-2 px-4 border border-transparent rounded-md text-sm font-medium text-center ${
+                        plan.featured
+                          ? "bg-primary-600 text-white hover:bg-primary-700"
+                          : "bg-primary-50 text-primary-700 hover:bg-primary-100"
+                      }`}
+                    >
+                      {plan.cta}
+                    </Link>
+                  )
                 ) : (
                   <div className="mt-8">
                     <button
