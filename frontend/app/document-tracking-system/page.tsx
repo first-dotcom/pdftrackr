@@ -31,10 +31,19 @@ export const metadata: Metadata = {
     "document workflow system",
   ],
   openGraph: {
-    title: "Document Tracking System - Enterprise PDF Analytics & Management Platform",
+    title: "Document Tracking System - Simple PDF Analytics for Freelancers & Small Teams",
     description:
-      "PDFTrackr's comprehensive document tracking system provides enterprise-grade analytics, bulk management, and systematic workflow automation. Track, analyze, and optimize document performance across your organization.",
+      "Track client documents with simple PDF analytics. Built for freelancers and small teams who need insights without enterprise complexity.",
     type: "website",
+    url: "https://pdftrackr.com/document-tracking-system",
+    images: [{ url: "https://pdftrackr.com/og-logo.png", alt: "PDFTrackr — simple PDF tracking for freelancers" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["https://pdftrackr.com/og-logo.png"],
+  },
+  alternates: {
+    canonical: "https://pdftrackr.com/document-tracking-system",
   },
 };
 
@@ -195,7 +204,7 @@ export default function DocumentTrackingSystemPage() {
 
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Document Tracking System - PDF Analytics & Management Platform
+            Document Tracking System - Simple PDF Analytics for Freelancers & Small Teams
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Track your client documents with ease. Get powerful analytics without the enterprise

@@ -21,14 +21,40 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Secure PDF Sharing Guide - Protect Your Documents with Professional Tools",
     description:
-      "Learn how to share PDFs securely with enterprise-grade protection. Get password protection, access controls, and virus scanning. Free secure PDF sharing with 500MB storage, no credit card required.",
+      "Keep client PDFs secure without the hassle. Simple, affordable sharing tools for freelancers and small teams.",
     type: "article",
+    url: "https://pdftrackr.com/secure-pdf-sharing-guide",
+    images: [{ url: "https://pdftrackr.com/og-logo.png", alt: "PDFTrackr — simple PDF tracking for freelancers" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["https://pdftrackr.com/og-logo.png"],
+  },
+  alternates: {
+    canonical: "https://pdftrackr.com/secure-pdf-sharing-guide",
   },
 };
 
 export default function SecurePdfSharingGuidePage() {
+  // Article Schema structured data
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Secure PDF Sharing Guide - Protect Your Documents with Professional Tools",
+    "description": "Keep client PDFs secure without the hassle. Simple, affordable sharing tools for freelancers and small teams.",
+    "author": { "@type": "Organization", "name": "PDFTrackr" },
+    "publisher": { "@type": "Organization", "name": "PDFTrackr" },
+    "mainEntityOfPage": "https://pdftrackr.com/secure-pdf-sharing-guide",
+    "dateModified": new Date().toISOString()
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Article Schema structured data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
       <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <Link href="/" className="inline-flex items-center text-gray-600 hover:text-gray-900">
@@ -39,7 +65,7 @@ export default function SecurePdfSharingGuidePage() {
 
         <div className="bg-white shadow-sm rounded-lg p-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">
-            Secure PDF Sharing Guide - Simple Protection for Freelancer Documents
+            Secure PDF Sharing Guide - Protect Your Documents with Professional Tools
           </h1>
 
           <div className="prose prose-gray max-w-none">

@@ -16,10 +16,19 @@ export const metadata: Metadata = {
     "PDF security privacy",
   ],
   openGraph: {
-    title: "PDF Privacy Policy - Secure Document Sharing & GDPR Compliance",
+    title: "PDF Privacy Policy - Simple Privacy Protection for Freelancers",
     description:
-      "PDFTrackr's privacy policy ensures your documents and data remain secure when sharing PDFs online. Our GDPR-compliant platform protects your privacy while providing powerful PDF analytics and tracking features.",
+      "Our simple privacy policy explains how freelancer documents are protected. Transparent, GDPR-compliant, easy to understand.",
     type: "article",
+    url: "https://pdftrackr.com/pdf-privacy-policy",
+    images: [{ url: "https://pdftrackr.com/og-logo.png", alt: "PDFTrackr — simple PDF tracking for freelancers" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["https://pdftrackr.com/og-logo.png"],
+  },
+  alternates: {
+    canonical: "https://pdftrackr.com/pdf-privacy-policy",
   },
 };
 
@@ -36,7 +45,7 @@ export default function PdfPrivacyPolicyPage() {
 
         <div className="bg-white shadow-sm rounded-lg p-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">
-            PDF Privacy Policy - Secure Document Sharing & GDPR Compliance
+            PDF Privacy Policy - Simple Privacy Protection for Freelancers
           </h1>
 
           <div className="prose prose-gray max-w-none">

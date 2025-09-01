@@ -7,7 +7,7 @@ import LearnMoreSection from "@/components/LearnMoreSection";
 export const metadata: Metadata = {
   title: "Free PDF Tracking - Track PDF Views & Analytics | No Credit Card Required",
   description:
-    "Get free PDF tracking with PDFTrackr. Track PDF views, capture emails, and get analytics without paying a dime. 500MB free storage, no credit card required. Start tracking your documents today.",
+    "Free PDF tracking for freelancers and small teams. See who opens your files and what they read. 500MB included—no credit card required.",
   keywords: [
     "free PDF tracking",
     "PDF tracking free",
@@ -21,9 +21,17 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Free PDF Tracking - Track PDF Views & Analytics | No Credit Card Required",
     description:
-      "Get free PDF tracking with PDFTrackr. Track PDF views, capture emails, and get analytics without paying a dime. 500MB free storage, no credit card required.",
+      "Free PDF tracking for freelancers and small teams. See who opens your files and what they read. 500MB included—no credit card required.",
     type: "website",
     url: "https://pdftrackr.com/free-pdf-tracking",
+    images: [{ url: "https://pdftrackr.com/og-logo.png", alt: "PDFTrackr — simple PDF tracking for freelancers" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["https://pdftrackr.com/og-logo.png"],
+  },
+  alternates: {
+    canonical: "https://pdftrackr.com/free-pdf-tracking",
   },
 };
 
@@ -124,7 +132,7 @@ export default function FreePdfTrackingPage() {
 
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Free PDF Tracking - Track PDF Views & Analytics
+            Free PDF Tracking - Track PDF Views & Analytics | No Credit Card Required
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Get professional PDF tracking and analytics completely free. No credit card required, no

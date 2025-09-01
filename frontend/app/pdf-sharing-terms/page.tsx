@@ -16,10 +16,19 @@ export const metadata: Metadata = {
     "PDF tracking terms",
   ],
   openGraph: {
-    title: "PDF Sharing Terms of Service - Document Tracking & Analytics",
+    title: "PDF Sharing Terms - Simple Service Agreement for Freelancers",
     description:
-      "PDFTrackr's terms of service govern the secure sharing and tracking of PDF documents. Our platform provides professional PDF analytics while ensuring legal compliance and user protection.",
+      "Clear, straightforward terms for freelancers. Simple agreement for sharing and tracking PDFs without legal jargon.",
     type: "article",
+    url: "https://pdftrackr.com/pdf-sharing-terms",
+    images: [{ url: "https://pdftrackr.com/og-logo.png", alt: "PDFTrackr — simple PDF tracking for freelancers" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["https://pdftrackr.com/og-logo.png"],
+  },
+  alternates: {
+    canonical: "https://pdftrackr.com/pdf-sharing-terms",
   },
 };
 

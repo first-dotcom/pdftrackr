@@ -28,16 +28,42 @@ export const metadata: Metadata = {
     "PDF content optimization",
   ],
   openGraph: {
-    title: "PDF Analytics Tutorial - Master Document Insights and Performance Tracking",
+    title: "PDF Analytics Tutorial - Simple Insights for Freelancers & Small Teams",
     description:
-      "Master PDF analytics to understand document performance and optimize your content strategy. Get comprehensive analytics with 500MB free storage, no credit card required. Start analyzing your PDFs today.",
+      "Master PDF analytics without the complexity. Simple insights built for freelancers, consultants, and small teams.",
     type: "article",
+    url: "https://pdftrackr.com/pdf-analytics-tutorial",
+    images: [{ url: "https://pdftrackr.com/og-logo.png", alt: "PDFTrackr — simple PDF tracking for freelancers" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["https://pdftrackr.com/og-logo.png"],
+  },
+  alternates: {
+    canonical: "https://pdftrackr.com/pdf-analytics-tutorial",
   },
 };
 
 export default function PdfAnalyticsTutorialPage() {
+  // Article Schema structured data
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "PDF Analytics Tutorial - Simple Insights for Freelancers & Small Teams",
+    "description": "Master PDF analytics without the complexity. Simple insights built for freelancers, consultants, and small teams.",
+    "author": { "@type": "Organization", "name": "PDFTrackr" },
+    "publisher": { "@type": "Organization", "name": "PDFTrackr" },
+    "mainEntityOfPage": "https://pdftrackr.com/pdf-analytics-tutorial",
+    "dateModified": new Date().toISOString()
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Article Schema structured data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
       <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <Link href="/" className="inline-flex items-center text-gray-600 hover:text-gray-900">

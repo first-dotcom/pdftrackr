@@ -19,10 +19,19 @@ export const metadata: Metadata = {
     "cloud document system",
   ],
   openGraph: {
-    title: "Track Documents Online - Cloud-Based Document Analytics & Management",
+    title: "Track Documents Online - Simple Cloud Analytics for Freelancers",
     description:
-      "Track documents online with PDFTrackr's cloud-based platform. Access real-time analytics from anywhere, collaborate across devices, and manage document engagement through our secure web dashboard.",
+      "Track documents online with ease. Affordable cloud analytics for freelancers—no complex setup, no enterprise tools required.",
     type: "website",
+    url: "https://pdftrackr.com/track-documents-online",
+    images: [{ url: "https://pdftrackr.com/og-logo.png", alt: "PDFTrackr — simple PDF tracking for freelancers" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["https://pdftrackr.com/og-logo.png"],
+  },
+  alternates: {
+    canonical: "https://pdftrackr.com/track-documents-online",
   },
 };
 

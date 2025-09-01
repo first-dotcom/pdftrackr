@@ -20,10 +20,19 @@ export const metadata: Metadata = {
     "document analytics guide",
   ],
   openGraph: {
-    title: "How to Track PDF Views - Complete Guide to Document Analytics",
+    title: "How to Track PDF Views - Simple Guide for Freelancers & Small Businesses",
     description:
-      "Learn how to track PDF views step-by-step. Get professional PDF tracking with 500MB free storage, no credit card required. Start tracking your documents in minutes with comprehensive analytics.",
+      "Learn how to track PDF views in minutes. A simple, step-by-step guide for freelancers and small businesses. Free storage included.",
     type: "article",
+    url: "https://pdftrackr.com/how-to-track-pdf-views",
+    images: [{ url: "https://pdftrackr.com/og-logo.png", alt: "PDFTrackr — simple PDF tracking for freelancers" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["https://pdftrackr.com/og-logo.png"],
+  },
+  alternates: {
+    canonical: "https://pdftrackr.com/how-to-track-pdf-views",
   },
 };
 

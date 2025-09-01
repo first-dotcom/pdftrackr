@@ -22,8 +22,17 @@ export const metadata: Metadata = {
   openGraph: {
     title: "PDF Tracking FAQ - Common Questions About Document Analytics & Security",
     description:
-      "Get instant answers to PDF tracking questions. Learn how to track PDF views, understand privacy concerns, and master document analytics. Free PDF tracking with no credit card required.",
+      "Quick answers to PDF tracking questions. Simple, clear help for freelancers and small businesses—start tracking for free.",
     type: "article",
+    url: "https://pdftrackr.com/pdf-tracking-faq",
+    images: [{ url: "https://pdftrackr.com/og-logo.png", alt: "PDFTrackr — simple PDF tracking for freelancers" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["https://pdftrackr.com/og-logo.png"],
+  },
+  alternates: {
+    canonical: "https://pdftrackr.com/pdf-tracking-faq",
   },
 };
 
