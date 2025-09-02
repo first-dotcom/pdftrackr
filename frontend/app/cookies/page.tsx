@@ -3,6 +3,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import LearnMoreSection from "@/components/LearnMoreSection";
 
+export const metadata = {
+  title: "Cookie Policy - PDFTrackr",
+  description: "Learn how PDFTrackr uses cookies to improve the site while respecting your privacy.",
+  openGraph: {
+    title: "Cookie Policy - PDFTrackr",
+    description: "Learn how PDFTrackr uses cookies to improve the site while respecting your privacy.",
+    images: ["https://pdftrackr.com/og-logo.png"]
+  },
+  twitter: { card: "summary_large_image" },
+  alternates: { canonical: "https://pdftrackr.com/cookies" }
+} satisfies import("next").Metadata;
+
 export default function CookiesPage() {
   return (
     <div className="min-h-screen bg-gray-50">

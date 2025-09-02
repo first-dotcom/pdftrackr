@@ -8,7 +8,7 @@ import { redirect } from "next/navigation";
 export const metadata: Metadata = {
   title: "PDF Data Rights - GDPR Compliance for Document Sharing",
   description:
-    "Exercise your GDPR data rights for PDF documents shared through PDFTrackr. Request access, deletion, or export of your personal data and document analytics.",
+    "Exercise your GDPR data rights for PDFs shared via PDFTrackr. Request access, deletion, or export of your personal data and related document analytics.",
   keywords: [
     "PDF data rights",
     "GDPR PDF tool",
@@ -20,9 +20,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: "PDF Data Rights - GDPR Compliance for Document Sharing",
     description:
-      "Exercise your GDPR data rights for PDF documents shared through PDFTrackr. Request access, deletion, or export of your personal data and document analytics.",
+      "Exercise your GDPR data rights for PDFs shared via PDFTrackr. Request access, deletion, or export of your personal data and related document analytics.",
     type: "article",
     url: "https://pdftrackr.com/data-rights",
+    images: ["https://pdftrackr.com/og-logo.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
   },
   alternates: {
     canonical: "https://pdftrackr.com/data-rights",

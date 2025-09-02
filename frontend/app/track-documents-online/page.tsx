@@ -7,7 +7,7 @@ import LearnMoreSection from "@/components/LearnMoreSection";
 export const metadata: Metadata = {
   title: "Track Documents Online - Simple Cloud Analytics for Freelancers",
   description:
-    "Track documents online with ease. Affordable cloud analytics for freelancers—no complex setup, no enterprise tools required.",
+    "Track documents online with ease. Affordable cloud analytics for freelancers—no complex setup, no big-company software required.",
   keywords: [
     "track documents online",
     "online document tracking",
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Track Documents Online - Simple Cloud Analytics for Freelancers",
     description:
-      "Track documents online with ease. Affordable cloud analytics for freelancers—no complex setup, no enterprise tools required.",
+      "Track documents online with ease. Affordable cloud analytics for freelancers—no complex setup, no big-company software required.",
     type: "website",
     url: "https://pdftrackr.com/track-documents-online",
     images: [{ url: "https://pdftrackr.com/og-logo.png", alt: "PDFTrackr — simple PDF tracking for freelancers" }],
@@ -70,7 +70,7 @@ const features = [
     icon: Shield,
     title: "Secure Cloud Storage",
     description:
-      "Your documents are stored securely in the cloud with enterprise-grade encryption. Automatic backups and virus scanning keep your data safe.",
+      "Your documents are stored securely in the cloud with industry-standard encryption. Automatic backups and virus scanning keep your data safe.",
   },
   {
     icon: Clock,
@@ -126,7 +126,7 @@ const useCases = [
   },
   {
     icon: "🏢",
-    title: "Enterprise Organizations",
+    title: "Agencies & Small Teams",
     description: "Manage compliance documents, track policy distribution, and monitor internal communication effectiveness.",
     color: "bg-purple-100",
     textColor: "text-purple-600",
@@ -292,7 +292,7 @@ export default function TrackDocumentsOnlinePage() {
                 How secure is the cloud platform?
               </h3>
               <p className="text-gray-600">
-                PDFTrackr uses enterprise-grade security with TLS encryption, automatic virus scanning, and secure cloud infrastructure. Your documents are protected with the same security standards used by major corporations.
+                PDFTrackr uses industry-standard security with TLS encryption, automatic virus scanning, and secure cloud infrastructure. Your documents are protected with the same security standards used by major corporations.
               </p>
             </div>
             <div>

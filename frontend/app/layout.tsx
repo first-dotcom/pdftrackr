@@ -9,11 +9,11 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "PDFTrackr - PDF Tracking & Analytics | Secure Document Sharing Platform",
+    default: "PDF Tracking & Analytics - Simple Document Sharing for Freelancers",
     template: "%s | PDFTrackr",
   },
   description:
-    "PDFTrackr provides professional PDF tracking and analytics to see who's reading your documents. Track PDF views, capture emails, and control access with our secure sharing platform. 500MB free storage, no credit card required.",
+    "Track who reads your PDFs with page-by-page insights and secure sharing. Built for freelancers and small teams. Free 500MB, no credit card.",
   keywords: [
     "PDF tracking",
     "PDF analytics",
@@ -42,19 +42,19 @@ export const metadata: Metadata = {
   },
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://pdftrackr.com"),
   alternates: {
-    canonical: "/",
+    canonical: "https://pdftrackr.com/",
   },
   openGraph: {
     type: "website",
     locale: "en_US",
     url: process.env.NEXT_PUBLIC_APP_URL || "https://pdftrackr.com",
-    title: "PDFTrackr - PDF Tracking & Analytics | Secure Document Sharing Platform",
+    title: "PDF Tracking & Analytics - Simple Document Sharing for Freelancers",
     description:
-      "Track PDF views, capture emails, and control access with our secure sharing platform. Professional PDF analytics with 500MB free storage.",
+      "Track who reads your PDFs with page-by-page insights and secure sharing. Built for freelancers and small teams. Free 500MB, no credit card.",
     siteName: "PDFTrackr",
     images: [
       {
-        url: "https://pdftrackr.com/logo.png",
+        url: "https://pdftrackr.com/og-logo.png",
         width: 1200,
         height: 630,
         alt: "PDFTrackr - PDF Tracking and Analytics Platform",
@@ -63,10 +63,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "PDFTrackr - PDF Tracking & Analytics | Secure Document Sharing Platform",
+    title: "PDF Tracking & Analytics - Simple Document Sharing for Freelancers",
     description:
-      "Track PDF views, capture emails, and control access with our secure sharing platform. Professional PDF analytics with 500MB free storage.",
-    images: ["https://pdftrackr.com/logo.png"],
+      "Track who reads your PDFs with page-by-page insights and secure sharing. Built for freelancers and small teams. Free 500MB, no credit card.",
+    images: ["https://pdftrackr.com/og-logo.png"],
     creator: "@pdftrackr",
   },
   robots: {

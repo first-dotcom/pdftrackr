@@ -19,11 +19,11 @@ import CTAButton from "@/components/CTAButton";
 export const metadata: Metadata = {
   title: "Document Tracking System - Simple PDF Analytics for Freelancers & Small Teams",
   description:
-    "Track client documents with simple PDF analytics. Built for freelancers and small teams who need insights without enterprise complexity.",
+    "Track client documents with simple PDF analytics. Built for freelancers and small teams who need insights without big-company complexity.",
   keywords: [
     "document tracking system",
     "PDF tracking system",
-    "enterprise document analytics",
+            "document analytics for teams",
     "document management system",
     "PDF analytics platform",
     "document tracking software",
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Document Tracking System - Simple PDF Analytics for Freelancers & Small Teams",
     description:
-      "Track client documents with simple PDF analytics. Built for freelancers and small teams who need insights without enterprise complexity.",
+      "Track client documents with simple PDF analytics. Built for freelancers and small teams who need insights without big-company complexity.",
     type: "website",
     url: "https://pdftrackr.com/document-tracking-system",
     images: [{ url: "https://pdftrackr.com/og-logo.png", alt: "PDFTrackr — simple PDF tracking for freelancers" }],
@@ -80,9 +80,9 @@ const systemFeatures = [
   },
   {
     icon: Shield,
-    title: "Enterprise Security",
+    title: "Security & Privacy",
     description:
-      "Bank-level security with encryption, access controls, and compliance features. Protect sensitive documents with enterprise-grade security protocols.",
+      "Bank-level security with encryption, access controls, and compliance features. Protect sensitive documents with industry-standard security practices.",
   },
   {
     icon: TrendingUp,
@@ -100,9 +100,9 @@ const systemFeatures = [
 
 const enterpriseCapabilities = [
   {
-    title: "Scalable Infrastructure",
+    title: "Simple & Reliable",
     description:
-      "Handle thousands of documents and users with our enterprise-grade infrastructure.",
+      "Handle thousands of documents and users with our reliable, cloud-hosted infrastructure.",
     icon: CheckCircle,
   },
   {
@@ -159,9 +159,9 @@ const workflowStages = [
 const useCases = [
   {
     icon: "🏢",
-    title: "Enterprise Organizations",
+    title: "Agencies & Growing Teams",
     description:
-      "Manage compliance documents, track policy distribution, and monitor internal communication across large organizations.",
+      "Manage compliance documents, track policy distribution, and monitor internal communication across growing teams.",
     color: "bg-blue-100",
     textColor: "text-blue-600",
   },
@@ -207,7 +207,7 @@ export default function DocumentTrackingSystemPage() {
             Document Tracking System - Simple PDF Analytics for Freelancers & Small Teams
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Track your client documents with ease. Get powerful analytics without the enterprise
+            Track your client documents with ease. Get powerful analytics without the complexity
             complexity. Perfect for consultants, solopreneurs, and small teams who need to
             understand document engagement.
           </p>
@@ -219,7 +219,7 @@ export default function DocumentTrackingSystemPage() {
             Start Using Our Document Tracking System Today
           </h2>
           <p className="text-lg mb-6 opacity-90">
-            Enterprise-grade platform • Systematic workflows • Bulk management • 500MB free storage
+            Reliable platform • Systematic workflows • Bulk management • 500MB free storage
           </p>
           <CTAButton size="lg" variant="secondary">
             Get Started Free
@@ -265,10 +265,10 @@ export default function DocumentTrackingSystemPage() {
           </div>
         </div>
 
-        {/* Enterprise Capabilities */}
+        {/* Built for Freelancers & Small Teams */}
         <div className="bg-white rounded-lg p-8 mb-16 shadow-sm">
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
-            Enterprise-Grade Capabilities
+            Built for Freelancers & Small Teams
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {enterpriseCapabilities.map((capability, index) => (
@@ -286,7 +286,7 @@ export default function DocumentTrackingSystemPage() {
         {/* Use Cases */}
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
-            Perfect for Enterprise Use Cases
+            Perfect for Client Work & Small Teams
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {useCases.map((useCase, index) => (
@@ -363,7 +363,7 @@ export default function DocumentTrackingSystemPage() {
                   <td className="py-4 px-4 text-center text-gray-600">Manual</td>
                 </tr>
                 <tr className="border-b border-gray-100">
-                  <td className="py-4 px-4 font-medium text-gray-900">Enterprise Security</td>
+                  <td className="py-4 px-4 font-medium text-gray-900">Security & Privacy</td>
                   <td className="py-4 px-4 text-center">
                     <span className="inline-flex items-center">
                       Bank-Level
@@ -426,12 +426,12 @@ export default function DocumentTrackingSystemPage() {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Is the system suitable for enterprise organizations?
+                Is the system suitable for growing teams and agencies?
               </h3>
               <p className="text-gray-600">
-                Yes! PDFTrackr is built for enterprise use with scalable infrastructure, API
+                Yes! PDFTrackr is built for growing teams with reliable infrastructure, API
                 integration capabilities, custom branding options, and compliance-ready features.
-                Our system can handle thousands of documents and users with enterprise-grade
+                Our system can handle thousands of documents and users with industry-standard
                 security.
               </p>
             </div>
@@ -493,7 +493,7 @@ export default function DocumentTrackingSystemPage() {
             Ready to Implement Our Document Tracking System?
           </h2>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Join enterprise organizations that trust PDFTrackr for their document tracking needs.
+            Join growing teams and agencies that trust PDFTrackr for their document tracking needs.
             Get started with our systematic approach to document management and analytics.
           </p>
           <Link

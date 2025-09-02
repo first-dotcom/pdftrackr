@@ -5,7 +5,7 @@ import CTAButton from "@/components/CTAButton";
 import LearnMoreSection from "@/components/LearnMoreSection";
 
 export const metadata: Metadata = {
-  title: "Secure PDF Sharing Guide - Protect Your Documents with Professional Tools",
+  title: "Secure PDF Sharing Guide - Simple Protection for Freelancer Documents",
   description:
     "Keep client PDFs secure without the hassle. Simple, affordable sharing tools for freelancers and small teams.",
   keywords: [
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     "document protection guide",
   ],
   openGraph: {
-    title: "Secure PDF Sharing Guide - Protect Your Documents with Professional Tools",
+    title: "Secure PDF Sharing Guide - Simple Protection for Freelancer Documents",
     description:
       "Keep client PDFs secure without the hassle. Simple, affordable sharing tools for freelancers and small teams.",
     type: "article",
@@ -40,7 +40,7 @@ export default function SecurePdfSharingGuidePage() {
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": "Article",
-    "headline": "Secure PDF Sharing Guide - Protect Your Documents with Professional Tools",
+    "headline": "Secure PDF Sharing Guide - Simple Protection for Freelancer Documents",
     "description": "Keep client PDFs secure without the hassle. Simple, affordable sharing tools for freelancers and small teams.",
     "author": { "@type": "Organization", "name": "PDFTrackr" },
     "publisher": { "@type": "Organization", "name": "PDFTrackr" },
@@ -65,7 +65,7 @@ export default function SecurePdfSharingGuidePage() {
 
         <div className="bg-white shadow-sm rounded-lg p-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">
-            Secure PDF Sharing Guide - Protect Your Documents with Professional Tools
+            Secure PDF Sharing Guide - Simple Protection for Freelancer Documents
           </h1>
 
           <div className="prose prose-gray max-w-none">
@@ -82,7 +82,7 @@ export default function SecurePdfSharingGuidePage() {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm text-blue-700">
-                    <strong>Security First:</strong> PDFTrackr provides enterprise-grade security
+                    <strong>Security First:</strong> PDFTrackr provides industry-standard security
                     for your PDF documents with virus scanning, encryption, and comprehensive access
                     controls.
                   </p>
@@ -356,7 +356,7 @@ export default function SecurePdfSharingGuidePage() {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm text-green-700">
-                    <strong>Secure Your Documents:</strong> PDFTrackr provides enterprise-grade
+                    <strong>Secure Your Documents:</strong> PDFTrackr provides industry-standard
                     security with 500MB free storage. Start protecting your PDFs today with
                     professional security features.
                   </p>
