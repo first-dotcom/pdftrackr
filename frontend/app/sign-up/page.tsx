@@ -78,6 +78,7 @@ export default function Page() {
             },
           }}
           redirectUrl="/dashboard"
+          afterSignUpUrl="/dashboard"
         />
       </div>
     </div>

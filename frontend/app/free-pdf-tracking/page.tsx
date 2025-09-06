@@ -117,6 +117,18 @@ const comparisonData = [
     competitors: "Limited",
     winner: "pdfTrackr",
   },
+  {
+    feature: "GDPR Compliance",
+    pdfTrackr: "Built-in",
+    competitors: "Limited",
+    winner: "pdfTrackr",
+  },
+  {
+    feature: "Page-by-Page Analytics",
+    pdfTrackr: "Included",
+    competitors: "Premium Feature",
+    winner: "pdfTrackr",
+  },
 ];
 
 export default function FreePdfTrackingPage() {
@@ -331,8 +343,8 @@ export default function FreePdfTrackingPage() {
                 What happens when I reach 500MB?
               </h3>
               <p className="text-gray-600">
-                You can delete old files to free up space, or wait for our Pro plans to launch in Q4
-                2025 for unlimited storage and advanced features.
+                You can delete old files to free up space. We're working on premium plans with more storage
+                and advanced features - join our waitlist to be notified when they become available.
               </p>
             </div>
           </div>

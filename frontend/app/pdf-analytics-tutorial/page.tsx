@@ -319,22 +319,22 @@ export default function PdfAnalyticsTutorialPage() {
               live engagement, identify trending content, and respond quickly to audience behavior.
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">Custom Reporting</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">Data Retention & Privacy</h3>
             <p className="text-gray-600 mb-4">
-              Create customized reports tailored to your specific needs. Export data for further
-              analysis, generate stakeholder reports, and integrate with other analytics tools.
+              PDFTrackr automatically manages data retention with GDPR-compliant policies. Analytics data
+              is retained for 30 days for sessions and 26 months for summaries, with automatic cleanup.
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">A/B Testing</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">Geographic Insights</h3>
             <p className="text-gray-600 mb-4">
-              Test different versions of your PDFs to optimize performance. Compare engagement
-              metrics, identify winning content, and continuously improve your document strategy.
+              Understand where your audience is located with country-level geographic data. This helps
+              you optimize content for specific regions and understand your global reach.
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">Predictive Analytics</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">Device & Browser Analytics</h3>
             <p className="text-gray-600 mb-4">
-              Use historical data to predict future performance and optimize content strategy.
-              Identify trends, forecast engagement, and make data-driven content decisions.
+              Track how your documents are accessed across different devices and browsers. Understand
+              your audience's technology preferences and optimize accordingly.
             </p>
 
             <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">

@@ -125,9 +125,9 @@ const faqData = [
           "PDFTrackr's email gating feature requires viewers to provide their email address before accessing your document. This is perfect for lead generation and building your email list. The email capture is GDPR-compliant and includes consent management features.",
       },
       {
-        question: "Can I integrate PDF tracking with my CRM?",
+        question: "Can I export my analytics data?",
         answer:
-          "Yes, PDFTrackr provides export capabilities that allow you to integrate tracking data with your existing CRM systems. You can export viewer information, engagement metrics, and lead data to streamline your sales and marketing processes.",
+          "Currently, PDFTrackr provides comprehensive analytics within the dashboard. We're working on export capabilities for future updates. Join our waitlist to be notified when this feature becomes available.",
       },
       {
         question: "Is email capture mandatory for PDF access?",
@@ -151,9 +151,9 @@ const faqData = [
           "Our free plan includes 500MB storage, password protection, email capture, basic analytics, virus scanning, and GDPR compliance. You can track unlimited documents and get started immediately without any payment information.",
       },
       {
-        question: "When will Pro plans be available?",
+        question: "When will premium plans be available?",
         answer:
-          "PDFTrackr Pro plans will launch in Q4 2025 with advanced features including unlimited storage, priority support, advanced analytics, custom branding, and API access. Join our waitlist to be notified when Pro plans become available.",
+          "We're working on premium plans with advanced features including more storage, priority support, and additional analytics capabilities. Join our waitlist to be notified when these plans become available.",
       },
     ],
   },
@@ -210,7 +210,7 @@ export default function FAQPage() {
         "name": "What analytics can I see with PDF tracking?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "PDFTrackr provides comprehensive analytics including total views, unique visitors, average session duration, page-by-page engagement, geographic distribution, device and browser information, and completion rates. You can export this data for further analysis and reporting."
+          "text": "PDFTrackr provides comprehensive analytics including total views, unique visitors, average session duration, page-by-page engagement, geographic distribution, device and browser information, and completion rates. Analytics are available within the dashboard with automatic data retention policies."
         }
       },
       {
@@ -226,7 +226,7 @@ export default function FAQPage() {
         "name": "Is PDF tracking free?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes! PDFTrackr offers a generous free plan with 500MB storage, basic tracking features, and essential analytics. No credit card is required to get started. For advanced features and higher storage limits, we offer Pro plans starting Q4 2025."
+          "text": "Yes! PDFTrackr offers a generous free plan with 500MB storage, comprehensive tracking features, and essential analytics. No credit card is required to get started. We're working on premium plans with additional features - join our waitlist to be notified when they become available."
         }
       },
       {

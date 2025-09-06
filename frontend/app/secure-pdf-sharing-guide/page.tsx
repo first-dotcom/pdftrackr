@@ -279,11 +279,11 @@ export default function SecurePdfSharingGuidePage() {
             </p>
 
             <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
-              Geographic Restrictions
+              GDPR Compliance
             </h3>
             <p className="text-gray-600 mb-4">
-              Restrict document access based on geographic location, ensuring compliance with
-              regional data protection regulations.
+              Built-in GDPR compliance with automatic data retention policies, IP address hashing,
+              and user consent management for European users.
             </p>
 
             <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">

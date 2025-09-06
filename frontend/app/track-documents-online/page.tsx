@@ -1,6 +1,7 @@
-import { ArrowLeft, BarChart3, CheckCircle, Clock, Cloud, Globe, Monitor, Shield, Smartphone, Users } from "lucide-react";
+import { ArrowLeft, BarChart3, CheckCircle, Clock, Cloud, Globe, Lock, Monitor, Shield, Smartphone, Users } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import React from "react";
 import CTAButton from "@/components/CTAButton";
 import LearnMoreSection from "@/components/LearnMoreSection";
 
@@ -61,12 +62,6 @@ const features = [
       "Access your document analytics on any device - desktop, tablet, or mobile. Our responsive design ensures optimal viewing and management from anywhere.",
   },
   {
-    icon: Users,
-    title: "Team Collaboration",
-    description:
-      "Share analytics with team members and collaborate on document strategies. Control access levels and manage permissions for different users.",
-  },
-  {
     icon: Shield,
     title: "Secure Cloud Storage",
     description:
@@ -80,9 +75,15 @@ const features = [
   },
   {
     icon: BarChart3,
-    title: "Advanced Reporting",
+    title: "Comprehensive Analytics",
     description:
-      "Generate comprehensive reports on document performance, user engagement, and analytics trends. Export data for further analysis and presentation.",
+      "Track document performance, user engagement, and analytics trends. View detailed insights on views, duration, geographic data, and page-by-page engagement.",
+  },
+  {
+    icon: Lock,
+    title: "Security Features",
+    description:
+      "Password protection, email gating, link expiration, and download controls. Every document is virus-scanned and encrypted for maximum security.",
   },
 ];
 
@@ -112,29 +113,29 @@ const benefits = [
 const useCases = [
   {
     icon: "💼",
-    title: "Business Teams",
-    description: "Track proposal engagement, monitor report distribution, and analyze presentation performance across your organization.",
+    title: "Freelancers & Consultants",
+    description: "Track client document engagement, monitor proposal views, and understand which content resonates with your audience.",
     color: "bg-blue-100",
     textColor: "text-blue-600",
   },
   {
     icon: "📚",
-    title: "Educational Institutions",
-    description: "Monitor student engagement with course materials, track assignment submissions, and analyze learning resource usage.",
+    title: "Educators & Trainers",
+    description: "Monitor student engagement with course materials and understand which content gets the most attention.",
     color: "bg-green-100",
     textColor: "text-green-600",
   },
   {
     icon: "🏢",
-    title: "Agencies & Small Teams",
-    description: "Manage compliance documents, track policy distribution, and monitor internal communication effectiveness.",
+    title: "Small Business Owners",
+    description: "Track marketing materials, monitor lead generation documents, and optimize content based on viewer engagement.",
     color: "bg-purple-100",
     textColor: "text-purple-600",
   },
   {
     icon: "📈",
-    title: "Marketing Teams",
-    description: "Track lead magnet performance, monitor whitepaper engagement, and analyze content marketing effectiveness.",
+    title: "Content Creators",
+    description: "Monitor whitepaper performance, track lead magnet engagement, and optimize content strategy based on analytics.",
     color: "bg-orange-100",
     textColor: "text-orange-600",
   },
@@ -184,7 +185,7 @@ export default function TrackDocumentsOnlinePage() {
             {features.map((feature, index) => (
               <div key={index} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
                 <div className="flex items-center mb-4">
-                  <feature.icon className="h-8 w-8 text-primary-600 mr-3" />
+                  {React.createElement(feature.icon as React.ComponentType<any>, { className: "h-8 w-8 text-primary-600 mr-3" })}
                   <h3 className="text-lg font-semibold text-gray-900">{feature.title}</h3>
                 </div>
                 <p className="text-gray-600">{feature.description}</p>
@@ -297,10 +298,10 @@ export default function TrackDocumentsOnlinePage() {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Can multiple team members access the same analytics?
+                Is the platform suitable for individual users?
               </h3>
               <p className="text-gray-600">
-                Yes! You can share access with team members and control their permissions. Everyone can view the same analytics dashboard and collaborate on document strategies.
+                Yes! PDFTrackr is designed specifically for individual users, freelancers, and small teams. The platform is simple to use and doesn't require technical expertise to get started.
               </p>
             </div>
           </div>

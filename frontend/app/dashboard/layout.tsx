@@ -28,9 +28,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     );
   }
 
-  // Redirect unauthenticated users to sign in
+  // Redirect unauthenticated users to home page
   if (!userId) {
-    redirect("/sign-in");
+    redirect("/");
   }
 
   const handleMobileSidebarOpen = () => setIsMobileSidebarOpen(true);

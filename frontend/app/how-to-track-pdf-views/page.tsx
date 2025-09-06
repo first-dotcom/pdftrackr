@@ -173,6 +173,7 @@ export default function HowToTrackPdfViewsPage() {
               <li>Device and browser analytics</li>
               <li>Email capture capabilities</li>
               <li>Security features like password protection</li>
+              <li>GDPR compliance and data privacy</li>
             </ul>
 
             <h3 id="step2" className="text-xl font-semibold text-gray-900 mt-6 mb-3">
@@ -281,10 +282,10 @@ export default function HowToTrackPdfViewsPage() {
               document engagement as it happens.
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">Export and Reporting</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">Data Retention & Privacy</h3>
             <p className="text-gray-600 mb-4">
-              Export your analytics data for further analysis. Generate reports for stakeholders or
-              integrate with your existing analytics tools.
+              PDFTrackr automatically manages data retention with GDPR-compliant policies. Analytics data
+              is retained for 30 days for sessions and 26 months for summaries, with automatic cleanup.
             </p>
 
             <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">

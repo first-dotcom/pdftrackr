@@ -6,6 +6,7 @@ export default authMiddleware({
     "/",
     "/sign-in",
     "/sign-up",
+    "/sso-callback",
     "/document-tracking-system",
     "/track-documents-online",
     "/free-pdf-tracking",

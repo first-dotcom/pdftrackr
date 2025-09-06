@@ -52,73 +52,61 @@ const systemFeatures = [
     icon: Database,
     title: "Centralized Management",
     description:
-      "Manage all your documents from a single, unified dashboard. Organize files, track performance, and maintain control across your entire document ecosystem.",
+      "Manage all your documents from a single, unified dashboard. Organize files, track performance, and maintain control across your document collection.",
   },
   {
     icon: BarChart3,
-    title: "Systematic Analytics",
+    title: "Simple Analytics",
     description:
-      "Comprehensive analytics system that tracks every aspect of document performance. Monitor engagement patterns, user behavior, and content effectiveness with detailed reporting.",
-  },
-  {
-    icon: Users,
-    title: "Multi-User Access",
-    description:
-      "Grant access to team members with role-based permissions. Collaborate on document strategies while maintaining security and control over sensitive information.",
+      "Track document views, engagement time, and geographic data. Monitor which pages get the most attention and understand your audience better.",
   },
   {
     icon: FileText,
-    title: "Bulk Operations",
+    title: "Secure File Management",
     description:
-      "Upload and manage multiple documents simultaneously. Apply tracking settings, security policies, and analytics configurations across entire document sets.",
-  },
-  {
-    icon: Settings,
-    title: "Workflow Automation",
-    description:
-      "Automate document tracking workflows with customizable rules and policies. Set up automatic notifications, access controls, and reporting schedules.",
+      "Upload and manage PDF documents with built-in security. Each file is virus-scanned and stored securely with access controls.",
   },
   {
     icon: Shield,
     title: "Security & Privacy",
     description:
-      "Bank-level security with encryption, access controls, and compliance features. Protect sensitive documents with industry-standard security practices.",
+      "Bank-level security with encryption, password protection, and GDPR compliance. Protect sensitive documents with industry-standard security practices.",
   },
   {
     icon: TrendingUp,
-    title: "Performance Optimization",
+    title: "Performance Insights",
     description:
-      "Systematically optimize document performance based on analytics data. Identify trends, improve content strategy, and maximize engagement across all documents.",
+      "Understand document performance with view counts, session duration, and page-by-page analytics. Identify which content resonates with your audience.",
   },
   {
     icon: Zap,
-    title: "Real-Time Monitoring",
+    title: "Real-Time Tracking",
     description:
-      "Monitor document activity in real-time with instant notifications and live analytics. Stay informed about document engagement as it happens.",
+      "Monitor document activity in real-time with live analytics. See who's viewing your documents and how they interact with your content.",
   },
 ];
 
-const enterpriseCapabilities = [
+const currentCapabilities = [
   {
     title: "Simple & Reliable",
     description:
-      "Handle thousands of documents and users with our reliable, cloud-hosted infrastructure.",
+      "Reliable, cloud-hosted infrastructure designed for individual users and small teams.",
     icon: CheckCircle,
   },
   {
-    title: "API Integration",
-    description: "Integrate with your existing systems through our comprehensive API and webhooks.",
+    title: "GDPR Compliant",
+    description: "Built-in privacy controls and data retention policies to meet GDPR requirements.",
     icon: CheckCircle,
   },
   {
-    title: "Custom Branding",
-    description: "White-label the platform with your company branding and custom domain support.",
+    title: "Secure by Default",
+    description: "Every document is virus-scanned and encrypted with industry-standard security.",
     icon: CheckCircle,
   },
   {
-    title: "Compliance Ready",
+    title: "Easy to Use",
     description:
-      "Meet GDPR, HIPAA, and other regulatory requirements with built-in compliance features.",
+      "Intuitive interface designed for freelancers and small teams who need simple document tracking.",
     icon: CheckCircle,
   },
 ];
@@ -126,66 +114,66 @@ const enterpriseCapabilities = [
 const workflowStages = [
   {
     step: "1",
-    title: "Document Upload & Organization",
+    title: "Upload Your PDF",
     description:
-      "Upload documents to the system and organize them with custom categories, tags, and metadata for systematic management.",
+      "Upload your PDF document to our secure platform. Files are automatically virus-scanned and prepared for tracking.",
   },
   {
     step: "2",
-    title: "Tracking Configuration",
+    title: "Configure Security Settings",
     description:
-      "Configure tracking parameters, security settings, and access controls for each document or document group.",
+      "Set up password protection, email gating, link expiration, and download controls for your document.",
   },
   {
     step: "3",
-    title: "Distribution & Sharing",
+    title: "Share Securely",
     description:
-      "Share documents through secure links, email campaigns, or direct integration with your existing communication systems.",
+      "Generate a secure sharing link and distribute it to your audience. All access is tracked and monitored.",
   },
   {
     step: "4",
-    title: "Analytics & Monitoring",
+    title: "Monitor Analytics",
     description:
-      "Monitor real-time analytics, track engagement patterns, and generate comprehensive reports on document performance.",
+      "Track views, engagement time, geographic data, and page-by-page analytics in real-time through your dashboard.",
   },
   {
     step: "5",
-    title: "Optimization & Iteration",
+    title: "Optimize Content",
     description:
-      "Use analytics insights to optimize content, improve engagement, and refine your document strategy systematically.",
+      "Use analytics insights to understand which content resonates with your audience and improve future documents.",
   },
 ];
 
 const useCases = [
   {
-    icon: "🏢",
-    title: "Agencies & Growing Teams",
+    icon: "💼",
+    title: "Freelancers & Consultants",
     description:
-      "Manage compliance documents, track policy distribution, and monitor internal communication across growing teams.",
+      "Track client document engagement, monitor proposal views, and understand which content resonates with your audience.",
     color: "bg-blue-100",
     textColor: "text-blue-600",
   },
   {
     icon: "📊",
-    title: "Marketing Teams",
+    title: "Small Business Owners",
     description:
-      "Track campaign materials, monitor lead magnet performance, and optimize content strategy with systematic analytics.",
+      "Monitor marketing materials, track lead generation documents, and optimize content based on viewer engagement.",
     color: "bg-green-100",
     textColor: "text-green-600",
   },
   {
     icon: "🎓",
-    title: "Educational Institutions",
+    title: "Educators & Trainers",
     description:
-      "Manage course materials, track student engagement, and optimize educational content delivery across departments.",
+      "Track student engagement with course materials and understand which content gets the most attention.",
     color: "bg-purple-100",
     textColor: "text-purple-600",
   },
   {
-    icon: "⚖️",
-    title: "Legal & Compliance",
+    icon: "📈",
+    title: "Content Creators",
     description:
-      "Track legal document distribution, monitor compliance materials, and maintain audit trails for regulatory requirements.",
+      "Monitor whitepaper performance, track lead magnet engagement, and optimize content strategy based on analytics.",
     color: "bg-orange-100",
     textColor: "text-orange-600",
   },
@@ -207,9 +195,8 @@ export default function DocumentTrackingSystemPage() {
             Document Tracking System - Simple PDF Analytics for Freelancers & Small Teams
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Track your client documents with ease. Get powerful analytics without the complexity
-            complexity. Perfect for consultants, solopreneurs, and small teams who need to
-            understand document engagement.
+            Track your client documents with ease. Get powerful analytics without the complexity.
+            Perfect for consultants, solopreneurs, and small teams who need to understand document engagement.
           </p>
         </div>
 
@@ -219,7 +206,7 @@ export default function DocumentTrackingSystemPage() {
             Start Using Our Document Tracking System Today
           </h2>
           <p className="text-lg mb-6 opacity-90">
-            Reliable platform • Systematic workflows • Bulk management • 500MB free storage
+            Reliable platform • Simple workflows • Secure sharing • 500MB free storage
           </p>
           <CTAButton size="lg" variant="secondary">
             Get Started Free
@@ -271,7 +258,7 @@ export default function DocumentTrackingSystemPage() {
             Built for Freelancers & Small Teams
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {enterpriseCapabilities.map((capability, index) => (
+            {currentCapabilities.map((capability, index) => (
               <div key={index} className="flex items-start">
                 <capability.icon className="h-6 w-6 text-green-500 mr-3 mt-1 flex-shrink-0" />
                 <div>
@@ -286,7 +273,7 @@ export default function DocumentTrackingSystemPage() {
         {/* Use Cases */}
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
-            Perfect for Client Work & Small Teams
+            Perfect for Individual Users & Small Teams
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {useCases.map((useCase, index) => (
@@ -323,47 +310,27 @@ export default function DocumentTrackingSystemPage() {
               </thead>
               <tbody>
                 <tr className="border-b border-gray-100">
-                  <td className="py-4 px-4 font-medium text-gray-900">Bulk Document Management</td>
+                  <td className="py-4 px-4 font-medium text-gray-900">Document Management</td>
                   <td className="py-4 px-4 text-center">
                     <span className="inline-flex items-center">
-                      Included
-                      <CheckCircle className="h-5 w-5 text-green-500 ml-2" />
-                    </span>
-                  </td>
-                  <td className="py-4 px-4 text-center text-gray-600">Limited</td>
-                </tr>
-                <tr className="border-b border-gray-100">
-                  <td className="py-4 px-4 font-medium text-gray-900">Systematic Analytics</td>
-                  <td className="py-4 px-4 text-center">
-                    <span className="inline-flex items-center">
-                      Comprehensive
+                      Simple & Secure
                       <CheckCircle className="h-5 w-5 text-green-500 ml-2" />
                     </span>
                   </td>
                   <td className="py-4 px-4 text-center text-gray-600">Basic</td>
                 </tr>
                 <tr className="border-b border-gray-100">
-                  <td className="py-4 px-4 font-medium text-gray-900">Multi-User Access</td>
+                  <td className="py-4 px-4 font-medium text-gray-900">Analytics & Tracking</td>
                   <td className="py-4 px-4 text-center">
                     <span className="inline-flex items-center">
-                      Role-Based
+                      Comprehensive
                       <CheckCircle className="h-5 w-5 text-green-500 ml-2" />
                     </span>
                   </td>
-                  <td className="py-4 px-4 text-center text-gray-600">Single User</td>
+                  <td className="py-4 px-4 text-center text-gray-600">Limited</td>
                 </tr>
                 <tr className="border-b border-gray-100">
-                  <td className="py-4 px-4 font-medium text-gray-900">Workflow Automation</td>
-                  <td className="py-4 px-4 text-center">
-                    <span className="inline-flex items-center">
-                      Advanced
-                      <CheckCircle className="h-5 w-5 text-green-500 ml-2" />
-                    </span>
-                  </td>
-                  <td className="py-4 px-4 text-center text-gray-600">Manual</td>
-                </tr>
-                <tr className="border-b border-gray-100">
-                  <td className="py-4 px-4 font-medium text-gray-900">Security & Privacy</td>
+                  <td className="py-4 px-4 font-medium text-gray-900">Security Features</td>
                   <td className="py-4 px-4 text-center">
                     <span className="inline-flex items-center">
                       Bank-Level
@@ -373,14 +340,34 @@ export default function DocumentTrackingSystemPage() {
                   <td className="py-4 px-4 text-center text-gray-600">Basic</td>
                 </tr>
                 <tr className="border-b border-gray-100">
-                  <td className="py-4 px-4 font-medium text-gray-900">API Integration</td>
+                  <td className="py-4 px-4 font-medium text-gray-900">GDPR Compliance</td>
                   <td className="py-4 px-4 text-center">
                     <span className="inline-flex items-center">
-                      Full API
+                      Built-in
                       <CheckCircle className="h-5 w-5 text-green-500 ml-2" />
                     </span>
                   </td>
                   <td className="py-4 px-4 text-center text-gray-600">Limited</td>
+                </tr>
+                <tr className="border-b border-gray-100">
+                  <td className="py-4 px-4 font-medium text-gray-900">Free Storage</td>
+                  <td className="py-4 px-4 text-center">
+                    <span className="inline-flex items-center">
+                      500MB
+                      <CheckCircle className="h-5 w-5 text-green-500 ml-2" />
+                    </span>
+                  </td>
+                  <td className="py-4 px-4 text-center text-gray-600">50-100MB</td>
+                </tr>
+                <tr className="border-b border-gray-100">
+                  <td className="py-4 px-4 font-medium text-gray-900">Ease of Use</td>
+                  <td className="py-4 px-4 text-center">
+                    <span className="inline-flex items-center">
+                      Simple Setup
+                      <CheckCircle className="h-5 w-5 text-green-500 ml-2" />
+                    </span>
+                  </td>
+                  <td className="py-4 px-4 text-center text-gray-600">Complex</td>
                 </tr>
               </tbody>
             </table>
@@ -395,44 +382,42 @@ export default function DocumentTrackingSystemPage() {
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Can I manage multiple documents at once?
+                How does the document tracking workflow work?
               </h3>
               <p className="text-gray-600">
-                Yes! PDFTrackr's document tracking system supports bulk operations. You can upload
-                multiple documents, apply tracking settings across entire document sets, and manage
-                them systematically from a single dashboard.
+                Our system follows a simple 5-step workflow: upload your PDF, configure security settings,
+                share securely, monitor analytics, and optimize based on insights. This straightforward
+                approach makes document tracking accessible for individual users and small teams.
               </p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                How does the systematic workflow work?
+                What analytics can I see for my documents?
               </h3>
               <p className="text-gray-600">
-                Our system follows a structured 5-stage workflow: upload and organize, configure
-                tracking, distribute and share, monitor analytics, and optimize based on insights.
-                This systematic approach ensures consistent document management across your
-                organization.
+                PDFTrackr provides comprehensive analytics including view counts, unique visitors,
+                session duration, page-by-page engagement, geographic data, and device information.
+                All analytics are available for 30 days with automatic data retention policies.
               </p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Can multiple team members access the system?
+                Is the system suitable for freelancers and small teams?
               </h3>
               <p className="text-gray-600">
-                Absolutely! PDFTrackr supports multi-user access with role-based permissions. You
-                can grant different access levels to team members, allowing collaboration while
-                maintaining security and control over sensitive documents.
+                Yes! PDFTrackr is specifically designed for freelancers, consultants, and small teams.
+                We provide reliable infrastructure, comprehensive security features, and GDPR compliance
+                without the complexity of enterprise solutions.
               </p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Is the system suitable for growing teams and agencies?
+                What security features are included?
               </h3>
               <p className="text-gray-600">
-                Yes! PDFTrackr is built for growing teams with reliable infrastructure, API
-                integration capabilities, custom branding options, and compliance-ready features.
-                Our system can handle thousands of documents and users with industry-standard
-                security.
+                PDFTrackr includes password protection, email gating, link expiration, download controls,
+                virus scanning, TLS encryption, and GDPR-compliant data handling. Every document is
+                automatically scanned for security threats upon upload.
               </p>
             </div>
           </div>
@@ -493,8 +478,8 @@ export default function DocumentTrackingSystemPage() {
             Ready to Implement Our Document Tracking System?
           </h2>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Join growing teams and agencies that trust PDFTrackr for their document tracking needs.
-            Get started with our systematic approach to document management and analytics.
+            Join freelancers and small teams that trust PDFTrackr for their document tracking needs.
+            Get started with our simple approach to document management and analytics.
           </p>
           <Link
             href="/sign-up"
