@@ -15,6 +15,7 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 import CTAButton from "@/components/CTAButton";
+import SEOBreadcrumbs from "@/components/SEOBreadcrumbs";
 
 export const metadata: Metadata = {
   title: "Document Tracking System - Simple PDF Analytics for Freelancers & Small Teams",
@@ -23,12 +24,24 @@ export const metadata: Metadata = {
   keywords: [
     "document tracking system",
     "PDF tracking system",
-            "document analytics for teams",
+    "document analytics for teams",
     "document management system",
     "PDF analytics platform",
     "document tracking software",
     "bulk document tracking",
     "document workflow system",
+    "document tracking system for freelancers",
+    "PDF tracking system for small business",
+    "document analytics platform for consultants",
+    "simple document tracking system",
+    "document management system for teams",
+    "PDF tracking system for agencies",
+    "document workflow management system",
+    "document tracking software for freelancers",
+    "PDF analytics system for small teams",
+    "document tracking platform for consultants",
+    "secure document tracking system",
+    "document analytics software for freelancers",
   ],
   openGraph: {
     title: "Document Tracking System - Simple PDF Analytics for Freelancers & Small Teams",
@@ -183,12 +196,7 @@ export default function DocumentTrackingSystemPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <Link href="/" className="inline-flex items-center text-gray-600 hover:text-gray-900">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
-          </Link>
-        </div>
+        <SEOBreadcrumbs />
 
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -245,10 +253,80 @@ export default function DocumentTrackingSystemPage() {
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">{stage.title}</h3>
-                  <p className="text-gray-600">{stage.description}</p>
+                  <p className="text-gray-600">
+                    {stage.description}
+                    {stage.step === "1" && (
+                      <span> Learn more about our <Link href="/free-pdf-tracking" className="text-primary-600 hover:text-primary-800 underline">free PDF tracking solution</Link>.</span>
+                    )}
+                    {stage.step === "3" && (
+                      <span> For security details, see our <Link href="/secure-pdf-sharing-guide" className="text-primary-600 hover:text-primary-800 underline">secure PDF sharing guide</Link>.</span>
+                    )}
+                    {stage.step === "4" && (
+                      <span> Get detailed insights with our <Link href="/pdf-analytics-tutorial" className="text-primary-600 hover:text-primary-800 underline">PDF analytics tutorial</Link>.</span>
+                    )}
+                  </p>
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Why You Need a Document Tracking System */}
+        <div className="bg-white rounded-lg p-8 mb-16 shadow-sm">
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">
+            Why You Need a Document Tracking System
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Without a Tracking System</h3>
+              <ul className="space-y-3 text-gray-600">
+                <li className="flex items-start">
+                  <span className="text-red-500 mr-2">✗</span>
+                  <span>No visibility into document engagement or effectiveness</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-red-500 mr-2">✗</span>
+                  <span>Documents get shared without any control or monitoring</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-red-500 mr-2">✗</span>
+                  <span>Missed opportunities for lead generation and follow-up</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-red-500 mr-2">✗</span>
+                  <span>No way to measure ROI on document-based marketing efforts</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-red-500 mr-2">✗</span>
+                  <span>Security risks from uncontrolled document sharing</span>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">With PDFTrackr's System</h3>
+              <ul className="space-y-3 text-gray-600">
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2">✓</span>
+                  <span>Complete visibility into document performance and engagement</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2">✓</span>
+                  <span>Controlled sharing with security features and access management</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2">✓</span>
+                  <span>Email capture and lead generation from document interactions</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2">✓</span>
+                  <span>Data-driven insights to optimize document strategy and content</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2">✓</span>
+                  <span>Bank-level security with virus scanning and encryption</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -418,6 +496,36 @@ export default function DocumentTrackingSystemPage() {
                 PDFTrackr includes password protection, email gating, link expiration, download controls,
                 virus scanning, TLS encryption, and GDPR-compliant data handling. Every document is
                 automatically scanned for security threats upon upload.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                How does this compare to enterprise document management systems?
+              </h3>
+              <p className="text-gray-600">
+                Unlike complex enterprise systems, PDFTrackr is designed for simplicity and ease of use. 
+                We provide the essential document tracking features that freelancers and small teams need 
+                without the complexity, high costs, or extensive setup requirements of enterprise solutions.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Can I track multiple documents for different clients?
+              </h3>
+              <p className="text-gray-600">
+                Yes! PDFTrackr allows you to organize and track multiple documents for different clients 
+                or projects. Each document gets its own tracking link and analytics dashboard, making it 
+                easy to manage multiple client relationships and measure performance across different projects.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                What types of analytics can I expect from the system?
+              </h3>
+              <p className="text-gray-600">
+                Our document tracking system provides comprehensive analytics including view counts, unique 
+                visitors, session duration, page-by-page engagement, geographic data, device information, 
+                and referral sources. All data is presented in an easy-to-understand dashboard format.
               </p>
             </div>
           </div>

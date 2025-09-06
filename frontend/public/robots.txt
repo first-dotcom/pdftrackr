@@ -8,4 +8,8 @@ Disallow: /test-pdf/
 # Allow indexing of shared PDF view pages
 Allow: /view/
 
+# Sitemap location
 Sitemap: https://pdftrackr.com/sitemap.xml
+
+# Crawl delay for respectful crawling
+Crawl-delay: 1
