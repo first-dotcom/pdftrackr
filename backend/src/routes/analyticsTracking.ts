@@ -27,6 +27,38 @@ router.post(
   analyticsRateLimit,
   normalizeIp,
   asyncHandler(async (req: Request, res: Response) => {
+    let pageViewData: any;
+
+    // Handle both regular POST data and sendBeacon Blob data
+    if (req.headers["content-type"]?.includes("application/json")) {
+      // Regular JSON POST request
+      pageViewData = req.body;
+    } else if (
+      req.headers["content-type"]?.includes("text/plain") ||
+      req.headers["content-type"]?.includes("application/octet-stream")
+    ) {
+      // sendBeacon request - data is sent as Blob
+      try {
+        const rawData = await new Promise<string>((resolve, reject) => {
+          let data = "";
+          req.on("data", (chunk) => (data += chunk));
+          req.on("end", () => resolve(data));
+          req.on("error", reject);
+        });
+        pageViewData = JSON.parse(rawData);
+      } catch (error) {
+        logger.error("Failed to parse sendBeacon page-view data:", error);
+        res.status(400).json({
+          success: false,
+          error: "Invalid sendBeacon data format",
+        });
+        return;
+      }
+    } else {
+      // Fallback to regular body parsing
+      pageViewData = req.body;
+    }
+
     const {
       shareId,
       email,
@@ -35,7 +67,7 @@ router.post(
       sessionId,
       // NEW: Enhanced tracking data
       duration,
-    } = req.body;
+    } = pageViewData;
 
     if (!shareId || !page || !totalPages) {
       res.status(400).json({
@@ -48,6 +80,9 @@ router.post(
     const pageNum = parseInt(page);
     const totalPagesNum = parseInt(totalPages);
     const durationNum = duration ? Math.max(0, Math.round(Number(duration))) : 0;
+
+    // Debug logging for duration tracking
+    logger.info(`Page view tracking: page=${pageNum}, duration=${duration}ms, parsed=${durationNum}ms, shareId=${shareId}`);
 
     if (isNaN(pageNum) || pageNum <= 0 || pageNum > totalPagesNum) {
       logger.warn("Invalid page number", { page, totalPages, shareId });

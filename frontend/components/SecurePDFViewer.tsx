@@ -80,6 +80,8 @@ export default function SecurePDFViewer({
   const [lastActivityTime, setLastActivityTime] = useState<number>(Date.now());
   const [isUserActive, setIsUserActive] = useState<boolean>(true);
   const [sessionEndTracked, setSessionEndTracked] = useState<boolean>(false);
+  const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
+  const [hasTrackedExit, setHasTrackedExit] = useState<boolean>(false);
 
   // 📊 NEW: Enhanced activity tracking function
   const trackUserActivity = useCallback(() => {
@@ -170,6 +172,46 @@ export default function SecurePDFViewer({
       console.error("Failed to store analytics data locally:", error);
     }
   }, []);
+
+  // Enhanced sendBeacon with offline fallback
+  const sendBeaconWithFallback = useCallback((url: string, data: any) => {
+    if (navigator.sendBeacon && isOnline) {
+      const blob = new Blob([JSON.stringify(data)], {
+        type: 'application/json',
+      });
+      const success = navigator.sendBeacon(url, blob);
+      if (!success) {
+        storeFailedAnalytics(data, "pageView");
+      }
+      return success;
+    } else {
+      storeFailedAnalytics(data, "pageView");
+      return false;
+    }
+  }, [isOnline, storeFailedAnalytics]);
+
+  // Utility function to track page exit with duration
+  const trackPageExit = useCallback((context: string) => {
+    if (pageNumber > 0 && numPages > 0 && !hasTrackedExit) {
+      setHasTrackedExit(true);
+      const now = Date.now();
+      const pageDuration = Math.max(1, now - pageTracking.pageStartTime);
+      
+      const pageViewData = {
+        shareId,
+        email,
+        page: pageNumber,
+        totalPages: numPages,
+        sessionId,
+        timestamp: new Date().toISOString(),
+        duration: pageDuration,
+        isPageExit: true,
+      };
+      
+      console.log(`🔍 Sending page exit tracking (${context}): page=${pageNumber}, duration=${pageDuration}ms, startTime=${pageTracking.pageStartTime}, now=${now}`);
+      sendBeaconWithFallback('/api/analytics/page-view', pageViewData);
+    }
+  }, [pageNumber, numPages, hasTrackedExit, pageTracking.pageStartTime, shareId, email, sessionId, sendBeaconWithFallback]);
 
   // Retry failed analytics data
   const retryFailedAnalytics = useCallback(async () => {
@@ -378,6 +420,10 @@ export default function SecurePDFViewer({
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       if (!hasTrackedEnd && !sessionEndTracked) {
         hasTrackedEnd = true;
+        
+        // CRITICAL FIX: Track current page duration before session end using sendBeacon
+        trackPageExit('beforeunload');
+        
         // Use sendBeacon for more reliable delivery
         const sessionEndData = {
           shareId,
@@ -403,11 +449,20 @@ export default function SecurePDFViewer({
       }
     };
 
-    // Strategy 2: visibilitychange (good for mobile)
+    // Strategy 2: visibilitychange (good for mobile) - ENHANCED
     const handleVisibilityChange = () => {
-      if (document.hidden && !hasTrackedEnd && !sessionEndTracked) {
-        hasTrackedEnd = true;
-        trackSessionEnd();
+      if (document.hidden) {
+        // CRITICAL FIX: Track current page duration when tab becomes hidden
+        trackPageExit('visibilitychange');
+        
+        if (!hasTrackedEnd && !sessionEndTracked) {
+          hasTrackedEnd = true;
+          trackSessionEnd();
+        }
+      } else {
+        // FIXED: Don't reset page tracking when tab becomes visible - preserve duration
+        // Only update activity time, keep existing pageStartTime
+        setLastActivityTime(Date.now());
       }
     };
 
@@ -415,6 +470,10 @@ export default function SecurePDFViewer({
     const handlePageHide = () => {
       if (!hasTrackedEnd && !sessionEndTracked) {
         hasTrackedEnd = true;
+        
+        // CRITICAL FIX: Track current page duration before page hide
+        trackPageExit('pagehide');
+        
         trackSessionEnd();
       }
     };
@@ -423,8 +482,18 @@ export default function SecurePDFViewer({
     const handleUnload = () => {
       if (!hasTrackedEnd && !sessionEndTracked) {
         hasTrackedEnd = true;
+        
+        // CRITICAL FIX: Track current page duration before unload
+        trackPageExit('unload');
+        
         trackSessionEnd();
       }
+    };
+
+    // NEW: Browser back/forward navigation tracking
+    const handlePopState = () => {
+      // CRITICAL FIX: Track current page duration before browser navigation
+      trackPageExit('popstate');
     };
 
     // Strategy 5: Periodic session end check (every 15 seconds)
@@ -445,20 +514,66 @@ export default function SecurePDFViewer({
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("pagehide", handlePageHide);
     window.addEventListener("unload", handleUnload);
+    window.addEventListener("popstate", handlePopState);
 
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("pagehide", handlePageHide);
       window.removeEventListener("unload", handleUnload);
+      window.removeEventListener("popstate", handlePopState);
       clearInterval(interval);
 
       // Final attempt when component unmounts
       if (!hasTrackedEnd && !sessionEndTracked) {
+        // Track final page duration before unmount
+        trackPageExit('unmount');
         trackSessionEnd();
       }
     };
-  }, [sessionData, trackSessionEnd, sessionEndTracked, lastActivityTime]);
+  }, [sessionData, trackSessionEnd, sessionEndTracked, lastActivityTime, pageNumber, numPages, trackPageView, trackPageExit]);
+
+  // Network connectivity monitoring
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      // Retry failed analytics when back online
+      retryFailedAnalytics();
+    };
+    
+    const handleOffline = () => {
+      setIsOnline(false);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [retryFailedAnalytics]);
+
+
+  // 📊 NEW: Periodic page duration tracking to capture duration even without navigation
+  useEffect(() => {
+    if (!sessionId || numPages === 0) return undefined;
+
+    // Track page duration every 30 seconds to ensure we capture time even if user doesn't navigate
+    const durationInterval = setInterval(() => {
+      if (pageNumber > 0 && numPages > 0) {
+        // Send periodic page duration update (not as exit, just duration update)
+        trackPageView(pageNumber, numPages, false).catch((error) => {
+          console.warn("Failed to track periodic page duration:", error);
+        });
+      }
+    }, 30000); // Every 30 seconds
+
+    return () => {
+      clearInterval(durationInterval);
+    };
+  }, [sessionId, pageNumber, numPages, trackPageView]);
+
 
   // Initialize PDF URL
   useEffect(() => {
@@ -553,6 +668,51 @@ export default function SecurePDFViewer({
     });
   }, [numPages, trackPageView]);
 
+  // Keyboard navigation tracking
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle keyboard navigation if PDF is loaded
+      if (numPages === 0) return;
+      
+      switch (event.key) {
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          event.preventDefault();
+          goToPrevPage();
+          break;
+        case 'ArrowRight':
+        case 'ArrowDown':
+        case ' ':
+          event.preventDefault();
+          goToNextPage();
+          break;
+        case 'Home':
+          event.preventDefault();
+          if (pageNumber > 1) {
+            // Track exit from current page before jumping to first page
+            trackPageView(pageNumber, numPages, true);
+            setPageNumber(1);
+            // Track entry to first page
+            setTimeout(() => trackPageView(1, numPages, false), 100);
+          }
+          break;
+        case 'End':
+          event.preventDefault();
+          if (pageNumber < numPages) {
+            // Track exit from current page before jumping to last page
+            trackPageView(pageNumber, numPages, true);
+            setPageNumber(numPages);
+            // Track entry to last page
+            setTimeout(() => trackPageView(numPages, numPages, false), 100);
+          }
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [numPages, pageNumber, goToPrevPage, goToNextPage]);
+
   const zoomIn = useCallback(() => {
     setScale((prev) => Math.min(prev + 0.2, 3.0));
   }, []);
@@ -593,7 +753,11 @@ export default function SecurePDFViewer({
           <div className="text-red-600 text-xl mb-4">⚠️ PDF Viewer Error</div>
           <div className="text-gray-700 mb-4">{workerError}</div>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              // Track page exit before reload
+              trackPageExit('reload');
+              window.location.reload();
+            }}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
             Reload Page
