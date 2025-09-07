@@ -16,6 +16,10 @@ export const metadata: Metadata = {
     "PDF GDPR compliance",
     "document data rights",
     "PDF privacy rights",
+    "data protection rights",
+    "GDPR document sharing",
+    "PDF data deletion",
+    "document privacy compliance",
   ],
   openGraph: {
     title: "PDF Data Rights - GDPR Compliance for Document Sharing",
@@ -27,6 +31,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
+    images: ["https://pdftrackr.com/og-logo.png"],
   },
   alternates: {
     canonical: "https://pdftrackr.com/data-rights",

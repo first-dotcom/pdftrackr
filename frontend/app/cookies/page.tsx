@@ -6,12 +6,25 @@ import LearnMoreSection from "@/components/LearnMoreSection";
 export const metadata = {
   title: "Cookie Policy - PDFTrackr",
   description: "Learn how PDFTrackr uses cookies to improve the site while respecting your privacy.",
+  keywords: [
+    "cookie policy",
+    "PDF tracking cookies",
+    "document analytics cookies",
+    "PDF privacy cookies",
+    "website cookies policy",
+    "PDFTrackr cookies",
+  ],
   openGraph: {
     title: "Cookie Policy - PDFTrackr",
     description: "Learn how PDFTrackr uses cookies to improve the site while respecting your privacy.",
+    type: "article",
+    url: "https://pdftrackr.com/cookies",
+    images: [{ url: "https://pdftrackr.com/og-logo.png", alt: "PDFTrackr — simple PDF tracking for freelancers" }]
+  },
+  twitter: { 
+    card: "summary_large_image",
     images: ["https://pdftrackr.com/og-logo.png"]
   },
-  twitter: { card: "summary_large_image" },
   alternates: { canonical: "https://pdftrackr.com/cookies" }
 } satisfies import("next").Metadata;
 

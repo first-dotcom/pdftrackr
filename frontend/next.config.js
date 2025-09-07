@@ -62,10 +62,6 @@ const nextConfig = {
         source: '/:path*',
         headers: [
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
             key: 'X-Content-Type-Options',
             value: 'nosniff',
           },
@@ -77,10 +73,6 @@ const nextConfig = {
             key: 'X-XSS-Protection',
             value: '1; mode=block',
           },
-                  {
-          key: 'Content-Security-Policy',
-          value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.clerk.com *.clerk.accounts.dev *.clerk.dev clerk.pdftrackr.com accounts.pdftrackr.com challenges.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; img-src 'self' data: cdn.clerk.com *.clerk.accounts.dev img.clerk.com https://*.digitaloceanspaces.com https://www.google-analytics.com https://ssl.google-analytics.com; connect-src 'self' api.clerk.dev *.clerk.accounts.dev clerk.pdftrackr.com accounts.pdftrackr.com clkmail.pdftrackr.com localhost:3001 https://*.digitaloceanspaces.com https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://ssl.google-analytics.com https://www.googletagmanager.com; frame-src challenges.cloudflare.com; worker-src 'self' blob:;",
-        },
         ],
       },
     ];

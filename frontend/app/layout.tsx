@@ -80,6 +80,9 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  other: {
+    "msvalidate.01": process.env.NEXT_PUBLIC_BING_WEBMASTER_VERIFY || "",
+  },
 };
 
 // Organization Schema for Google Search Results
