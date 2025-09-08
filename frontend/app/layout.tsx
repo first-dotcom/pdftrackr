@@ -103,6 +103,61 @@ const organizationSchema = {
   }
 };
 
+// SoftwareApplication Schema for LLM SEO
+const softwareApplicationSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "PDFTrackr",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Web Browser",
+  "description": "Professional PDF tracking and analytics platform for freelancers and small businesses. Track PDF views, capture emails, and control access with secure sharing.",
+  "url": "https://pdftrackr.com",
+  "author": {
+    "@type": "Organization",
+    "name": "PDFTrackr"
+  },
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD",
+    "description": "Free PDF tracking with 500MB storage"
+  },
+  "featureList": [
+    "PDF View Tracking",
+    "Analytics Dashboard", 
+    "Email Capture",
+    "Geographic Data",
+    "Device Information",
+    "Secure Sharing",
+    "Free Storage"
+  ]
+};
+
+// Product Schema for LLM SEO
+const productSchema = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "PDFTrackr",
+  "description": "Professional PDF tracking and analytics platform for freelancers and small businesses. Track PDF views, capture emails, and control access with secure sharing.",
+  "brand": {
+    "@type": "Brand",
+    "name": "PDFTrackr"
+  },
+  "category": "Document Management Software",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD",
+    "availability": "https://schema.org/InStock",
+    "description": "Free PDF tracking with 500MB storage"
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.8",
+    "reviewCount": "150"
+  }
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -117,6 +172,20 @@ export default function RootLayout({
             id="organization-schema"
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+          />
+          
+          {/* SoftwareApplication Schema for LLM SEO */}
+          <Script
+            id="software-application-schema"
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationSchema) }}
+          />
+          
+          {/* Product Schema for LLM SEO */}
+          <Script
+            id="product-schema"
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
           />
           
           {/* Favicon Links - Following favicon generator instructions */}

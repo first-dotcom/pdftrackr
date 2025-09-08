@@ -5,8 +5,28 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: ['/', '/view/'],
-        disallow: ['/dashboard/', '/api/', '/_next/', '/test-pdf/'],
+        allow: ['/'],
+        disallow: ['/dashboard/', '/api/', '/_next/', '/test-pdf/', '/view/'],
+      },
+      {
+        userAgent: 'GPTBot',
+        allow: ['/'],
+        disallow: ['/dashboard/', '/api/', '/_next/', '/test-pdf/', '/view/'],
+      },
+      {
+        userAgent: 'AnthropicBot',
+        allow: ['/'],
+        disallow: ['/dashboard/', '/api/', '/_next/', '/test-pdf/', '/view/'],
+      },
+      {
+        userAgent: 'ClaudeBot',
+        allow: ['/'],
+        disallow: ['/dashboard/', '/api/', '/_next/', '/test-pdf/', '/view/'],
+      },
+      {
+        userAgent: 'Google-Extended',
+        allow: ['/'],
+        disallow: ['/dashboard/', '/api/', '/_next/', '/test-pdf/', '/view/'],
       },
     ],
     sitemap: 'https://pdftrackr.com/sitemap.xml',
