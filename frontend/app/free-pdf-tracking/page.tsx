@@ -6,7 +6,7 @@ import LearnMoreSection from "@/components/LearnMoreSection";
 import SEOBreadcrumbs from "@/components/SEOBreadcrumbs";
 
 export const metadata: Metadata = {
-  title: "Free PDF Tracking - Track PDF Views & Analytics | No Credit Card Required",
+  title: "Free PDF Tracking & Analytics (No Credit Card)",
   description:
     "Free PDF tracking for freelancers and small teams. See who opens your files and what they read. 500MB included—no credit card required.",
   keywords: [
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     "PDF analytics free trial",
   ],
   openGraph: {
-    title: "Free PDF Tracking - Track PDF Views & Analytics | No Credit Card Required",
+    title: "Free PDF Tracking & Analytics (No Credit Card)",
     description:
       "Free PDF tracking for freelancers and small teams. See who opens your files and what they read. 500MB included—no credit card required.",
     type: "website",

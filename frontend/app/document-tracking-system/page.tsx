@@ -18,7 +18,7 @@ import CTAButton from "@/components/CTAButton";
 import SEOBreadcrumbs from "@/components/SEOBreadcrumbs";
 
 export const metadata: Metadata = {
-  title: "Document Tracking System - Simple PDF Analytics for Freelancers & Small Teams",
+  title: "Document Tracking System for Freelancers & Teams",
   description:
     "Track client documents with simple PDF analytics. Built for freelancers and small teams who need insights without big-company complexity.",
   keywords: [
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     "document analytics software for freelancers",
   ],
   openGraph: {
-    title: "Document Tracking System - Simple PDF Analytics for Freelancers & Small Teams",
+    title: "Document Tracking System for Freelancers & Teams",
     description:
       "Track client documents with simple PDF analytics. Built for freelancers and small teams who need insights without big-company complexity.",
     type: "website",

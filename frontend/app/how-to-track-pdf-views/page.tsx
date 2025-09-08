@@ -7,7 +7,7 @@ import LearnMoreSection from "@/components/LearnMoreSection";
 import SEOBreadcrumbs from "@/components/SEOBreadcrumbs";
 
 export const metadata: Metadata = {
-  title: "How to Track PDF Views - Simple Guide for Freelancers & Small Businesses",
+  title: "How to Track PDF Views (Step‑by‑Step Guide)",
   description:
     "Learn how to track PDF views in minutes. A simple, step-by-step guide for freelancers and small businesses. Free storage included.",
   keywords: [
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     "PDF analytics dashboard setup",
   ],
   openGraph: {
-    title: "How to Track PDF Views - Simple Guide for Freelancers & Small Businesses",
+    title: "How to Track PDF Views (Step‑by‑Step Guide)",
     description:
       "Learn how to track PDF views in minutes. A simple, step-by-step guide for freelancers and small businesses. Free storage included.",
     type: "article",
