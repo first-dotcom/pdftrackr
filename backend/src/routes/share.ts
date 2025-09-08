@@ -215,7 +215,7 @@ router.get(
     }
 
     // Check if max views reached
-    if (link.maxViews && link.viewCount >= link.maxViews) {
+    if (link.maxViews && link.viewCount > link.maxViews) {
       throw new CustomError("Share link view limit reached", 403);
     }
 
@@ -289,7 +289,7 @@ router.post(
       throw new CustomError("Share link has expired", 403);
     }
 
-    if (link.maxViews && link.viewCount >= link.maxViews) {
+    if (link.maxViews && link.viewCount > link.maxViews) {
       throw new CustomError("Share link view limit reached", 403);
     }
 
@@ -590,7 +590,7 @@ router.get(
       throw new CustomError("Share link has expired", 403);
     }
 
-    if (link.maxViews && link.viewCount >= link.maxViews) {
+    if (link.maxViews && link.viewCount > link.maxViews) {
       throw new CustomError("Share link view limit reached", 403);
     }
 
