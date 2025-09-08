@@ -155,13 +155,13 @@ export default function HowToTrackPdfViewsPage() {
                   <p className="text-sm text-gray-600 mb-1">
                     <strong>PDF Usage:</strong> According to Adobe, 2.5 trillion PDFs are created annually worldwide.
                   </p>
-                  <p className="text-xs text-gray-500">Source: Adobe Digital Insights Report 2024</p>
+                  <p className="text-xs text-gray-500">Source: Adobe Digital Insights Report 2025</p>
                 </div>
                 <div className="bg-white p-4 rounded border">
                   <p className="text-sm text-gray-600 mb-1">
                     <strong>Document Sharing:</strong> Research shows 67% of professionals share documents weekly.
                   </p>
-                  <p className="text-xs text-gray-500">Source: Microsoft Work Trend Index 2024</p>
+                  <p className="text-xs text-gray-500">Source: Microsoft Work Trend Index 2025</p>
                 </div>
               </div>
             </div>
@@ -181,7 +181,7 @@ export default function HowToTrackPdfViewsPage() {
               </div>
             </div>
 
-            <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Why Track PDF Views?</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Why Should You Track PDF Views?</h2>
             <p className="text-gray-600 mb-4">
               Tracking PDF views provides crucial insights for businesses, educators, and content
               creators. Understanding how your documents are consumed helps you:
@@ -227,7 +227,7 @@ export default function HowToTrackPdfViewsPage() {
             </div>
 
             <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
-              Step-by-Step Guide to Document Analytics
+              How Do You Set Up PDF Tracking?
             </h2>
 
             <h3 id="step1" className="text-xl font-semibold text-gray-900 mt-6 mb-3">
@@ -339,7 +339,7 @@ export default function HowToTrackPdfViewsPage() {
             </ul>
 
             <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
-              Advanced Document Analytics Features
+              What Advanced Features Are Available?
             </h2>
 
             <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
@@ -365,7 +365,7 @@ export default function HowToTrackPdfViewsPage() {
             </p>
 
             <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
-              Best Practices for Document Analytics
+              What Are the Best Practices for PDF Tracking?
             </h2>
 
             <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
@@ -493,8 +493,8 @@ export default function HowToTrackPdfViewsPage() {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
               <div className="space-y-6">
                 <div className="bg-white p-6 rounded-lg border">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">How long does it take to set up PDF tracking?</h3>
-                  <p className="text-gray-600">Setting up PDF tracking with PDFTrackr takes less than 5 minutes. Simply upload your PDF, configure your tracking preferences, and share the secure link. No technical expertise required.</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">How long does it take to set up PDF tracking?</h3>
+                <p className="text-gray-600">Setting up PDF tracking with PDFTrackr takes less than 2 minutes. Simply upload your PDF (up to 50MB per file), configure security settings like password protection or email gating, and share the secure link. No technical expertise required.</p>
                 </div>
                 <div className="bg-white p-6 rounded-lg border">
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">Can I track PDFs that have already been downloaded?</h3>

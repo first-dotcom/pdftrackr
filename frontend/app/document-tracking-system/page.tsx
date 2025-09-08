@@ -205,6 +205,7 @@ export default function DocumentTrackingSystemPage() {
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Track your client documents with ease. Get powerful analytics without the complexity.
             Perfect for consultants, solopreneurs, and small teams who need to understand document engagement.
+            Learn more about our <Link href="/free-pdf-tracking" className="text-primary-600 hover:text-primary-800 underline">free PDF tracking solution</Link> or explore our <Link href="/pdf-analytics-tutorial" className="text-primary-600 hover:text-primary-800 underline">comprehensive analytics tutorial</Link>.
           </p>
         </div>
 

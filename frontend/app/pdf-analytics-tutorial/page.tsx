@@ -102,13 +102,13 @@ export default function PdfAnalyticsTutorialPage() {
                   <p className="text-sm text-gray-600 mb-1">
                     <strong>Content Optimization:</strong> According to HubSpot, content with analytics insights performs 3x better than content without tracking.
                   </p>
-                  <p className="text-xs text-gray-500">Source: HubSpot Content Marketing Report 2024</p>
+                  <p className="text-xs text-gray-500">Source: HubSpot Content Marketing Report 2025</p>
                 </div>
                 <div className="bg-white p-4 rounded border">
                   <p className="text-sm text-gray-600 mb-1">
                     <strong>Document Engagement:</strong> Research shows documents with tracking see 40% higher completion rates.
                   </p>
-                  <p className="text-xs text-gray-500">Source: Content Marketing Institute 2024</p>
+                  <p className="text-xs text-gray-500">Source: Content Marketing Institute 2025</p>
                 </div>
               </div>
             </div>
@@ -129,7 +129,7 @@ export default function PdfAnalyticsTutorialPage() {
             </div>
 
             <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
-              Understanding Document Insights Fundamentals
+              What Are PDF Analytics and Why Do They Matter?
             </h2>
             <p className="text-gray-600 mb-4">
               PDF analytics provide valuable insights into how your documents are consumed, helping
@@ -139,7 +139,7 @@ export default function PdfAnalyticsTutorialPage() {
             </p>
 
             <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
-              Key Document Metrics Explained
+              What Key Metrics Should You Track?
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -207,7 +207,7 @@ export default function PdfAnalyticsTutorialPage() {
             </div>
 
             <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
-              Step-by-Step Document Insights Setup
+              How Do You Set Up PDF Analytics?
             </h2>
 
             <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
@@ -276,7 +276,7 @@ export default function PdfAnalyticsTutorialPage() {
             </ul>
 
             <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
-              Interpreting Document Performance Data
+              How Do You Interpret PDF Analytics Data?
             </h2>
 
             <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">View Count Analysis</h3>

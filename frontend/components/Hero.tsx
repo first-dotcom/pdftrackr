@@ -24,9 +24,8 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
               PDF Tracking & Analytics - Simple Document Sharing for Freelancers
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              PDFTrackr provides simple PDF tracking and analytics to see who's reading your
-              documents. Track PDF views, capture emails, and control access with our secure
-              sharing platform. Perfect for freelancers, consultants, and small teams.
+              Track PDF views, capture emails, and control access with our secure sharing platform. 
+              Perfect for consultants, solopreneurs, and small teams who need professional document insights.
             </p>
 
             <p className="mt-2 text-sm text-gray-500 sm:max-w-xl">
@@ -97,9 +96,8 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
               </h1>
 
               <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto">
-                PDFTrackr provides simple PDF tracking and analytics to see who's reading your
-                documents. Track PDF views, capture emails, and control access with our secure
-                sharing platform. Perfect for freelancers, consultants, and small teams.
+                Track PDF views, capture emails, and control access with our secure sharing platform. 
+                Perfect for consultants, solopreneurs, and small teams who need professional document insights.
               </p>
 
               <p className="mt-2 text-sm text-gray-500 sm:max-w-xl sm:mx-auto">

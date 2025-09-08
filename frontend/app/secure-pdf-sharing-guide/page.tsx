@@ -93,13 +93,13 @@ export default function SecurePdfSharingGuidePage() {
                   <p className="text-sm text-gray-600 mb-1">
                     <strong>Document Security:</strong> According to IBM, 95% of data breaches involve document sharing vulnerabilities.
                   </p>
-                  <p className="text-xs text-gray-500">Source: IBM Security Report 2024</p>
+                  <p className="text-xs text-gray-500">Source: IBM Security Report 2025</p>
                 </div>
                 <div className="bg-white p-4 rounded border">
                   <p className="text-sm text-gray-600 mb-1">
                     <strong>Small Business Risk:</strong> 60% of small businesses experience data breaches, with document sharing being a common vector.
                   </p>
-                  <p className="text-xs text-gray-500">Source: Verizon Data Breach Investigations Report 2024</p>
+                  <p className="text-xs text-gray-500">Source: Verizon Data Breach Investigations Report 2025</p>
                 </div>
               </div>
             </div>

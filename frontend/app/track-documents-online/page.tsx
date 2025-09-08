@@ -152,6 +152,7 @@ export default function TrackDocumentsOnlinePage() {
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Track Documents Online (Cloud Analytics)</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Access your document insights from anywhere. No complex setup or expensive software needed. Perfect for freelancers who want to track client documents without the hassle.
+            Get started with our <Link href="/free-pdf-tracking" className="text-primary-600 hover:text-primary-800 underline">free PDF tracking solution</Link> or learn more about our <Link href="/document-tracking-system" className="text-primary-600 hover:text-primary-800 underline">complete document tracking system</Link>.
           </p>
         </div>
 
@@ -175,13 +176,13 @@ export default function TrackDocumentsOnlinePage() {
               <p className="text-sm text-gray-600 mb-1">
                 <strong>Cloud Adoption:</strong> According to Gartner, 85% of small businesses now use cloud-based document management systems.
               </p>
-              <p className="text-xs text-gray-500">Source: Gartner Small Business Cloud Report 2024</p>
+              <p className="text-xs text-gray-500">Source: Gartner Small Business Cloud Report 2025</p>
             </div>
             <div className="bg-white p-4 rounded border">
               <p className="text-sm text-gray-600 mb-1">
                 <strong>Remote Work Growth:</strong> Remote work has increased 300% since 2020, driving demand for online document tracking.
               </p>
-              <p className="text-xs text-gray-500">Source: Buffer State of Remote Work 2024</p>
+              <p className="text-xs text-gray-500">Source: Buffer State of Remote Work 2025</p>
             </div>
           </div>
         </div>
