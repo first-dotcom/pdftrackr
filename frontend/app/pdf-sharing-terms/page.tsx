@@ -4,7 +4,7 @@ import Link from "next/link";
 import LearnMoreSection from "@/components/LearnMoreSection";
 
 export const metadata: Metadata = {
-  title: "PDF Sharing Terms - Simple Service Agreement for Freelancers",
+  title: "PDF Sharing Terms (Simple Service Agreement)",
   description:
     "Clear, straightforward terms for freelancers. Simple agreement for sharing and tracking PDFs without legal jargon.",
   keywords: [
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     "PDF tracking terms",
   ],
   openGraph: {
-    title: "PDF Sharing Terms - Simple Service Agreement for Freelancers",
+    title: "PDF Sharing Terms (Simple Service Agreement)",
     description:
       "Clear, straightforward terms for freelancers. Simple agreement for sharing and tracking PDFs without legal jargon.",
     type: "article",
@@ -44,9 +44,7 @@ export default function PdfSharingTermsPage() {
         </div>
 
         <div className="bg-white shadow-sm rounded-lg p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">
-            PDF Sharing Terms - Simple Service Agreement for Freelancers
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">PDF Sharing Terms (Simple Service Agreement)</h1>
 
           <div className="prose prose-gray max-w-none">
             <p className="text-lg text-gray-600 mb-6">

@@ -14,7 +14,7 @@ import CTAButton from "@/components/CTAButton";
 import LearnMoreSection from "@/components/LearnMoreSection";
 
 export const metadata: Metadata = {
-  title: "PDF Analytics Tutorial - Simple Insights for Freelancers & Small Teams",
+  title: "PDF Analytics Tutorial (Simple Insights)",
   description:
     "Master PDF analytics without the complexity. Simple insights built for freelancers, consultants, and small teams.",
   keywords: [
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     "PDF content optimization",
   ],
   openGraph: {
-    title: "PDF Analytics Tutorial - Simple Insights for Freelancers & Small Teams",
+    title: "PDF Analytics Tutorial (Simple Insights)",
     description:
       "Master PDF analytics without the complexity. Simple insights built for freelancers, consultants, and small teams.",
     type: "article",
@@ -49,7 +49,7 @@ export default function PdfAnalyticsTutorialPage() {
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": "Article",
-    "headline": "PDF Analytics Tutorial - Simple Insights for Freelancers & Small Teams",
+    "headline": "PDF Analytics Tutorial (Simple Insights)",
     "description": "Master PDF analytics without the complexity. Simple insights built for freelancers, consultants, and small teams.",
     "author": { "@type": "Organization", "name": "PDFTrackr" },
     "publisher": { "@type": "Organization", "name": "PDFTrackr" },

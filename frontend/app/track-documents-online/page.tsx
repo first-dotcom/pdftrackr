@@ -7,7 +7,7 @@ import LearnMoreSection from "@/components/LearnMoreSection";
 import SEOBreadcrumbs from "@/components/SEOBreadcrumbs";
 
 export const metadata: Metadata = {
-  title: "Track Documents Online - Simple Cloud Analytics for Freelancers",
+  title: "Track Documents Online (Cloud Analytics)",
   description:
     "Track documents online with ease. Affordable cloud analytics for freelancers—no complex setup, no big-company software required.",
   keywords: [
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     "cloud document system",
   ],
   openGraph: {
-    title: "Track Documents Online - Simple Cloud Analytics for Freelancers",
+    title: "Track Documents Online (Cloud Analytics)",
     description:
       "Track documents online with ease. Affordable cloud analytics for freelancers—no complex setup, no big-company software required.",
     type: "website",
@@ -149,9 +149,7 @@ export default function TrackDocumentsOnlinePage() {
         <SEOBreadcrumbs />
 
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Track Documents Online - Simple Cloud Analytics for Freelancers
-          </h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Track Documents Online (Cloud Analytics)</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Access your document insights from anywhere. No complex setup or expensive software needed. Perfect for freelancers who want to track client documents without the hassle.
           </p>

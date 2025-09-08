@@ -4,7 +4,7 @@ import Link from "next/link";
 import LearnMoreSection from "@/components/LearnMoreSection";
 
 export const metadata: Metadata = {
-  title: "PDF Privacy Policy - Simple Privacy Protection for Freelancers",
+  title: "PDF Privacy Policy (GDPR‑Compliant)",
   description:
     "Our simple privacy policy explains how freelancer documents are protected. Transparent, GDPR-compliant, easy to understand.",
   keywords: [
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     "PDF security privacy",
   ],
   openGraph: {
-    title: "PDF Privacy Policy - Simple Privacy Protection for Freelancers",
+    title: "PDF Privacy Policy (GDPR‑Compliant)",
     description:
       "Our simple privacy policy explains how freelancer documents are protected. Transparent, GDPR-compliant, easy to understand.",
     type: "article",
@@ -44,9 +44,7 @@ export default function PdfPrivacyPolicyPage() {
         </div>
 
         <div className="bg-white shadow-sm rounded-lg p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">
-            PDF Privacy Policy - Simple Privacy Protection for Freelancers
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">PDF Privacy Policy (GDPR‑Compliant)</h1>
 
           <div className="prose prose-gray max-w-none">
             <p className="text-lg text-gray-600 mb-6">

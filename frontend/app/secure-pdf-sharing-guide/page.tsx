@@ -5,7 +5,7 @@ import CTAButton from "@/components/CTAButton";
 import LearnMoreSection from "@/components/LearnMoreSection";
 
 export const metadata: Metadata = {
-  title: "Secure PDF Sharing Guide - Simple Protection for Freelancer Documents",
+  title: "Secure PDF Sharing Guide (Simple Protection)",
   description:
     "Keep client PDFs secure without the hassle. Simple, affordable sharing tools for freelancers and small teams.",
   keywords: [
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     "document protection guide",
   ],
   openGraph: {
-    title: "Secure PDF Sharing Guide - Simple Protection for Freelancer Documents",
+    title: "Secure PDF Sharing Guide (Simple Protection)",
     description:
       "Keep client PDFs secure without the hassle. Simple, affordable sharing tools for freelancers and small teams.",
     type: "article",
@@ -40,7 +40,7 @@ export default function SecurePdfSharingGuidePage() {
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": "Article",
-    "headline": "Secure PDF Sharing Guide - Simple Protection for Freelancer Documents",
+    "headline": "Secure PDF Sharing Guide (Simple Protection)",
     "description": "Keep client PDFs secure without the hassle. Simple, affordable sharing tools for freelancers and small teams.",
     "author": { "@type": "Organization", "name": "PDFTrackr" },
     "publisher": { "@type": "Organization", "name": "PDFTrackr" },
@@ -64,9 +64,7 @@ export default function SecurePdfSharingGuidePage() {
         </div>
 
         <div className="bg-white shadow-sm rounded-lg p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">
-            Secure PDF Sharing Guide - Simple Protection for Freelancer Documents
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">Secure PDF Sharing Guide (Simple Protection)</h1>
 
           <div className="prose prose-gray max-w-none">
             <p className="text-lg text-gray-600 mb-6">

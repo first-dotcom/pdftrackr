@@ -6,7 +6,7 @@ import CTAButton from "@/components/CTAButton";
 import LearnMoreSection from "@/components/LearnMoreSection";
 
 export const metadata: Metadata = {
-  title: "PDF Tracking FAQ - Common Questions About Document Analytics & Security",
+  title: "PDF Tracking FAQ (Analytics & Security)",
   description:
     "Quick answers to PDF tracking questions. Simple, clear help for freelancers and small businesses—start tracking for free.",
   keywords: [
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     "PDF security questions",
   ],
   openGraph: {
-    title: "PDF Tracking FAQ - Common Questions About Document Analytics & Security",
+    title: "PDF Tracking FAQ (Analytics & Security)",
     description:
       "Quick answers to PDF tracking questions. Simple, clear help for freelancers and small businesses—start tracking for free.",
     type: "article",
@@ -258,9 +258,7 @@ export default function FAQPage() {
         </div>
 
         <div className="bg-white shadow-sm rounded-lg p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">
-            PDF Tracking FAQ - Common Questions About Document Analytics & Security
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">PDF Tracking FAQ (Analytics & Security)</h1>
 
           <div className="prose prose-gray max-w-none">
             <p className="text-lg text-gray-600 mb-8">
