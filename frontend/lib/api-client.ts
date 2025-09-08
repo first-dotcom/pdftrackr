@@ -359,6 +359,10 @@ class ApiClient {
     // Simple analytics retrieval methods
     getDocumentStats: (shareId: string) =>
       this.get(`/api/analytics/document/${shareId}/stats`, { skipCSRF: true, skipAuth: true }),
+
+    // Public analytics for homepage
+    getPublicStats: () =>
+      this.get("/api/analytics/public/stats", { skipCSRF: true, skipAuth: true }),
   };
 }
 

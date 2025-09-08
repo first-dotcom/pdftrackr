@@ -1,9 +1,24 @@
-import { and, desc, eq, gt, gte, inArray, isNotNull, isNull, lt, lte, or, sql, ilike } from "drizzle-orm";
+import {
+  and,
+  desc,
+  eq,
+  gt,
+  gte,
+  ilike,
+  inArray,
+  isNotNull,
+  isNull,
+  lt,
+  lte,
+  or,
+  sql,
+} from "drizzle-orm";
 import { Router } from "express";
 import type { Request, Response } from "express";
 import { z } from "zod";
 import { authenticate } from "../middleware/auth";
 import { CustomError, asyncHandler } from "../middleware/errorHandler";
+import { createRateLimit } from "../middleware/security";
 import { validateQuery } from "../middleware/validation";
 import {
   analyticsSummary,
@@ -87,9 +102,7 @@ router.get(
         avgDuration: sql<number>`COALESCE(AVG(${viewSessions.totalDuration}), 0)`,
       })
       .from(viewSessions)
-      .where(
-        and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)),
-      );
+      .where(and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)));
 
     // Email captures count
     const emailCapturesCount = await db
@@ -97,9 +110,7 @@ router.get(
         count: sql<number>`COUNT(*)`,
       })
       .from(emailCaptures)
-      .where(
-        and(inArray(emailCaptures.shareId, shareIds), gte(emailCaptures.capturedAt, start)),
-      );
+      .where(and(inArray(emailCaptures.shareId, shareIds), gte(emailCaptures.capturedAt, start)));
 
     // Views over time (daily breakdown)
     const viewsOverTime = await db
@@ -109,9 +120,7 @@ router.get(
         uniqueViews: sql<number>`SUM(CASE WHEN ${viewSessions.isUnique} THEN 1 ELSE 0 END)`,
       })
       .from(viewSessions)
-      .where(
-        and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)),
-      )
+      .where(and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)))
       .groupBy(sql`DATE(${viewSessions.startedAt})`)
       .orderBy(sql`DATE(${viewSessions.startedAt})`);
 
@@ -122,9 +131,7 @@ router.get(
         count: sql<number>`COUNT(*)`,
       })
       .from(viewSessions)
-      .where(
-        and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)),
-      )
+      .where(and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)))
       .groupBy(viewSessions.country)
       .orderBy(desc(sql<number>`COUNT(*)`))
       .limit(10);
@@ -136,9 +143,7 @@ router.get(
         count: sql<number>`COUNT(*)`,
       })
       .from(viewSessions)
-      .where(
-        and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)),
-      )
+      .where(and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)))
       .groupBy(viewSessions.device)
       .orderBy(desc(sql<number>`COUNT(*)`))
       .limit(10);
@@ -150,9 +155,7 @@ router.get(
         count: sql<number>`COUNT(*)`,
       })
       .from(viewSessions)
-      .where(
-        and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)),
-      )
+      .where(and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)))
       .groupBy(viewSessions.referer)
       .orderBy(desc(sql<number>`COUNT(*)`))
       .limit(10);
@@ -163,13 +166,10 @@ router.get(
         pageNumber: pageViews.pageNumber,
         views: sql<number>`COUNT(*)`,
         avgDuration: sql<number>`COALESCE(AVG(${pageViews.duration}) / 1000.0, 0)`,
-
       })
       .from(pageViews)
       .innerJoin(viewSessions, eq(pageViews.sessionId, viewSessions.sessionId))
-      .where(
-        and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)),
-      )
+      .where(and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)))
       .groupBy(pageViews.pageNumber)
       .orderBy(pageViews.pageNumber);
 
@@ -208,7 +208,6 @@ router.get(
           pageNumber: row.pageNumber,
           views: row.views,
           avgDuration: Math.round(row.avgDuration || 0),
-
         })),
       },
     });
@@ -272,18 +271,15 @@ router.get(
         isUnique: viewSessions.isUnique,
         pageNumber: pageViews.pageNumber,
         pageDuration: pageViews.duration,
-
       })
       .from(viewSessions)
       .leftJoin(pageViews, eq(viewSessions.sessionId, pageViews.sessionId))
-      .where(
-        and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)),
-      )
+      .where(and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)))
       .orderBy(desc(viewSessions.startedAt), sql`${pageViews.pageNumber} NULLS LAST`);
 
     // Group sessions and their page data
     const sessionsMap = new Map();
-    
+
     sessionData.forEach((row) => {
       if (!sessionsMap.has(row.sessionId)) {
         sessionsMap.set(row.sessionId, {
@@ -294,12 +290,11 @@ router.get(
           pages: [],
         });
       }
-      
+
       if (row.pageNumber) {
         sessionsMap.get(row.sessionId).pages.push({
           pageNumber: row.pageNumber,
           duration: row.pageDuration,
-
         });
       }
     });
@@ -368,7 +363,7 @@ router.get(
         )
         .where(eq(files.userId, userId));
 
-      const shareIds = userShareLinks.map(link => link.shareId);
+      const shareIds = userShareLinks.map((link) => link.shareId);
 
       // Get file count
       const fileCount = await db
@@ -379,33 +374,39 @@ router.get(
         .where(eq(files.userId, userId));
 
       // Get view statistics (separate query to avoid cartesian product)
-      const viewStats = shareIds.length > 0 ? await db
-        .select({
-          totalViews: sql<number>`COUNT(${viewSessions.id})`,
-          totalUniqueViews: sql<number>`SUM(CASE WHEN ${viewSessions.isUnique} THEN 1 ELSE 0 END)`,
-          totalDuration: sql<number>`COALESCE(SUM(${viewSessions.totalDuration}), 0)`,
-          avgDuration: sql<number>`COALESCE(AVG(${viewSessions.totalDuration}), 0)`,
-        })
-        .from(viewSessions)
-        .where(
-          and(
-            inArray(viewSessions.shareId, shareIds),
-            gte(viewSessions.startedAt, startDate)
-          )
-        ) : [{ totalViews: 0, totalUniqueViews: 0, totalDuration: 0, avgDuration: 0 }];
+      const viewStats =
+        shareIds.length > 0
+          ? await db
+              .select({
+                totalViews: sql<number>`COUNT(${viewSessions.id})`,
+                totalUniqueViews: sql<number>`SUM(CASE WHEN ${viewSessions.isUnique} THEN 1 ELSE 0 END)`,
+                totalDuration: sql<number>`COALESCE(SUM(${viewSessions.totalDuration}), 0)`,
+                avgDuration: sql<number>`COALESCE(AVG(${viewSessions.totalDuration}), 0)`,
+              })
+              .from(viewSessions)
+              .where(
+                and(
+                  inArray(viewSessions.shareId, shareIds),
+                  gte(viewSessions.startedAt, startDate),
+                ),
+              )
+          : [{ totalViews: 0, totalUniqueViews: 0, totalDuration: 0, avgDuration: 0 }];
 
       // Get email captures (separate query to avoid cartesian product)
-      const emailStats = shareIds.length > 0 ? await db
-        .select({
-          emailCaptures: sql<number>`COUNT(DISTINCT ${emailCaptures.id})`,
-        })
-        .from(emailCaptures)
-        .where(
-          and(
-            inArray(emailCaptures.shareId, shareIds),
-            gte(emailCaptures.capturedAt, startDate)
-          )
-        ) : [{ emailCaptures: 0 }];
+      const emailStats =
+        shareIds.length > 0
+          ? await db
+              .select({
+                emailCaptures: sql<number>`COUNT(DISTINCT ${emailCaptures.id})`,
+              })
+              .from(emailCaptures)
+              .where(
+                and(
+                  inArray(emailCaptures.shareId, shareIds),
+                  gte(emailCaptures.capturedAt, startDate),
+                ),
+              )
+          : [{ emailCaptures: 0 }];
 
       // Get total share links count
       const shareLinksCount = await db
@@ -413,13 +414,7 @@ router.get(
           totalShares: sql<number>`COUNT(DISTINCT ${shareLinks.id})`,
         })
         .from(files)
-        .innerJoin(
-          shareLinks,
-          and(
-            eq(files.id, shareLinks.fileId),
-            eq(files.userId, userId)
-          ),
-        );
+        .innerJoin(shareLinks, and(eq(files.id, shareLinks.fileId), eq(files.userId, userId)));
 
       const stats = {
         totalFiles: fileCount[0]?.totalFiles || 0,
@@ -461,49 +456,58 @@ router.get(
         .limit(5);
 
       // Get top files by actual view count (separate query to avoid cartesian product)
-      const topFiles = shareIds.length > 0 ? await db
-        .select({
-          fileId: files.id,
-          title: files.title,
-          originalName: files.originalName,
-          viewCount: sql<number>`COUNT(${viewSessions.id})`,
-          uniqueViewCount: sql<number>`SUM(CASE WHEN ${viewSessions.isUnique} THEN 1 ELSE 0 END)`,
-          totalDuration: sql<number>`COALESCE(SUM(${viewSessions.totalDuration}), 0)`,
-        })
-        .from(files)
-        .innerJoin(
-          shareLinks,
-          and(
-            eq(files.id, shareLinks.fileId),
-            eq(shareLinks.isActive, true),
-            or(isNull(shareLinks.expiresAt), gt(shareLinks.expiresAt, new Date())),
-          ),
-        )
-        .innerJoin(
-          viewSessions,
-          and(eq(shareLinks.shareId, viewSessions.shareId), gte(viewSessions.startedAt, startDate)),
-        )
-        .where(eq(files.userId, userId))
-        .groupBy(files.id)
-        .orderBy(desc(sql`COUNT(${viewSessions.id})`))
-        .limit(5) : [];
+      const topFiles =
+        shareIds.length > 0
+          ? await db
+              .select({
+                fileId: files.id,
+                title: files.title,
+                originalName: files.originalName,
+                viewCount: sql<number>`COUNT(${viewSessions.id})`,
+                uniqueViewCount: sql<number>`SUM(CASE WHEN ${viewSessions.isUnique} THEN 1 ELSE 0 END)`,
+                totalDuration: sql<number>`COALESCE(SUM(${viewSessions.totalDuration}), 0)`,
+              })
+              .from(files)
+              .innerJoin(
+                shareLinks,
+                and(
+                  eq(files.id, shareLinks.fileId),
+                  eq(shareLinks.isActive, true),
+                  or(isNull(shareLinks.expiresAt), gt(shareLinks.expiresAt, new Date())),
+                ),
+              )
+              .innerJoin(
+                viewSessions,
+                and(
+                  eq(shareLinks.shareId, viewSessions.shareId),
+                  gte(viewSessions.startedAt, startDate),
+                ),
+              )
+              .where(eq(files.userId, userId))
+              .groupBy(files.id)
+              .orderBy(desc(sql`COUNT(${viewSessions.id})`))
+              .limit(5)
+          : [];
 
       // Get views by day for the last 30 days (separate query to avoid cartesian product)
-      const viewsByDay = shareIds.length > 0 ? await db
-        .select({
-          date: sql<string>`DATE(${viewSessions.startedAt})`,
-          views: sql<number>`COUNT(${viewSessions.id})`,
-          uniqueViews: sql<number>`SUM(CASE WHEN ${viewSessions.isUnique} THEN 1 ELSE 0 END)`,
-        })
-        .from(viewSessions)
-        .where(
-          and(
-            inArray(viewSessions.shareId, shareIds),
-            gte(viewSessions.startedAt, startDate)
-          )
-        )
-        .groupBy(sql`DATE(${viewSessions.startedAt})`)
-        .orderBy(sql`DATE(${viewSessions.startedAt})`) : [];
+      const viewsByDay =
+        shareIds.length > 0
+          ? await db
+              .select({
+                date: sql<string>`DATE(${viewSessions.startedAt})`,
+                views: sql<number>`COUNT(${viewSessions.id})`,
+                uniqueViews: sql<number>`SUM(CASE WHEN ${viewSessions.isUnique} THEN 1 ELSE 0 END)`,
+              })
+              .from(viewSessions)
+              .where(
+                and(
+                  inArray(viewSessions.shareId, shareIds),
+                  gte(viewSessions.startedAt, startDate),
+                ),
+              )
+              .groupBy(sql`DATE(${viewSessions.startedAt})`)
+              .orderBy(sql`DATE(${viewSessions.startedAt})`)
+          : [];
 
       logger.debug("Dashboard analytics calculated", {
         userId,
@@ -661,11 +665,11 @@ router.post(
       // Get daily stats for this file
       const dailyStats = await db
         .select({
-                  totalViews: sql<number>`COUNT(*)`,
-        uniqueViews: sql<number>`SUM(CASE WHEN ${viewSessions.isUnique} THEN 1 ELSE 0 END)`,
-        totalDuration: sql<number>`COALESCE(SUM(${viewSessions.totalDuration}), 0)`,
-        avgDuration: sql<number>`COALESCE(AVG(${viewSessions.totalDuration}), 0)`,
-        emailCaptures: sql<number>`COUNT(DISTINCT ${emailCaptures.id})`,
+          totalViews: sql<number>`COUNT(*)`,
+          uniqueViews: sql<number>`SUM(CASE WHEN ${viewSessions.isUnique} THEN 1 ELSE 0 END)`,
+          totalDuration: sql<number>`COALESCE(SUM(${viewSessions.totalDuration}), 0)`,
+          avgDuration: sql<number>`COALESCE(AVG(${viewSessions.totalDuration}), 0)`,
+          emailCaptures: sql<number>`COUNT(DISTINCT ${emailCaptures.id})`,
         })
         .from(viewSessions)
         .leftJoin(
@@ -763,7 +767,9 @@ router.get(
 
     // Check cache first (include cache buster if provided)
     const cacheBuster = req.query._t as string;
-    const cacheKey = `aggregate:${fileId}:${userId}:${req.query.days || 30}:${req.query.pageRange || 'all'}:${cacheBuster || 'default'}`;
+    const cacheKey = `aggregate:${fileId}:${userId}:${req.query.days || 30}:${
+      req.query.pageRange || "all"
+    }:${cacheBuster || "default"}`;
     const cachedData = await getCache<string>(cacheKey);
     if (cachedData) {
       res.json(JSON.parse(cachedData));
@@ -797,16 +803,16 @@ router.get(
             totalSessions: 0,
             uniqueSessions: 0,
             avgSessionTime: 0,
-            completionRate: 0
+            completionRate: 0,
           },
           pageStats: [],
-          dropoffFunnel: []
-        }
+          dropoffFunnel: [],
+        },
       });
       return;
     }
 
-    const shareIds = shareLinksResult.map(sl => sl.shareId);
+    const shareIds = shareLinksResult.map((sl) => sl.shareId);
 
     // Date range filter (default: last 30 days)
     const days = parseInt(req.query.days as string) || 30;
@@ -817,9 +823,9 @@ router.get(
     const pageRange = req.query.pageRange as string;
     let pageStart = 1;
     let pageEnd = totalPages;
-    
+
     if (pageRange) {
-      const [start, end] = pageRange.split('-').map(Number);
+      const [start, end] = pageRange.split("-").map(Number);
       if (!isNaN(start) && !isNaN(end) && start > 0 && end <= totalPages) {
         pageStart = start;
         pageEnd = end;
@@ -832,13 +838,10 @@ router.get(
         totalSessions: sql<number>`COUNT(*)`,
         uniqueSessions: sql<number>`COUNT(DISTINCT ${viewSessions.sessionId})`,
         avgSessionTime: sql<number>`COALESCE(AVG(${viewSessions.totalDuration}), 0)`,
-        totalDuration: sql<number>`COALESCE(SUM(${viewSessions.totalDuration}), 0)`
+        totalDuration: sql<number>`COALESCE(SUM(${viewSessions.totalDuration}), 0)`,
       })
       .from(viewSessions)
-      .where(and(
-        inArray(viewSessions.shareId, shareIds),
-        gte(viewSessions.startedAt, start)
-      ));
+      .where(and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)));
 
     const fileStats = fileStatsResult[0];
 
@@ -847,24 +850,26 @@ router.get(
       .select({
         pageNumber: pageViews.pageNumber,
         totalViews: sql<number>`COUNT(*)`,
-        avgDuration: sql<number>`COALESCE(AVG(${pageViews.duration}) / 1000.0, 0)`
+        avgDuration: sql<number>`COALESCE(AVG(${pageViews.duration}) / 1000.0, 0)`,
       })
       .from(pageViews)
       .innerJoin(viewSessions, eq(pageViews.sessionId, viewSessions.sessionId))
-      .where(and(
-        inArray(viewSessions.shareId, shareIds),
-        gte(viewSessions.startedAt, start),
-        gte(pageViews.pageNumber, pageStart),
-        lte(pageViews.pageNumber, pageEnd)
-      ))
+      .where(
+        and(
+          inArray(viewSessions.shareId, shareIds),
+          gte(viewSessions.startedAt, start),
+          gte(pageViews.pageNumber, pageStart),
+          lte(pageViews.pageNumber, pageEnd),
+        ),
+      )
       .groupBy(pageViews.pageNumber)
       .orderBy(pageViews.pageNumber);
 
     // Format page stats - simplified to essential metrics only
-    const pageStats = pageStatsResult.map(stat => ({
+    const pageStats = pageStatsResult.map((stat) => ({
       pageNumber: stat.pageNumber,
       totalViews: Number(stat.totalViews) || 0,
-      avgDuration: Number(stat.avgDuration) || 0  // Keep decimal precision like individual view
+      avgDuration: Number(stat.avgDuration) || 0, // Keep decimal precision like individual view
     }));
 
     const responseData = {
@@ -873,17 +878,17 @@ router.get(
         fileStats: {
           totalSessions: Number(fileStats.totalSessions) || 0,
           uniqueSessions: Number(fileStats.uniqueSessions) || 0,
-          avgSessionTime: Math.round(Number(fileStats.avgSessionTime) || 0)
+          avgSessionTime: Math.round(Number(fileStats.avgSessionTime) || 0),
         },
-        pageStats
-      }
+        pageStats,
+      },
     };
 
     // Cache the response for 2 minutes (shorter TTL for analytics)
     await setCache(cacheKey, JSON.stringify(responseData), 30);
 
     res.json(responseData);
-  })
+  }),
 );
 
 // Individual analytics endpoint - averaged per page per session
@@ -899,7 +904,9 @@ router.get(
     }
 
     // Check cache first (simplified - no pagination needed for per-file analytics)
-    const cacheKey = `individual:${fileId}:${userId}:${req.query.email || ''}:${req.query.device || ''}:${req.query.country || ''}:${req.query.dateFrom || ''}:${req.query.dateTo || ''}`;
+    const cacheKey = `individual:${fileId}:${userId}:${req.query.email || ""}:${
+      req.query.device || ""
+    }:${req.query.country || ""}:${req.query.dateFrom || ""}:${req.query.dateTo || ""}`;
     const cachedData = await getCache<string>(cacheKey);
     if (cachedData) {
       res.json(JSON.parse(cachedData));
@@ -932,20 +939,20 @@ router.get(
             page: 1,
             limit: 20,
             total: 0,
-            totalPages: 0
+            totalPages: 0,
           },
           filters: {
             applied: {},
-            available: {}
-          }
-        }
+            available: {},
+          },
+        },
       };
       await setCache(cacheKey, JSON.stringify(emptyResponse), 30);
       res.json(emptyResponse);
       return;
     }
 
-    const shareIds = shareLinksResult.map(sl => sl.shareId);
+    const shareIds = shareLinksResult.map((sl) => sl.shareId);
 
     // Parse query parameters
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
@@ -1004,7 +1011,7 @@ router.get(
         browser: viewSessions.browser,
         os: viewSessions.os,
         isUnique: viewSessions.isUnique,
-        referer: viewSessions.referer
+        referer: viewSessions.referer,
       })
       .from(viewSessions)
       .where(and(...whereConditions))
@@ -1013,13 +1020,13 @@ router.get(
       .offset(offset);
 
     // Get averaged page views for each session (grouped by page number)
-    const sessionIds = sessionsResult.map(s => s.sessionId);
+    const sessionIds = sessionsResult.map((s) => s.sessionId);
     const pageViewsResult = await db
       .select({
         sessionId: pageViews.sessionId,
         pageNumber: pageViews.pageNumber,
         avgDuration: sql<number>`COALESCE(AVG(${pageViews.duration}) / 1000.0, 0)`,
-        totalViews: sql<number>`COUNT(*)`
+        totalViews: sql<number>`COUNT(*)`,
       })
       .from(pageViews)
       .where(inArray(pageViews.sessionId, sessionIds))
@@ -1028,19 +1035,19 @@ router.get(
 
     // Group averaged page views by session
     const pageViewsBySession = new Map<string, any[]>();
-    pageViewsResult.forEach(pv => {
+    pageViewsResult.forEach((pv) => {
       if (!pageViewsBySession.has(pv.sessionId)) {
         pageViewsBySession.set(pv.sessionId, []);
       }
       pageViewsBySession.get(pv.sessionId)!.push({
         pageNumber: pv.pageNumber,
         avgDuration: Number(pv.avgDuration) || 0,
-        totalViews: Number(pv.totalViews) || 0
+        totalViews: Number(pv.totalViews) || 0,
       });
     });
 
     // Format sessions with their page views
-    const sessions = sessionsResult.map(session => ({
+    const sessions = sessionsResult.map((session) => ({
       sessionId: session.sessionId,
       startedAt: session.startedAt,
       totalDuration: session.totalDuration,
@@ -1052,7 +1059,7 @@ router.get(
       os: session.os,
       isUnique: session.isUnique,
       referer: session.referer,
-      pages: pageViewsBySession.get(session.sessionId) || []
+      pages: pageViewsBySession.get(session.sessionId) || [],
     }));
 
     // Get available filter options
@@ -1066,7 +1073,7 @@ router.get(
           page,
           limit,
           total,
-          totalPages
+          totalPages,
         },
         filters: {
           applied: {
@@ -1074,13 +1081,13 @@ router.get(
             device,
             country,
             dateFrom,
-            dateTo
+            dateTo,
           },
-          available: availableFilters
-        }
-      }
+          available: availableFilters,
+        },
+      },
     });
-  })
+  }),
 );
 
 // Original sessions endpoint with page details included
@@ -1096,7 +1103,11 @@ router.get(
     }
 
     // Check cache first
-    const cacheKey = `sessions:${fileId}:${userId}:${req.query.page || 1}:${req.query.limit || 20}:${req.query.email || ''}:${req.query.device || ''}:${req.query.country || ''}:${req.query.dateFrom || ''}:${req.query.dateTo || ''}`;
+    const cacheKey = `sessions:${fileId}:${userId}:${req.query.page || 1}:${
+      req.query.limit || 20
+    }:${req.query.email || ""}:${req.query.device || ""}:${req.query.country || ""}:${
+      req.query.dateFrom || ""
+    }:${req.query.dateTo || ""}`;
     const cachedData = await getCache<string>(cacheKey);
     if (cachedData) {
       res.json(JSON.parse(cachedData));
@@ -1110,15 +1121,15 @@ router.get(
     await setCache(cacheKey, JSON.stringify(result), 30);
 
     res.json(result);
-  })
+  }),
 );
 
 // Helper function to get sessions with page data (optimized)
 async function getSessionsWithPageData(
-  fileId: number, 
-  userId: number, 
-  query: any, 
-  averaged: boolean = false
+  fileId: number,
+  userId: number,
+  query: any,
+  averaged = false,
 ): Promise<{
   success: boolean;
   data: {
@@ -1150,12 +1161,12 @@ async function getSessionsWithPageData(
       data: {
         sessions: [],
         pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
-        filters: { applied: {}, available: {} }
-      }
+        filters: { applied: {}, available: {} },
+      },
     };
   }
 
-  const shareIds = shareLinksResult.map(sl => sl.shareId);
+  const shareIds = shareLinksResult.map((sl) => sl.shareId);
 
   // Parse query parameters
   const page = Math.max(1, parseInt(query.page as string) || 1);
@@ -1210,7 +1221,7 @@ async function getSessionsWithPageData(
       browser: viewSessions.browser,
       os: viewSessions.os,
       isUnique: viewSessions.isUnique,
-      referer: viewSessions.referer
+      referer: viewSessions.referer,
     })
     .from(viewSessions)
     .where(and(...whereConditions))
@@ -1219,8 +1230,8 @@ async function getSessionsWithPageData(
     .offset(offset);
 
   // Get page views for each session
-  const sessionIds = sessionsResult.map(s => s.sessionId);
-  
+  const sessionIds = sessionsResult.map((s) => s.sessionId);
+
   if (averaged) {
     // Get averaged page views (grouped by page number)
     const pageViewsResult = await db
@@ -1229,7 +1240,6 @@ async function getSessionsWithPageData(
         pageNumber: pageViews.pageNumber,
         avgDuration: sql<number>`COALESCE(AVG(${pageViews.duration}) / 1000.0, 0)`,
         totalViews: sql<number>`COUNT(*)`,
-
       })
       .from(pageViews)
       .where(inArray(pageViews.sessionId, sessionIds))
@@ -1238,20 +1248,19 @@ async function getSessionsWithPageData(
 
     // Group averaged page views by session
     const pageViewsBySession = new Map<string, any[]>();
-    pageViewsResult.forEach(pv => {
+    pageViewsResult.forEach((pv) => {
       if (!pageViewsBySession.has(pv.sessionId)) {
         pageViewsBySession.set(pv.sessionId, []);
       }
       pageViewsBySession.get(pv.sessionId)!.push({
         pageNumber: pv.pageNumber,
-        avgDuration: Number(pv.avgDuration) || 0,  // Keep decimal precision
+        avgDuration: Number(pv.avgDuration) || 0, // Keep decimal precision
         totalViews: Number(pv.totalViews) || 0,
-
       });
     });
 
     // Format sessions with their averaged page views
-    const sessions = sessionsResult.map(session => ({
+    const sessions = sessionsResult.map((session) => ({
       sessionId: session.sessionId,
       startedAt: session.startedAt,
       totalDuration: session.totalDuration,
@@ -1263,7 +1272,7 @@ async function getSessionsWithPageData(
       os: session.os,
       isUnique: session.isUnique,
       referer: session.referer,
-      pages: pageViewsBySession.get(session.sessionId) || []
+      pages: pageViewsBySession.get(session.sessionId) || [],
     }));
 
     // Get available filter options
@@ -1276,9 +1285,9 @@ async function getSessionsWithPageData(
         pagination: { page, limit, total, totalPages },
         filters: {
           applied: { email: emailSearch, device, country, dateFrom, dateTo },
-          available: availableFilters
-        }
-      }
+          available: availableFilters,
+        },
+      },
     };
   } else {
     // Get individual page views
@@ -1288,7 +1297,7 @@ async function getSessionsWithPageData(
         pageNumber: pageViews.pageNumber,
         duration: pageViews.duration,
 
-        viewedAt: pageViews.viewedAt
+        viewedAt: pageViews.viewedAt,
       })
       .from(pageViews)
       .where(inArray(pageViews.sessionId, sessionIds))
@@ -1296,7 +1305,7 @@ async function getSessionsWithPageData(
 
     // Group individual page views by session
     const pageViewsBySession = new Map<string, any[]>();
-    pageViewsResult.forEach(pv => {
+    pageViewsResult.forEach((pv) => {
       if (!pageViewsBySession.has(pv.sessionId)) {
         pageViewsBySession.set(pv.sessionId, []);
       }
@@ -1304,12 +1313,12 @@ async function getSessionsWithPageData(
         pageNumber: pv.pageNumber,
         duration: pv.duration,
 
-        viewedAt: pv.viewedAt
+        viewedAt: pv.viewedAt,
       });
     });
 
     // Format sessions with their individual page views
-    const sessions = sessionsResult.map(session => ({
+    const sessions = sessionsResult.map((session) => ({
       sessionId: session.sessionId,
       startedAt: session.startedAt,
       totalDuration: session.totalDuration,
@@ -1321,7 +1330,7 @@ async function getSessionsWithPageData(
       os: session.os,
       isUnique: session.isUnique,
       referer: session.referer,
-      pages: pageViewsBySession.get(session.sessionId) || []
+      pages: pageViewsBySession.get(session.sessionId) || [],
     }));
 
     // Get available filter options
@@ -1334,9 +1343,9 @@ async function getSessionsWithPageData(
         pagination: { page, limit, total, totalPages },
         filters: {
           applied: { email: emailSearch, device, country, dateFrom, dateTo },
-          available: availableFilters
-        }
-      }
+          available: availableFilters,
+        },
+      },
     };
   }
 }
@@ -1347,27 +1356,21 @@ async function getAvailableFilters(shareIds: string[]) {
     db
       .select({ device: viewSessions.device })
       .from(viewSessions)
-      .where(and(
-        inArray(viewSessions.shareId, shareIds),
-        isNotNull(viewSessions.device)
-      ))
+      .where(and(inArray(viewSessions.shareId, shareIds), isNotNull(viewSessions.device)))
       .groupBy(viewSessions.device)
       .orderBy(viewSessions.device),
 
     db
       .select({ country: viewSessions.country })
       .from(viewSessions)
-      .where(and(
-        inArray(viewSessions.shareId, shareIds),
-        isNotNull(viewSessions.country)
-      ))
+      .where(and(inArray(viewSessions.shareId, shareIds), isNotNull(viewSessions.country)))
       .groupBy(viewSessions.country)
-      .orderBy(viewSessions.country)
+      .orderBy(viewSessions.country),
   ]);
 
   return {
-    devices: devices.map(d => d.device).filter(Boolean),
-    countries: countries.map(c => c.country).filter(Boolean)
+    devices: devices.map((d) => d.device).filter(Boolean),
+    countries: countries.map((c) => c.country).filter(Boolean),
   };
 }
 
@@ -1400,5 +1403,75 @@ export async function invalidateAllDashboardCache(): Promise<void> {
     logger.error("Failed to invalidate all dashboard cache", { error });
   }
 }
+
+// Public analytics endpoint - optimized for homepage display
+// Rate limit: 100 requests per 15 minutes per IP
+const publicAnalyticsRateLimit = createRateLimit(
+  15 * 60 * 1000, // 15 minutes
+  100, // 100 requests per window
+  "Too many requests for public analytics, please try again later",
+);
+
+router.get(
+  "/public/stats",
+  publicAnalyticsRateLimit,
+  asyncHandler(async (req: Request, res: Response) => {
+    const cacheKey = "public:analytics:stats";
+    const CACHE_TTL = 300; // 5 minutes cache for public data
+
+    try {
+      // Try to get cached data first
+      const cachedData = await getCache(cacheKey);
+      if (cachedData) {
+        logger.debug("Public analytics served from cache");
+        return successResponse(res, cachedData);
+      }
+
+      logger.debug("Cache miss, calculating public analytics");
+
+      // Get global statistics - optimized single query approach
+      const globalStats = await db
+        .select({
+          totalFiles: sql<number>`COUNT(DISTINCT ${files.id})`,
+          totalViews: sql<number>`COUNT(${viewSessions.id})`,
+          avgSessionDuration: sql<number>`COALESCE(AVG(${viewSessions.totalDuration}), 0)`,
+        })
+        .from(files)
+        .leftJoin(shareLinks, eq(files.id, shareLinks.fileId))
+        .leftJoin(viewSessions, eq(shareLinks.shareId, viewSessions.shareId));
+
+      const stats = globalStats[0];
+
+      // Format the response data
+      const responseData = {
+        totalViews: Number(stats?.totalViews) || 0,
+        totalDocs: Number(stats?.totalFiles) || 0,
+        avgSession: Math.round(Number(stats?.avgSessionDuration) || 0), // in seconds
+      };
+
+      // Cache the calculated data
+      await setCache(cacheKey, responseData, CACHE_TTL);
+      logger.debug("Public analytics cached", {
+        totalViews: responseData.totalViews,
+        totalDocs: responseData.totalDocs,
+        avgSession: responseData.avgSession,
+      });
+
+      successResponse(res, responseData);
+    } catch (error) {
+      logger.error("Public analytics calculation failed", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+
+      // Return safe fallback data
+      successResponse(res, {
+        totalViews: 0,
+        totalDocs: 0,
+        avgSession: 0,
+      });
+    }
+  }),
+);
 
 export default router;
