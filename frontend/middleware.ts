@@ -1,21 +1,14 @@
 import { authMiddleware } from "@clerk/nextjs";
+import { NextResponse } from "next/server";
+import { config as appConfig } from "./lib/config";
 
 export default authMiddleware({
   // Routes that can be accessed while signed out
   publicRoutes: [
-    "/",
+    ...appConfig.seo.publicLandingPages,
     "/sign-in",
     "/sign-up",
     "/sso-callback",
-    "/document-tracking-system",
-    "/track-documents-online",
-    "/free-pdf-tracking",
-    "/how-to-track-pdf-views",
-    "/secure-pdf-sharing-guide",
-    "/pdf-analytics-tutorial",
-    "/pdf-tracking-faq",
-    "/pdf-privacy-policy",
-    "/pdf-sharing-terms",
     "/cookies",
     "/data-rights",
     "/view/(.*)", // Allow public access to shared files
@@ -29,13 +22,20 @@ export default authMiddleware({
   // Optional: Configure which routes to run middleware on
   // This is useful if you want to run middleware on all routes
   // except for certain ones
-  beforeAuth: (_req) => {
+  beforeAuth: (req) => {
     // Handle any pre-auth logic here
     return;
   },
-  afterAuth: (_auth, _req) => {
-    // Handle any post-auth logic here
-    return;
+  afterAuth: (auth, req) => {
+    // For public landing pages, set proper cache-control headers for SEO
+    if (appConfig.seo.publicLandingPages.includes(req.nextUrl.pathname as any)) {
+      // Create a new response with proper cache headers for SEO
+      const response = NextResponse.next();
+      response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=3600');
+      return response;
+    }
+    
+    return NextResponse.next();
   },
 });
 

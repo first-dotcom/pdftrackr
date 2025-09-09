@@ -59,6 +59,22 @@ export const config = {
     fileUpload: true,
     shareLinks: true,
   },
+
+  // Public landing pages that should be indexed by search engines
+  seo: {
+    publicLandingPages: [
+      "/",
+      "/document-tracking-system",
+      "/track-documents-online", 
+      "/free-pdf-tracking",
+      "/how-to-track-pdf-views",
+      "/secure-pdf-sharing-guide",
+      "/pdf-analytics-tutorial",
+      "/pdf-tracking-faq",
+      "/pdf-privacy-policy",
+      "/pdf-sharing-terms",
+    ] as const,
+  },
 } as const;
 
 // Export types for TypeScript
