@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import FeedbackModal from "@/components/FeedbackModal";
+import ConsentBanner from "@/components/ConsentBanner";
 import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -199,13 +200,24 @@ export default function RootLayout({
           <meta name="msapplication-TileColor" content="#3B82F6" />
           <meta name="theme-color" content="#3B82F6" />
           
-          {/* Google tag (gtag.js) */}
-          <script async src="https://www.googletagmanager.com/gtag/js?id=G-0D0FQG4352"></script>
+          {/* Default-deny consent mode before any GA loads */}
           <script
             dangerouslySetInnerHTML={{
               __html: `
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
+                gtag('consent', 'default', {
+                  analytics_storage: 'denied',
+                  ad_storage: 'denied'
+                });
+              `,
+            }}
+          />
+          {/* Google tag (gtag.js) - loads after consent */}
+          <script async src="https://www.googletagmanager.com/gtag/js?id=G-0D0FQG4352"></script>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
                 gtag('js', new Date());
                 gtag('config', 'G-0D0FQG4352');
               `,
@@ -215,6 +227,7 @@ export default function RootLayout({
         <body className={inter.className}>
           {children}
           <FeedbackModal />
+          <ConsentBanner />
         </body>
       </html>
     </ClerkProvider>
