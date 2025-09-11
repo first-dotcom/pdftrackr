@@ -138,6 +138,7 @@ const productSchema = {
   "@context": "https://schema.org",
   "@type": "Product",
   "name": "PDFTrackr",
+  "image": "https://pdftrackr.com/og-logo.png",
   "description": "Professional PDF tracking and analytics platform for freelancers and small businesses. Track PDF views, capture emails, and control access with secure sharing.",
   "brand": {
     "@type": "Brand",
@@ -148,6 +149,7 @@ const productSchema = {
     "@type": "Offer",
     "price": "0",
     "priceCurrency": "USD",
+    "url": "https://pdftrackr.com/",
     "availability": "https://schema.org/InStock",
     "description": "Free PDF tracking with 500MB storage"
   },
