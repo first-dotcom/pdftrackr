@@ -8,7 +8,7 @@ import SEOBreadcrumbs from "@/components/SEOBreadcrumbs";
 export const metadata: Metadata = {
   title: "Free PDF Tracking & Analytics (No Credit Card)",
   description:
-    "Free PDF tracking for freelancers and small teams. See who opens your files and what they read. 500MB included—no credit card required.",
+    "Free PDF tracking for freelancers and small teams. See who opens your files and what they read. 500MB included - no credit card required.",
   keywords: [
     "free PDF tracking",
     "PDF tracking free",
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Free PDF Tracking & Analytics (No Credit Card)",
     description:
-      "Free PDF tracking for freelancers and small teams. See who opens your files and what they read. 500MB included—no credit card required.",
+      "Free PDF tracking for freelancers and small teams. See who opens your files and what they read. 500MB included - no credit card required.",
     type: "website",
     url: "https://pdftrackr.com/free-pdf-tracking",
     images: [{ url: "https://pdftrackr.com/og-logo.png", alt: "PDFTrackr — simple PDF tracking for freelancers" }],

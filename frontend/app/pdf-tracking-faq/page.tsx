@@ -8,7 +8,7 @@ import LearnMoreSection from "@/components/LearnMoreSection";
 export const metadata: Metadata = {
   title: "PDF Tracking FAQ (Analytics & Security)",
   description:
-    "Quick answers to PDF tracking questions. Simple, clear help for freelancers and small businesses—start tracking for free.",
+    "Quick answers to PDF tracking questions. Simple, clear help for freelancers and small businesses - start tracking for free.",
   keywords: [
     "PDF tracking FAQ",
     "can a downloaded pdf be tracked",
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "PDF Tracking FAQ (Analytics & Security)",
     description:
-      "Quick answers to PDF tracking questions. Simple, clear help for freelancers and small businesses—start tracking for free.",
+      "Quick answers to PDF tracking questions. Simple, clear help for freelancers and small businesses - start tracking for free.",
     type: "article",
     url: "https://pdftrackr.com/pdf-tracking-faq",
     images: [{ url: "https://pdftrackr.com/og-logo.png", alt: "PDFTrackr — simple PDF tracking for freelancers" }],

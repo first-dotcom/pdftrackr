@@ -9,7 +9,7 @@ import SEOBreadcrumbs from "@/components/SEOBreadcrumbs";
 export const metadata: Metadata = {
   title: "Track Documents Online (Cloud Analytics)",
   description:
-    "Track documents online with ease. Affordable cloud analytics for freelancers—no complex setup, no big-company software required.",
+    "Track documents online with ease. Affordable cloud analytics for freelancers - no complex setup, no big-company software required.",
   keywords: [
     "track documents online",
     "online document tracking",
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Track Documents Online (Cloud Analytics)",
     description:
-      "Track documents online with ease. Affordable cloud analytics for freelancers—no complex setup, no big-company software required.",
+      "Track documents online with ease. Affordable cloud analytics for freelancers - no complex setup, no big-company software required.",
     type: "website",
     url: "https://pdftrackr.com/track-documents-online",
     images: [{ url: "https://pdftrackr.com/og-logo.png", alt: "PDFTrackr — simple PDF tracking for freelancers" }],
