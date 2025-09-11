@@ -153,12 +153,12 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
           {/* Main Content */}
           <div className="pt-10 pb-8 sm:pt-12 sm:pb-16 md:pt-16 md:pb-20">
             <div className="text-center">
-              <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl">
+              <h2 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl">
                 <span className="block">PDF Tracking & Analytics</span>
                 <span className="block text-primary-600">
                   - Simple Document Sharing for Freelancers
                 </span>
-              </h1>
+              </h2>
 
               <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto">
                 Track PDF views, capture emails, and control access with our secure sharing
