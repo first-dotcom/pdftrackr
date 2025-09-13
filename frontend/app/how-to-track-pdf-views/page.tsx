@@ -4,12 +4,13 @@ import Link from "next/link";
 import Script from "next/script";
 import CTAButton from "@/components/CTAButton";
 import LearnMoreSection from "@/components/LearnMoreSection";
+import LastUpdated from "@/components/LastUpdated";
 import SEOBreadcrumbs from "@/components/SEOBreadcrumbs";
 
 export const metadata: Metadata = {
-  title: "How to Track PDF Views (Step‑by‑Step Guide)",
+  title: "How to Track PDF Views 2025 (Step‑by‑Step Guide)",
   description:
-    "Learn how to track PDF views in minutes. A simple, step-by-step guide for freelancers and small businesses. Free storage included.",
+    "How to track PDF views 2025: Complete step-by-step guide for freelancers & small businesses. Learn PDF tracking in minutes with free storage included!",
   keywords: [
     "how to track PDF views",
     "PDF tracking guide",
@@ -129,6 +130,8 @@ export default function HowToTrackPdfViewsPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-8">
             How to Track PDF Views - Simple Guide for Freelancers & Small Businesses
           </h1>
+
+          <LastUpdated date="2025-09" />
 
           {/* TL;DR Section for AI Optimization */}
           <div className="bg-blue-50 border-l-4 border-blue-400 p-6 mb-8">

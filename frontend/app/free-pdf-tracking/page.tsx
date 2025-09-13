@@ -3,12 +3,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import CTAButton from "@/components/CTAButton";
 import LearnMoreSection from "@/components/LearnMoreSection";
+import LastUpdated from "@/components/LastUpdated";
 import SEOBreadcrumbs from "@/components/SEOBreadcrumbs";
 
 export const metadata: Metadata = {
-  title: "Free PDF Tracking & Analytics (No Credit Card)",
+  title: "Free PDF Tracking Software 2025 (No Credit Card)",
   description:
-    "Free PDF tracking for freelancers and small teams. See who opens your files and what they read. 500MB included - no credit card required.",
+    "Free PDF tracking software 2025 for freelancers & teams. Track who opens your files with 500MB free storage. Start tracking today - no credit card required!",
   keywords: [
     "free PDF tracking",
     "PDF tracking free",
@@ -160,6 +161,8 @@ export default function FreePdfTrackingPage() {
             Learn how to get started with our <Link href="/how-to-track-pdf-views" className="text-primary-600 hover:text-primary-800 underline">step-by-step PDF tracking guide</Link> or explore our <Link href="/pdf-analytics-tutorial" className="text-primary-600 hover:text-primary-800 underline">analytics tutorial</Link>.
           </p>
         </div>
+
+        <LastUpdated date="2025-09" />
 
         {/* TL;DR Section for AI Optimization */}
         <div className="bg-blue-50 border-l-4 border-blue-400 p-6 mb-8">

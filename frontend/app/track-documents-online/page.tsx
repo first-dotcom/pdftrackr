@@ -4,10 +4,11 @@ import Link from "next/link";
 import React from "react";
 import CTAButton from "@/components/CTAButton";
 import LearnMoreSection from "@/components/LearnMoreSection";
+import LastUpdated from "@/components/LastUpdated";
 import SEOBreadcrumbs from "@/components/SEOBreadcrumbs";
 
 export const metadata: Metadata = {
-  title: "Track Documents Online (Cloud Analytics)",
+  title: "Track Documents Online 2025 (Cloud Analytics)",
   description:
     "Track documents online with ease. Affordable cloud analytics for freelancers - no complex setup, no big-company software required.",
   keywords: [
@@ -155,6 +156,8 @@ export default function TrackDocumentsOnlinePage() {
             Get started with our <Link href="/free-pdf-tracking" className="text-primary-600 hover:text-primary-800 underline">free PDF tracking solution</Link> or learn more about our <Link href="/document-tracking-system" className="text-primary-600 hover:text-primary-800 underline">complete document tracking system</Link>.
           </p>
         </div>
+
+        <LastUpdated date="2025-09" />
 
         {/* TL;DR Section for AI Optimization */}
         <div className="bg-blue-50 border-l-4 border-blue-400 p-6 mb-8">

@@ -4,9 +4,10 @@ import Link from "next/link";
 import Script from "next/script";
 import CTAButton from "@/components/CTAButton";
 import LearnMoreSection from "@/components/LearnMoreSection";
+import LastUpdated from "@/components/LastUpdated";
 
 export const metadata: Metadata = {
-  title: "PDF Tracking FAQ (Analytics & Security)",
+  title: "PDF Tracking FAQ 2025 (Analytics & Security)",
   description:
     "Quick answers to PDF tracking questions. Simple, clear help for freelancers and small businesses - start tracking for free.",
   keywords: [
@@ -54,7 +55,7 @@ const faqData = [
       {
         question: "How does PDF tracking work?",
         answer:
-          "PDFTrackr uses secure link-based tracking. When you upload a PDF, we create a unique, secure URL that viewers access instead of downloading the file directly. This allows us to track views, engagement time, geographic location, and other analytics while keeping your document secure and protected.",
+          "PDFTrackr uses secure link-based tracking. When you upload a PDF, we create a unique, secure URL that viewers access instead of downloading the file directly. This allows us to track views, engagement time, geographic location, and other analytics while keeping your document secure and protected. For a complete setup guide, see our <Link href=\"/how-to-track-pdf-views\" className=\"text-primary-600 hover:text-primary-800 underline\">how to track PDF views tutorial</Link>.",
       },
       {
         question: "Is PDF tracking legal and ethical?",
@@ -70,7 +71,7 @@ const faqData = [
       {
         question: "How secure is PDF tracking?",
         answer:
-          "PDFTrackr provides enterprise-grade security for your documents. All data is encrypted using TLS/SSL protocols, files are virus-scanned automatically, and we implement strict access controls. Your documents are stored in secure cloud infrastructure with regular security audits and compliance with industry standards.",
+          "PDFTrackr provides enterprise-grade security for your documents. All data is encrypted using TLS/SSL protocols, files are virus-scanned automatically, and we implement strict access controls. Your documents are stored in secure cloud infrastructure with regular security audits and compliance with industry standards. Learn more about our <Link href=\"/secure-pdf-sharing-guide\" className=\"text-primary-600 hover:text-primary-800 underline\">secure PDF sharing features</Link>.",
       },
       {
         question: "Can PDF tracking be detected by viewers?",
@@ -143,7 +144,7 @@ const faqData = [
       {
         question: "Is PDF tracking free?",
         answer:
-          "Yes! PDFTrackr offers a generous free plan with 500MB storage, basic tracking features, and essential analytics. No credit card is required to get started. For advanced features and higher storage limits, we offer Pro plans starting Q4 2025.",
+          "Yes! PDFTrackr offers a generous free plan with 500MB storage, basic tracking features, and essential analytics. No credit card is required to get started. For advanced features and higher storage limits, we offer Pro plans starting Q4 2025. Learn more about our <Link href=\"/free-pdf-tracking\" className=\"text-primary-600 hover:text-primary-800 underline\">free PDF tracking solution</Link>.",
       },
       {
         question: "What's included in the free plan?",
@@ -259,6 +260,8 @@ export default function FAQPage() {
 
         <div className="bg-white shadow-sm rounded-lg p-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">PDF Tracking FAQ (Analytics & Security)</h1>
+
+          <LastUpdated date="2025-09" />
 
           <div className="prose prose-gray max-w-none">
             <p className="text-lg text-gray-600 mb-8">

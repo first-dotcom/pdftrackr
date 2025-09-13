@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "PDF Tracking & Analytics - Simple Document Sharing for Freelancers",
+    default: "PDF Tracking Software 2025 - Simple Document Sharing for Freelancers",
     template: "%s | PDFTrackr",
   },
   description:

@@ -15,12 +15,13 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 import CTAButton from "@/components/CTAButton";
+import LastUpdated from "@/components/LastUpdated";
 import SEOBreadcrumbs from "@/components/SEOBreadcrumbs";
 
 export const metadata: Metadata = {
-  title: "Document Tracking System for Freelancers & Teams",
+  title: "Document Tracking System 2025 for Freelancers & Teams",
   description:
-    "Track client documents with simple PDF analytics. Built for freelancers and small teams who need insights without big-company complexity.",
+    "Document tracking system 2025 for freelancers & teams. Simple PDF analytics without big-company complexity. Start tracking client documents today!",
   keywords: [
     "document tracking system",
     "PDF tracking system",
@@ -208,6 +209,8 @@ export default function DocumentTrackingSystemPage() {
             Learn more about our <Link href="/free-pdf-tracking" className="text-primary-600 hover:text-primary-800 underline">free PDF tracking solution</Link> or explore our <Link href="/pdf-analytics-tutorial" className="text-primary-600 hover:text-primary-800 underline">comprehensive analytics tutorial</Link>.
           </p>
         </div>
+
+        <LastUpdated date="2025-09" />
 
         {/* TL;DR Section for AI Optimization */}
         <div className="bg-blue-50 border-l-4 border-blue-400 p-6 mb-8">

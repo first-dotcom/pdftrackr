@@ -12,11 +12,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import CTAButton from "@/components/CTAButton";
 import LearnMoreSection from "@/components/LearnMoreSection";
+import LastUpdated from "@/components/LastUpdated";
 
 export const metadata: Metadata = {
-  title: "PDF Analytics Tutorial (Simple Insights)",
+  title: "PDF Analytics Tutorial 2025 (Simple Insights)",
   description:
-    "Master PDF analytics without the complexity. Simple insights built for freelancers, consultants, and small teams.",
+    "PDF analytics tutorial 2025: Master document insights for freelancers, consultants & teams. Learn analytics without complexity - start analyzing today!",
   keywords: [
     "PDF analytics tutorial",
     "PDF analytics guide",
@@ -77,6 +78,8 @@ export default function PdfAnalyticsTutorialPage() {
             PDF Analytics Tutorial - Simple Insights for Freelancers & Small Teams
           </h1>
 
+          <LastUpdated date="2025-09" />
+
           {/* TL;DR Section for AI Optimization */}
           <div className="bg-blue-50 border-l-4 border-blue-400 p-6 mb-8">
             <h3 className="text-lg font-semibold text-blue-800 mb-3">TL;DR</h3>
@@ -91,7 +94,7 @@ export default function PdfAnalyticsTutorialPage() {
 
           <div className="prose prose-gray max-w-none">
             <p className="text-lg text-gray-600 mb-6">
-              Master PDF analytics without the complexity. Learn how to understand document performance and optimize your content strategy. Perfect for consultants and solopreneurs.
+              Master PDF analytics without the complexity. Learn how to understand document performance and optimize your content strategy. Perfect for consultants and solopreneurs. <Link href="/free-pdf-tracking" className="text-primary-600 hover:text-primary-800 underline">Get started with our free PDF tracking solution</Link> to begin analyzing your documents today.
             </p>
 
         {/* Industry Statistics for Citation Boost */}
@@ -229,7 +232,7 @@ export default function PdfAnalyticsTutorialPage() {
               Step 2: Configure Tracking Settings
             </h3>
             <p className="text-gray-600 mb-4">
-              Set up your analytics preferences to capture the data you need:
+              Set up your analytics preferences to capture the data you need. For detailed guidance on <Link href="/secure-pdf-sharing-guide" className="text-primary-600 hover:text-primary-800 underline">security settings and access controls</Link>, see our comprehensive guide:
             </p>
             <ul className="list-disc pl-6 text-gray-600 mb-4">
               <li>

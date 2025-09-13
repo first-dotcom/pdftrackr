@@ -3,9 +3,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import CTAButton from "@/components/CTAButton";
 import LearnMoreSection from "@/components/LearnMoreSection";
+import LastUpdated from "@/components/LastUpdated";
 
 export const metadata: Metadata = {
-  title: "Secure PDF Sharing Guide (Simple Protection)",
+  title: "Secure PDF Sharing Guide 2025 (Simple Protection)",
   description:
     "Keep client PDFs secure without the hassle. Simple, affordable sharing tools for freelancers and small teams.",
   keywords: [
@@ -65,6 +66,8 @@ export default function SecurePdfSharingGuidePage() {
 
         <div className="bg-white shadow-sm rounded-lg p-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">Secure PDF Sharing Guide (Simple Protection)</h1>
+
+          <LastUpdated date="2025-09" />
 
           {/* TL;DR Section for AI Optimization */}
           <div className="bg-blue-50 border-l-4 border-blue-400 p-6 mb-8">
@@ -257,7 +260,8 @@ export default function SecurePdfSharingGuidePage() {
                   className="text-primary-600 hover:text-primary-700 underline"
                 >
                   tracking and analytics
-                </Link>
+                </Link>{" "}
+                with comprehensive <Link href="/pdf-analytics-tutorial" className="text-primary-600 hover:text-primary-800 underline">analytics features</Link>
               </li>
             </ul>
 
@@ -277,7 +281,7 @@ export default function SecurePdfSharingGuidePage() {
             <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
               Step 5: Monitor and Manage
             </h3>
-            <p className="text-gray-600 mb-4">Track document access and manage security:</p>
+            <p className="text-gray-600 mb-4">Track document access and manage security with our comprehensive <Link href="/document-tracking-system" className="text-primary-600 hover:text-primary-800 underline">document tracking system</Link>:</p>
             <ul className="list-disc pl-6 text-gray-600 mb-4">
               <li>Monitor who accesses your documents</li>
               <li>Track viewing patterns and engagement</li>
