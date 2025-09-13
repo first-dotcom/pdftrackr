@@ -121,7 +121,31 @@ const softwareApplicationSchema = {
     "@type": "Offer",
     "price": "0",
     "priceCurrency": "USD",
-    "description": "Free PDF tracking with 500MB storage"
+    "priceValidUntil": "2026-12-31",
+    "description": "Free PDF tracking with 500MB storage",
+    "shippingDetails": {
+      "@type": "OfferShippingDetails",
+      "shippingRate": {
+        "@type": "MonetaryAmount",
+        "value": "0",
+        "currency": "USD"
+      },
+      "deliveryTime": {
+        "@type": "ShippingDeliveryTime",
+        "handlingTime": {
+          "@type": "QuantitativeValue",
+          "minValue": 0,
+          "maxValue": 0,
+          "unitCode": "DAY"
+        },
+        "transitTime": {
+          "@type": "QuantitativeValue",
+          "minValue": 0,
+          "maxValue": 0,
+          "unitCode": "DAY"
+        }
+      }
+    }
   },
   "featureList": [
     "PDF View Tracking",
@@ -150,9 +174,33 @@ const productSchema = {
     "@type": "Offer",
     "price": "0",
     "priceCurrency": "USD",
+    "priceValidUntil": "2026-12-31",
     "url": "https://pdftrackr.com/",
     "availability": "https://schema.org/InStock",
-    "description": "Free PDF tracking with 500MB storage"
+    "description": "Free PDF tracking with 500MB storage",
+    "shippingDetails": {
+      "@type": "OfferShippingDetails",
+      "shippingRate": {
+        "@type": "MonetaryAmount",
+        "value": "0",
+        "currency": "USD"
+      },
+      "deliveryTime": {
+        "@type": "ShippingDeliveryTime",
+        "handlingTime": {
+          "@type": "QuantitativeValue",
+          "minValue": 0,
+          "maxValue": 0,
+          "unitCode": "DAY"
+        },
+        "transitTime": {
+          "@type": "QuantitativeValue",
+          "minValue": 0,
+          "maxValue": 0,
+          "unitCode": "DAY"
+        }
+      }
+    }
   },
   "aggregateRating": {
     "@type": "AggregateRating",
