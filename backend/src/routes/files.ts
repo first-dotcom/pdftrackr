@@ -418,8 +418,9 @@ router.delete(
         });
       }
 
-      // ✅ FIXED: Invalidate user profile cache ONLY after successful deletion
+      // ✅ FIXED: Invalidate user profile cache and dashboard cache after successful deletion
       await deleteCache(`user_profile:${req.user?.id}`);
+      await invalidateUserDashboardCache(req.user?.id);
 
       successResponse(res, null, "File deleted successfully");
     } catch (error) {
