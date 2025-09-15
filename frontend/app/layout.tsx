@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     template: "%s | PDFTrackr",
   },
   description:
-    "Track who reads your PDFs with page-by-page insights, secure sharing, and comprehensive analytics. Perfect for freelancers and small businesses. Free 500MB storage, no credit card required.",
+    "Track who reads your PDFs with page-by-page insights, secure sharing, and simple analytics. Built for freelancers and small teams. Free 500MB storage.",
   keywords: [
     "PDF tracking",
     "PDF analytics",
