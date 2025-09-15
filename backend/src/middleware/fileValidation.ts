@@ -251,11 +251,12 @@ export const validatePDFSecurity = async (req: Request, _res: Response, next: Ne
         error: errorMessage,
       });
 
-      // Check if this is a ClamAV unavailability issue
-      if (errorMessage.includes("ClamAV unavailable")) {
-        logger.warn("ClamAV unavailable - allowing upload with structure validation only", {
+      // Check if this is a ClamAV unavailability or timeout issue
+      if (errorMessage.includes("ClamAV unavailable") || errorMessage.includes("ClamAV scan timeout")) {
+        logger.warn("ClamAV unavailable or timed out - allowing upload with structure validation only", {
           filename: file.originalname,
           fileId,
+          error: errorMessage,
         });
         
         // Allow the upload to proceed with structure-only validation

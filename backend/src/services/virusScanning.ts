@@ -27,7 +27,7 @@ class ClamAVScanner {
       return new Promise((resolve, reject) => {
         const socket = net.createConnection(this.port, this.host);
 
-        socket.setTimeout(30000); // 30 second timeout
+        socket.setTimeout(120000); // 120 second timeout for large PDF files
 
         socket.on("connect", () => {
           logger.info(`Connected to ClamAV at ${this.host}:${this.port}`);
