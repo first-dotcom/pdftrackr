@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { Router } from "express";
 import type { Request, Response } from "express";
 import { asyncHandler } from "../middleware/errorHandler";
-import { createRateLimit, normalizeIp } from "../middleware/security";
+import { normalizeIp } from "../middleware/security";
 import { pageViews, viewSessions } from "../models/schema";
 import { auditService } from "../services/auditService";
 import { db } from "../utils/database";
@@ -10,12 +10,6 @@ import { logger } from "../utils/logger";
 
 const router: Router = Router();
 
-// Rate limiting for analytics - more generous since these are frequent
-const analyticsRateLimit = createRateLimit(
-  60 * 1000, // 1 minute window
-  100, // 100 requests per minute per IP
-  "Too many analytics requests",
-);
 
 // 📊 SESSION START TRACKING
 // Sessions are now created in share.ts when accessing share links
@@ -24,7 +18,6 @@ const analyticsRateLimit = createRateLimit(
 // 📊 PAGE VIEW TRACKING
 router.post(
   "/page-view",
-  analyticsRateLimit,
   normalizeIp,
   asyncHandler(async (req: Request, res: Response) => {
     let pageViewData: any;
@@ -136,7 +129,6 @@ router.post(
 // 📊 SESSION END TRACKING
 router.post(
   "/session-end",
-  analyticsRateLimit,
   normalizeIp,
   asyncHandler(async (req: Request, res: Response) => {
     let sessionData: any;
@@ -216,7 +208,6 @@ router.post(
 // 📊 SESSION ACTIVITY TRACKING (Heartbeat)
 router.post(
   "/session-activity",
-  analyticsRateLimit,
   normalizeIp,
   asyncHandler(async (req: Request, res: Response) => {
     const { sessionId, lastActiveAt, currentPage } = req.body;
@@ -258,7 +249,6 @@ router.post(
 // 📊 RETURN VISIT TRACKING
 router.post(
   "/return-visit",
-  analyticsRateLimit,
   normalizeIp,
   asyncHandler(async (req: Request, res: Response) => {
     const { shareId, email, totalVisits, daysSinceFirst } = req.body;
@@ -300,7 +290,6 @@ router.post(
 // 📊 ANALYTICS DASHBOARD DATA
 router.get(
   "/document/:shareId/stats",
-  createRateLimit(60 * 1000, 30, "Too many analytics requests"),
   normalizeIp,
   asyncHandler(async (req: Request, res: Response) => {
     const { shareId } = req.params;
@@ -333,7 +322,6 @@ router.get(
 // 📊 USER ENGAGEMENT PROFILE
 router.get(
   "/user/:email/profile",
-  createRateLimit(60 * 1000, 20, "Too many analytics requests"),
   normalizeIp,
   asyncHandler(async (req: Request, res: Response) => {
     const { email } = req.params;

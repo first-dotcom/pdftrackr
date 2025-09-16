@@ -18,7 +18,6 @@ import type { Request, Response } from "express";
 import { z } from "zod";
 import { authenticate } from "../middleware/auth";
 import { CustomError, asyncHandler } from "../middleware/errorHandler";
-import { createRateLimit } from "../middleware/security";
 import { validateQuery } from "../middleware/validation";
 import {
   analyticsSummary,
@@ -1405,16 +1404,8 @@ export async function invalidateAllDashboardCache(): Promise<void> {
 }
 
 // Public analytics endpoint - optimized for homepage display
-// Rate limit: 100 requests per 15 minutes per IP
-const publicAnalyticsRateLimit = createRateLimit(
-  15 * 60 * 1000, // 15 minutes
-  100, // 100 requests per window
-  "Too many requests for public analytics, please try again later",
-);
-
 router.get(
   "/public/stats",
-  publicAnalyticsRateLimit,
   asyncHandler(async (req: Request, res: Response) => {
     const cacheKey = "public:analytics:stats";
     const CACHE_TTL = 300; // 5 minutes cache for public data

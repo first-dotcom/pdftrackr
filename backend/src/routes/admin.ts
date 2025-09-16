@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { eq, sql } from "drizzle-orm";
 import { authenticate } from "../middleware/auth";
-import { createRateLimit } from "../middleware/security";
 import { users, files, viewSessions, waitlist, feedback } from "../models/schema";
 import { db } from "../utils/database";
 import { logger } from "../utils/logger";
@@ -19,11 +18,9 @@ const requireAdmin = (req: any, _res: any, next: any) => {
   next();
 };
 
-// Rate limit for all admin routes
-const adminRateLimit = createRateLimit(60 * 1000, 30, "Too many admin requests");
 
 // GET /api/admin/stats - Get overall statistics
-router.get("/stats", adminRateLimit, authenticate, requireAdmin, async (req, res, next) => {
+router.get("/stats", authenticate, requireAdmin, async (req, res, next) => {
   try {
     // Get basic counts
     const [usersCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(users);
@@ -99,7 +96,7 @@ router.get("/stats", adminRateLimit, authenticate, requireAdmin, async (req, res
 });
 
 // GET /api/admin/users - Get all users with their stats
-router.get("/users", adminRateLimit, authenticate, requireAdmin, async (req, res, next) => {
+router.get("/users", authenticate, requireAdmin, async (req, res, next) => {
   try {
     // Efficient query to get users with their total views in a single query
     // Using LEFT JOIN to get all users even if they have no views
@@ -140,7 +137,7 @@ router.get("/users", adminRateLimit, authenticate, requireAdmin, async (req, res
 });
 
 // GET /api/admin/waitlist - Get all waitlist entries
-router.get("/waitlist", adminRateLimit, authenticate, requireAdmin, async (req, res, next) => {
+router.get("/waitlist", authenticate, requireAdmin, async (req, res, next) => {
   try {
     const waitlistEntries = await db
       .select({
@@ -164,7 +161,7 @@ router.get("/waitlist", adminRateLimit, authenticate, requireAdmin, async (req, 
 });
 
 // GET /api/admin/feedback - Get all feedback entries
-router.get("/feedback", adminRateLimit, authenticate, requireAdmin, async (req, res, next) => {
+router.get("/feedback", authenticate, requireAdmin, async (req, res, next) => {
   try {
     const feedbackEntries = await db
       .select({

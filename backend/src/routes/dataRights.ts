@@ -3,7 +3,7 @@ import { z } from "zod";
 import { eq, and, desc } from "drizzle-orm";
 import { authenticate } from "../middleware/auth";
 import { asyncHandler } from "../middleware/errorHandler";
-import { createRateLimit, normalizeIp } from "../middleware/security";
+import { normalizeIp } from "../middleware/security";
 import { validateBody } from "../middleware/validation";
 import { CustomError } from "../middleware/errorHandler";
 import { users, files, shareLinks, viewSessions, pageViews, emailCaptures, analyticsSummary } from "../models/schema";
@@ -15,12 +15,6 @@ import { config } from "../config";
 
 const router: Router = Router();
 
-// Rate limiting for data rights requests
-const dataRightsRateLimit = createRateLimit(
-  60 * 1000, // 1 minute window
-  5, // 5 requests per minute per IP
-  "Too many data rights requests"
-);
 
 // Data rights request schema
 const dataRightsRequestSchema = z.object({
@@ -46,7 +40,6 @@ const rectificationSchema = z.object({
  */
 router.post(
   "/",
-  dataRightsRateLimit,
   normalizeIp,
   authenticate,
   validateBody(dataRightsRequestSchema),

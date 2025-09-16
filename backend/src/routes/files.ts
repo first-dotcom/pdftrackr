@@ -14,7 +14,6 @@ import { config } from "../config";
 import { authenticate } from "../middleware/auth";
 import { CustomError, asyncHandler } from "../middleware/errorHandler";
 import {
-  createUploadRateLimit,
   validateMimeType,
   validatePDFSecurity,
 } from "../middleware/fileValidation";
@@ -57,7 +56,6 @@ const upload = multer({
 // Upload PDF file - Enhanced security
 router.post(
   "/upload",
-  createUploadRateLimit(), // Rate limiting for uploads
   authenticate,
   upload.single("file"),
   validateMimeType, // Validate MIME type first

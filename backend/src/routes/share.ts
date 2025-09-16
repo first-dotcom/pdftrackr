@@ -8,7 +8,7 @@ import { config } from "../config";
 import { authenticate, optionalAuth } from "../middleware/auth";
 import { CustomError, asyncHandler } from "../middleware/errorHandler";
 import { pdfViews } from "../middleware/metrics";
-import { createRateLimit, normalizeIp } from "../middleware/security";
+import { normalizeIp } from "../middleware/security";
 import { validateBody } from "../middleware/validation";
 import { emailCaptures, files, pageViews, shareLinks, viewSessions } from "../models/schema";
 import { auditService } from "../services/auditService";
@@ -237,7 +237,6 @@ router.get(
 // Access share link (authenticate with password if required)
 router.post(
   "/:shareId/access",
-  createRateLimit(15 * 60 * 1000, 20, "Too many access attempts"),
   validateBody(shareAccessSchema),
   normalizeIp,
   asyncHandler(async (req: Request, res: Response) => {
@@ -541,7 +540,6 @@ router.options("/:shareId/view", (req: Request, res: Response) => {
 // Secure PDF proxy endpoint - stream PDF with access validation
 router.get(
   "/:shareId/view",
-  createRateLimit(5 * 60 * 1000, 50, "Too many PDF view requests"),
   normalizeIp,
   asyncHandler(async (req: Request, res: Response) => {
     const { shareId } = req.params;

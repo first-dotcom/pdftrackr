@@ -2,7 +2,6 @@ import compression from "compression";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { type Request } from "express";
-import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import morgan from "morgan";
 import { config } from "./config";
@@ -89,28 +88,6 @@ app.use(
   }),
 );
 
-// Rate limiting - production-optimized
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: config.env === "production" ? 1000 : 2000, // Relaxed limits for launch
-  message: {
-    error: "Too many requests from this IP, please try again later.",
-    retryAfter: "15 minutes",
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  skipSuccessfulRequests: true, // Don't count successful requests in production
-  skipFailedRequests: false, // Always count failed requests
-  keyGenerator: (req: Request) => {
-    // Use forwarded IP for production (behind proxy/load balancer)
-    return req.ip || req.connection.remoteAddress || "unknown";
-  },
-  skip: (req) => {
-    // Skip rate limiting for health checks
-    return req.path === "/health";
-  },
-});
-app.use(limiter);
 
 // CORS configuration - production-ready with strict origin validation
 app.use(
