@@ -444,6 +444,7 @@ export class AuditService {
           totalDuration: viewSessions.totalDuration,
           isUnique: viewSessions.isUnique,
           startedAt: viewSessions.startedAt,
+          lastActiveAt: viewSessions.lastActiveAt,
         })
         .from(viewSessions)
         .where(eq(viewSessions.shareId, shareId))
@@ -464,8 +465,19 @@ export class AuditService {
       const totalViews = sessions.length;
       const uniqueViewers = sessions.filter(s => s.isUnique).length;
       
+      // Robust duration calculation: fall back to (lastActiveAt - startedAt) if totalDuration is 0/undefined
+      const totalDurationSeconds = sessions.reduce((sum, s) => {
+        const explicit = Number(s.totalDuration || 0);
+        if (explicit > 0) return sum + explicit;
+        // Derive from timestamps in seconds if explicit duration is not available
+        const startedMs = s.startedAt ? new Date(s.startedAt).getTime() : 0;
+        const lastActiveMs = s.lastActiveAt ? new Date(s.lastActiveAt).getTime() : startedMs;
+        const derived = startedMs > 0 ? Math.max(0, Math.round((lastActiveMs - startedMs) / 1000)) : 0;
+        return sum + derived;
+      }, 0);
+
       const avgSessionDuration = sessions.length > 0
-        ? Math.round(sessions.reduce((sum, s) => sum + (s.totalDuration || 0), 0) / sessions.length)
+        ? Math.round(totalDurationSeconds / sessions.length)
         : 0;
 
       // Calculate completion rate based on page views
