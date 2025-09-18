@@ -7,7 +7,7 @@ export const emailSchema = z.string().email().max(255);
 export const nameSchema = z.string().min(1).max(100).trim();
 export const passwordSchema = z.string().min(8).max(128);
 export const pageNumberSchema = z.number().int().min(1).max(10000);
-export const durationSchema = z.number().int().min(0).max(86400); // max 24 hours
+export const durationSchema = z.number().int().min(0).max(86400000); // max 24 hours in milliseconds
 
 // File validation
 export const fileUploadSchema = z.object({

@@ -32,6 +32,10 @@ import { logger } from "../utils/logger";
 import { deleteCache, getCache, getCacheKeys, setCache } from "../utils/redis";
 import { successResponse } from "../utils/response";
 
+// Utility function for consistent page view duration calculation
+// Only averages non-zero durations (exit events) to avoid diluting with entry events (0ms)
+const avgNonZeroDuration = sql<number>`COALESCE(AVG(CASE WHEN ${pageViews.duration} > 0 THEN ${pageViews.duration} ELSE NULL END), 0)`;
+
 const router: Router = Router();
 
 // Get file analytics
@@ -164,7 +168,7 @@ router.get(
       .select({
         pageNumber: pageViews.pageNumber,
         views: sql<number>`COUNT(*)`,
-        avgDuration: sql<number>`COALESCE(AVG(${pageViews.duration}) / 1000.0, 0)`,
+        avgDuration: avgNonZeroDuration, // Use utility for consistent calculation
       })
       .from(pageViews)
       .innerJoin(viewSessions, eq(pageViews.sessionId, viewSessions.sessionId))
@@ -849,7 +853,7 @@ router.get(
       .select({
         pageNumber: pageViews.pageNumber,
         totalViews: sql<number>`COUNT(*)`,
-        avgDuration: sql<number>`COALESCE(AVG(${pageViews.duration}) / 1000.0, 0)`,
+        avgDuration: avgNonZeroDuration, // Use utility for consistent calculation
       })
       .from(pageViews)
       .innerJoin(viewSessions, eq(pageViews.sessionId, viewSessions.sessionId))
@@ -1018,13 +1022,14 @@ router.get(
       .limit(limit)
       .offset(offset);
 
-    // Get averaged page views for each session (grouped by page number)
+    // Get page views for each session (grouped by page number)
+    // Use utility for consistent non-zero duration calculation
     const sessionIds = sessionsResult.map((s) => s.sessionId);
     const pageViewsResult = await db
       .select({
         sessionId: pageViews.sessionId,
         pageNumber: pageViews.pageNumber,
-        avgDuration: sql<number>`COALESCE(AVG(${pageViews.duration}) / 1000.0, 0)`,
+        avgDuration: avgNonZeroDuration, // Use utility for consistent calculation
         totalViews: sql<number>`COUNT(*)`,
       })
       .from(pageViews)
@@ -1045,21 +1050,40 @@ router.get(
       });
     });
 
-    // Format sessions with their page views
-    const sessions = sessionsResult.map((session) => ({
-      sessionId: session.sessionId,
-      startedAt: session.startedAt,
-      totalDuration: session.totalDuration,
-      viewerEmail: session.viewerEmail,
-      viewerName: session.viewerName,
-      device: session.device,
-      country: session.country,
-      browser: session.browser,
-      os: session.os,
-      isUnique: session.isUnique,
-      referer: session.referer,
-      pages: pageViewsBySession.get(session.sessionId) || [],
-    }));
+    // Format sessions with their page views and calculate fallback duration
+    const sessions = sessionsResult.map((session) => {
+      let finalDuration = session.totalDuration;
+      
+      // Fallback: If session duration is 0 or null, calculate from page views
+      if (!finalDuration || finalDuration === 0) {
+        const sessionPages = pageViewsBySession.get(session.sessionId) || [];
+        // Sum all page durations (already filtered to non-zero at SQL level)
+        const totalPageDuration = sessionPages.reduce((sum, page) => sum + (page.avgDuration || 0), 0);
+        if (totalPageDuration > 0) {
+          finalDuration = Math.round(totalPageDuration);
+          logger.info(`Using fallback duration for session ${session.sessionId}: ${finalDuration}ms from ${sessionPages.length} page views`);
+        } else {
+          // Last resort: use a minimum estimated duration (1 second) if no data available
+          finalDuration = 1000; // 1 second minimum
+          logger.debug(`Using minimum fallback duration for session ${session.sessionId}: ${finalDuration}ms`);
+        }
+      }
+      
+      return {
+        sessionId: session.sessionId,
+        startedAt: session.startedAt,
+        totalDuration: finalDuration,
+        viewerEmail: session.viewerEmail,
+        viewerName: session.viewerName,
+        device: session.device,
+        country: session.country,
+        browser: session.browser,
+        os: session.os,
+        isUnique: session.isUnique,
+        referer: session.referer,
+        pages: pageViewsBySession.get(session.sessionId) || [],
+      };
+    });
 
     // Get available filter options
     const availableFilters = await getAvailableFilters(shareIds);
@@ -1237,7 +1261,7 @@ async function getSessionsWithPageData(
       .select({
         sessionId: pageViews.sessionId,
         pageNumber: pageViews.pageNumber,
-        avgDuration: sql<number>`COALESCE(AVG(${pageViews.duration}) / 1000.0, 0)`,
+        avgDuration: avgNonZeroDuration, // Use utility for consistent calculation
         totalViews: sql<number>`COUNT(*)`,
       })
       .from(pageViews)
@@ -1403,6 +1427,38 @@ export async function invalidateAllDashboardCache(): Promise<void> {
   }
 }
 
+export async function invalidateFileAnalyticsCache(fileId: number, userId: number): Promise<void> {
+  try {
+    // Collect all cache patterns for this file
+    const cachePatterns = [
+      `aggregate:${fileId}:${userId}:*`,  // Aggregate analytics
+      `individual:${fileId}:${userId}:*`, // Individual analytics  
+      `dashboard:${userId}:*`,            // User dashboard (may include this file)
+      `user_profile:${userId}`,           // User profile cache
+    ];
+    
+    let totalKeysDeleted = 0;
+    
+    for (const pattern of cachePatterns) {
+      const keys = await getCacheKeys(pattern);
+      if (keys.length > 0) {
+        for (const key of keys) {
+          await deleteCache(key);
+        }
+        totalKeysDeleted += keys.length;
+      }
+    }
+    
+    logger.info("Invalidated file analytics cache", { 
+      fileId, 
+      userId, 
+      keysDeleted: totalKeysDeleted 
+    });
+  } catch (error) {
+    logger.error("Failed to invalidate file analytics cache", { fileId, userId, error });
+  }
+}
+
 // Public analytics endpoint - optimized for homepage display
 router.get(
   "/public/stats",
@@ -1437,7 +1493,7 @@ router.get(
       const responseData = {
         totalViews: Number(stats?.totalViews) || 0,
         totalDocs: Number(stats?.totalFiles) || 0,
-        avgSession: Math.round(Number(stats?.avgSessionDuration) || 0), // in seconds
+        avgSession: Math.round((Number(stats?.avgSessionDuration) || 0) / 1000), // Convert milliseconds to seconds for public API
       };
 
       // Cache the calculated data

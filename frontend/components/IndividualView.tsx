@@ -17,7 +17,7 @@ import {
 } from "recharts";
 import type { AppliedFilters, PaginatedSessionsResponse } from "../../shared/types/api";
 import { apiClient } from "../lib/api-client";
-import { formatViewTime } from "../utils/formatters";
+import { formatDuration } from "../utils/formatters";
 import LoadingSpinner from "./LoadingSpinner";
 
 interface IndividualViewProps {
@@ -346,7 +346,7 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
                     {new Date(session.startedAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatViewTime(session.totalDuration)}
+                    {formatDuration(session.totalDuration)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {session.device || "Unknown"}
@@ -402,7 +402,7 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
                               }}
                             />
                             <Tooltip
-                              formatter={(value: any) => [formatViewTime(value), "Average Time"]}
+                              formatter={(value: any) => [formatDuration(value), "Average Time"]}
                               labelFormatter={(label) => label}
                             />
                             <Line

@@ -441,7 +441,14 @@ export default function SecurePDFViewer({
           const blob = new Blob([JSON.stringify(sessionEndData)], {
             type: 'application/json',
           });
-          navigator.sendBeacon(`${config.api.url}/api/analytics/session-end`, blob);
+          const success = navigator.sendBeacon(`${config.api.url}/api/analytics/session-end`, blob);
+          if (!success) {
+            console.warn('sendBeacon failed, trying fallback');
+            // Store for retry later
+            storeFailedAnalytics(sessionEndData, "sessionEnd");
+          } else {
+            console.log('Session end tracked via sendBeacon');
+          }
         } else {
           // Fallback to synchronous tracking
           trackSessionEnd();

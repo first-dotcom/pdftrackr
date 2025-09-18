@@ -2,7 +2,7 @@
 
 import { apiClient } from "@/lib/api-client";
 import { type AggregateAnalytics } from "@/shared/types/api";
-import { formatViewTime } from "@/utils/formatters";
+import { formatDuration } from "@/utils/formatters";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   CartesianGrid,
@@ -117,7 +117,7 @@ export default function AggregateView({ fileId, totalPages, days = 30 }: Aggrega
                 label={{ value: "Time (seconds)", angle: -90, position: "insideLeft" }}
               />
               <Tooltip
-                formatter={(value: any) => [formatViewTime(value), "Average Time"]}
+                formatter={(value: any) => [formatDuration(value), "Average Time"]}
                 labelFormatter={(label) => label}
               />
               <Line

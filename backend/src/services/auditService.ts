@@ -258,15 +258,16 @@ export class AuditService {
     ip: string;
     userAgent: string;
     email?: string;
-    durationSeconds: number;
+    durationMs: number;
     pagesViewed: number;
     totalPages: number;
     maxPageReached: number;
     sessionId?: string;
   }) {
     const completionRate = Math.round((data.maxPageReached / data.totalPages) * 100);
+    const durationSeconds = Math.round(data.durationMs / 1000);
     const engagementScore = this.calculateEngagementScore(
-      data.durationSeconds,
+      durationSeconds,
       data.maxPageReached, 
       data.totalPages
     );
@@ -281,25 +282,26 @@ export class AuditService {
       email: data.email,
       success: true,
       metadata: {
-        durationSeconds: data.durationSeconds,
-        durationMinutes: Math.round(data.durationSeconds / 60),
+        durationMs: data.durationMs,
+        durationSeconds: durationSeconds,
+        durationMinutes: Math.round(durationSeconds / 60),
         pagesViewed: data.pagesViewed,
         totalPages: data.totalPages,
         maxPageReached: data.maxPageReached,
         completionRate,
         engagementScore,
-        readingSpeed: data.durationSeconds > 0 ? Math.round(data.pagesViewed / (data.durationSeconds / 60)) : 0, // pages per minute
+        readingSpeed: durationSeconds > 0 ? Math.round(data.pagesViewed / (durationSeconds / 60)) : 0, // pages per minute
       },
     });
 
     // ALSO update analytics tables for dashboard queries
     if (data.sessionId) {
       try {
-        // Update session duration in viewSessions table
+        // Update session duration in viewSessions table (store in milliseconds)
         await db
           .update(viewSessions)
           .set({
-            totalDuration: data.durationSeconds,
+            totalDuration: data.durationMs,
             lastActiveAt: new Date(),
           })
           .where(eq(viewSessions.sessionId, data.sessionId));
@@ -465,19 +467,45 @@ export class AuditService {
       const totalViews = sessions.length;
       const uniqueViewers = sessions.filter(s => s.isUnique).length;
       
-      // Robust duration calculation: fall back to (lastActiveAt - startedAt) if totalDuration is 0/undefined
-      const totalDurationSeconds = sessions.reduce((sum, s) => {
+      // Robust duration calculation: totalDuration is now in milliseconds
+      logger.info(`Calculating duration for ${sessions.length} sessions`);
+      const totalDurationMs = sessions.reduce((sum, s) => {
         const explicit = Number(s.totalDuration || 0);
-        if (explicit > 0) return sum + explicit;
-        // Derive from timestamps in seconds if explicit duration is not available
+        logger.info(`Session ${s.sessionId}: explicit duration = ${explicit}ms`);
+        
+        if (explicit > 0) {
+          return sum + explicit; // Already in milliseconds
+        }
+        
+        // Fallback 1: Calculate from page views for this session
+        const sessionPageViews = pageViewsData.filter(pv => pv.sessionId === s.sessionId);
+        // Sum only non-zero durations (exit events) to avoid counting entry events (duration=0)
+        const pageViewDuration = sessionPageViews
+          .filter(pv => Number(pv.duration) > 0) // Only count exit events
+          .reduce((pvSum, pv) => pvSum + Number(pv.duration), 0);
+        if (pageViewDuration > 0) {
+          logger.info(`Session ${s.sessionId}: using page view duration = ${pageViewDuration}ms from ${sessionPageViews.filter(pv => Number(pv.duration) > 0).length} non-zero page views`);
+          return sum + pageViewDuration;
+        }
+        
+        // Fallback 2: Derive from timestamps in milliseconds if explicit duration is not available
         const startedMs = s.startedAt ? new Date(s.startedAt).getTime() : 0;
         const lastActiveMs = s.lastActiveAt ? new Date(s.lastActiveAt).getTime() : startedMs;
-        const derived = startedMs > 0 ? Math.max(0, Math.round((lastActiveMs - startedMs) / 1000)) : 0;
-        return sum + derived;
+        const derived = startedMs > 0 ? Math.max(0, lastActiveMs - startedMs) : 0;
+        if (derived > 0) {
+          logger.info(`Session ${s.sessionId}: using timestamp-derived duration = ${derived}ms`);
+          return sum + derived;
+        }
+        
+        // Fallback 3: Use minimum duration for sessions that exist but have no duration
+        logger.info(`Session ${s.sessionId}: using minimum fallback duration = 1000ms`);
+        return sum + 1000; // 1 second minimum
       }, 0);
+      
+      logger.info(`Total duration: ${totalDurationMs}ms for ${sessions.length} sessions`);
 
       const avgSessionDuration = sessions.length > 0
-        ? Math.round(totalDurationSeconds / sessions.length)
+        ? Math.round(totalDurationMs / sessions.length)
         : 0;
 
       // Calculate completion rate based on page views

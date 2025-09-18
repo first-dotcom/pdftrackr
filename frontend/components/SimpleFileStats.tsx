@@ -1,6 +1,7 @@
 "use client";
 
 import { apiClient } from "@/lib/api-client";
+import { formatDuration } from "@/utils/formatters";
 import { Clock, Eye, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -34,7 +35,7 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
         setStats({
           totalViews: Number(data.totalViews) || 0,
           uniqueViewers: Number(data.uniqueViewers) || 0,
-          avgViewTime: Number(data.avgSessionDuration) || 0, // Keep in seconds for better precision
+          avgViewTime: Number(data.avgSessionDuration) || 0, // Now in milliseconds
         });
       } else {
         setError("Failed to load file stats");
@@ -108,8 +109,8 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
       iconColor: "text-green-600",
     },
     {
-      label: "Avg Session Time",
-      value: (Number(stats.avgViewTime) || 0) > 0 ? `${Number(stats.avgViewTime) || 0}s` : "-",
+      label: "Avg Duration",
+      value: (Number(stats.avgViewTime) || 0) > 0 ? formatDuration(Number(stats.avgViewTime) || 0) : "-",
       icon: Clock,
       bgGradient: "from-orange-50 to-orange-100",
       borderColor: "border-orange-200",
@@ -142,10 +143,10 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
                   </div>
                 </div>
                 <div className="ml-4 flex-1 min-w-0">
-                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 truncate">
+                  <p className="text-base sm:text-lg font-bold text-gray-900 whitespace-nowrap">
                     {item.value}
                   </p>
-                  <p className="text-sm text-gray-600 font-medium truncate">{item.label}</p>
+                  <p className="text-sm text-gray-600 font-medium">{item.label}</p>
                 </div>
               </div>
             </div>

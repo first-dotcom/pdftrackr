@@ -60,15 +60,15 @@ export class SessionService {
   /**
    * Close a specific session
    */
-  static async closeSession(sessionId: string, durationSeconds?: number) {
+  static async closeSession(sessionId: string, durationMs?: number) {
     try {
       const updateData: any = {
         isActive: false,
       };
 
       // Only set total_duration if explicitly provided (from session end tracking)
-      if (durationSeconds !== undefined) {
-        updateData.totalDuration = durationSeconds;
+      if (durationMs !== undefined) {
+        updateData.totalDuration = durationMs; // Store in milliseconds
       }
       // Don't calculate duration from lastActiveAt - let session end tracking handle it
 

@@ -119,7 +119,8 @@ export default function FileDetailPage() {
     try {
       const response = await api.shareLinks.delete(shareId);
       if (response.success) {
-        fetchShareLinks(); // Refresh share links
+        // Just refresh the entire page - simple and effective
+        window.location.reload();
       } else {
         console.error("Failed to delete share link:", response.error);
       }

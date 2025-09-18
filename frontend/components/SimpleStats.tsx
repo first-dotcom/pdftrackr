@@ -1,7 +1,7 @@
 "use client";
 
 import { apiClient } from "@/lib/api-client";
-import { formatViewTime } from "@/utils/formatters";
+import { formatDuration } from "@/utils/formatters";
 import { Clock, Eye, FileText, Share2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -109,7 +109,7 @@ export default function SimpleStats({ userId }: SimpleStatsProps) {
     },
     {
       label: "Avg Session Time",
-      value: stats.avgViewTime > 0 ? formatViewTime(stats.avgViewTime) : "-",
+      value: stats.avgViewTime > 0 ? formatDuration(stats.avgViewTime) : "-",
       icon: Clock,
       bgGradient: "from-orange-50 to-orange-100",
       borderColor: "border-orange-200",

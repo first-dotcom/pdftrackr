@@ -28,7 +28,7 @@ import {
   trackPageViewSchema,
   updateShareLinkSchema,
 } from "../utils/validation";
-import { invalidateUserDashboardCache } from "./analytics";
+import { invalidateUserDashboardCache, invalidateFileAnalyticsCache } from "./analytics";
 
 const router: Router = Router();
 
@@ -506,9 +506,13 @@ router.delete(
   asyncHandler(async (req, res) => {
     const { shareId } = req.params;
 
-    // Verify ownership through file
+    // Verify ownership through file and get fileId for cache invalidation
     const shareLink = await db
-      .select()
+      .select({
+        shareId: shareLinks.shareId,
+        fileId: shareLinks.fileId,
+        userId: files.userId,
+      })
       .from(shareLinks)
       .innerJoin(files, eq(shareLinks.fileId, files.id))
       .where(and(eq(shareLinks.shareId, shareId), eq(files.userId, req.user?.id)))
@@ -518,7 +522,16 @@ router.delete(
       throw new CustomError("Share link not found", 404);
     }
 
+    const { fileId, userId } = shareLink[0];
+
+    // Delete the share link
     await db.delete(shareLinks).where(eq(shareLinks.shareId, shareId));
+
+    // Invalidate analytics caches for this file
+    await invalidateFileAnalyticsCache(fileId, userId);
+    
+    // Also invalidate user dashboard cache
+    await invalidateUserDashboardCache(userId);
 
     res.json({
       success: true,

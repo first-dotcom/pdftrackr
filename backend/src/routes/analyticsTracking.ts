@@ -175,12 +175,15 @@ router.post(
     }
 
     try {
+      // Convert seconds to milliseconds for consistency
+      const durationMs = parseInt(durationSeconds) * 1000;
+      
       await auditService.logSessionEnd({
         shareId,
         email,
         ip: req.ip,
         userAgent: req.get("User-Agent") || "",
-        durationSeconds: parseInt(durationSeconds),
+        durationMs: durationMs,
         pagesViewed: parseInt(pagesViewed) || 1,
         totalPages: parseInt(totalPages) || 1,
         maxPageReached: parseInt(maxPageReached),
@@ -188,7 +191,7 @@ router.post(
       });
 
       logger.debug(
-        `Session end tracked: ${shareId} - ${durationSeconds}s, ${maxPageReached}/${totalPages} pages`,
+        `Session end tracked: ${shareId} - ${durationMs}ms (${durationSeconds}s), ${maxPageReached}/${totalPages} pages`,
       );
 
       res.json({

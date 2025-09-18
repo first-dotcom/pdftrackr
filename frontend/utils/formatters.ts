@@ -46,7 +46,8 @@ export const getProgressColor = (percentage: number): string => {
   return "bg-primary-600";
 };
 
-// View time formatting - precise seconds/minutes display with decimals
+// View time formatting - DEPRECATED: use formatDuration instead
+// This function expects SECONDS and is kept for backward compatibility
 export const formatViewTime = (seconds: number): string => {
   if (seconds < 0) {
     return "0s";
@@ -62,6 +63,44 @@ export const formatViewTime = (seconds: number): string => {
     return `${minutes}m`;
   }
   return `${minutes}m ${remainingSeconds.toFixed(3)}s`;
+};
+
+// Duration formatting - handles milliseconds with HH:MM:SS:ms format (shortened as needed)
+export const formatDuration = (milliseconds: number): string => {
+  if (milliseconds < 0) {
+    return "0ms";
+  }
+
+  const totalMs = Math.round(milliseconds);
+  const ms = totalMs % 1000;
+  const totalSeconds = Math.floor(totalMs / 1000);
+  const seconds = totalSeconds % 60;
+  const totalMinutes = Math.floor(totalSeconds / 60);
+  const minutes = totalMinutes % 60;
+  const hours = Math.floor(totalMinutes / 60);
+
+  // Build parts array and join only non-zero parts (but always show at least ms)
+  const parts: string[] = [];
+  
+  if (hours > 0) {
+    parts.push(`${hours.toString().padStart(2, '0')}h`);
+  }
+  if (minutes > 0 || hours > 0) {
+    parts.push(`${minutes.toString().padStart(2, '0')}m`);
+  }
+  if (seconds > 0 || minutes > 0 || hours > 0) {
+    parts.push(`${seconds.toString().padStart(2, '0')}s`);
+  }
+  
+  // Always show milliseconds
+  parts.push(`${ms.toString().padStart(3, '0')}ms`);
+  
+  return parts.join(':');
+};
+
+// Convert seconds to milliseconds and format
+export const formatSecondsAsDuration = (seconds: number): string => {
+  return formatDuration(seconds * 1000);
 };
 
 // Percentage formatting with bounds checking

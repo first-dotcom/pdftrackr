@@ -5,7 +5,7 @@ import SkeletonLoader from "@/components/SkeletonLoader";
 import StorageUsage from "@/components/StorageUsage";
 import { useApi } from "@/hooks/useApi";
 import { config } from "@/lib/config";
-import { formatViewTime } from "@/utils/formatters";
+import { formatDuration } from "@/utils/formatters";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { BarChart3, Clock, Eye, FileText, Mail, Plus, TrendingUp, Users } from "lucide-react";
 import Link from "next/link";
@@ -215,7 +215,7 @@ export default function DashboardPage() {
                         {view.viewerName || view.viewerEmail || "Anonymous"}
                       </div>
                       <div className="text-xs text-gray-500 truncate">
-                        {formatViewTime(view.totalDuration)} •{" "}
+                        {formatDuration(view.totalDuration)} •{" "}
                         {view.city || view.country || "Unknown location"}
                       </div>
                     </div>
