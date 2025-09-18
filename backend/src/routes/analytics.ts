@@ -376,7 +376,7 @@ router.get(
         .from(files)
         .where(eq(files.userId, userId));
 
-      // Get view statistics (separate query to avoid cartesian product)
+      // Get view statistics with fallback duration calculation
       const viewStats =
         shareIds.length > 0
           ? await db
@@ -384,7 +384,16 @@ router.get(
                 totalViews: sql<number>`COUNT(${viewSessions.id})`,
                 totalUniqueViews: sql<number>`SUM(CASE WHEN ${viewSessions.isUnique} THEN 1 ELSE 0 END)`,
                 totalDuration: sql<number>`COALESCE(SUM(${viewSessions.totalDuration}), 0)`,
-                avgDuration: sql<number>`COALESCE(AVG(${viewSessions.totalDuration}), 0)`,
+                // Use fallback duration calculation like individual analytics
+                avgDuration: sql<number>`COALESCE(AVG(
+                  CASE 
+                    WHEN ${viewSessions.totalDuration} > 0 THEN ${viewSessions.totalDuration}
+                    ELSE (
+                      SELECT COALESCE(SUM(CASE WHEN pv.duration > 0 THEN pv.duration ELSE 0 END), 1000)
+                      FROM page_views pv WHERE pv.session_id = ${viewSessions.sessionId}
+                    )
+                  END
+                ), 0)`,
               })
               .from(viewSessions)
               .where(

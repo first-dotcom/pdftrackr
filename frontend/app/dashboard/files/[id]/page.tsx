@@ -288,20 +288,22 @@ export default function FileDetailPage() {
             <div className="card-body">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-gray-900">Share Links</h2>
-                <div className="flex items-center space-x-3">
-                  <span className="text-sm text-gray-500">{shareLinks.length} total</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedFile(file);
-                      setShareModalOpen(true);
-                    }}
-                    className="btn-primary btn-sm flex items-center"
-                  >
-                    <Share2 className="h-4 w-4 mr-2" />
-                    Create Share Link
-                  </button>
-                </div>
+                {shareLinks.length > 0 && (
+                  <div className="flex items-center space-x-3">
+                    <span className="text-sm text-gray-500">{shareLinks.length} total</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedFile(file);
+                        setShareModalOpen(true);
+                      }}
+                      className="btn-primary btn-sm flex items-center"
+                    >
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Create Share Link
+                    </button>
+                  </div>
+                )}
               </div>
 
               {shareLinks.length > 0 ? (
@@ -505,12 +507,25 @@ export default function FileDetailPage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <Share2 className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">No share links</h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Create a share link to share this file with others.
+                <div className="text-center py-12 bg-gradient-to-br from-primary-50 to-blue-50 rounded-lg border-2 border-dashed border-primary-200">
+                  <div className="mx-auto w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mb-6 animate-pulse-slow">
+                    <Share2 className="h-10 w-10 text-primary-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Ready to share?</h3>
+                  <p className="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">
+                    Create a share link to securely share this document and track who views it.
                   </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedFile(file);
+                      setShareModalOpen(true);
+                    }}
+                    className="btn-primary btn-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 focus:ring-4 focus:ring-primary-200"
+                  >
+                    <Share2 className="h-5 w-5 mr-2" />
+                    Create Your First Share Link
+                  </button>
                 </div>
               )}
             </div>

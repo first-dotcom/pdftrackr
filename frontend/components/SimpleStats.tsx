@@ -108,7 +108,7 @@ export default function SimpleStats({ userId }: SimpleStatsProps) {
       iconColor: "text-purple-600",
     },
     {
-      label: "Avg Session Time",
+      label: "Avg Duration",
       value: stats.avgViewTime > 0 ? formatDuration(stats.avgViewTime) : "-",
       icon: Clock,
       bgGradient: "from-orange-50 to-orange-100",
@@ -140,7 +140,7 @@ export default function SimpleStats({ userId }: SimpleStatsProps) {
                   </div>
                 </div>
                 <div className="ml-4 flex-1 min-w-0">
-                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 truncate">
+                  <p className="text-base sm:text-lg font-bold text-gray-900 whitespace-nowrap">
                     {item.value}
                   </p>
                   <p className="text-sm text-gray-600 font-medium truncate">{item.label}</p>
