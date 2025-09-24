@@ -47,30 +47,39 @@ export default function HowItWorks() {
         </div>
 
         <div className="mt-10">
-          <div className="space-y-10 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-x-8 md:gap-y-10">
-            {steps.map((step, index) => (
-              <div key={step.title} className="relative">
-                <div className="flex items-center space-x-4">
-                  <div className="flex-shrink-0">
-                    <div className="flex items-center justify-center h-12 w-12 rounded-md bg-primary-600 text-white">
+          <div className="relative">
+            {/* Desktop connecting lines */}
+            <div className="hidden lg:flex absolute top-6 left-0 w-full justify-between items-center px-6 pointer-events-none">
+              {[1, 2, 3].map((_, index) => (
+                <div 
+                  key={index} 
+                  className="flex-1 border-t-2 border-dashed border-gray-300"
+                  style={{ 
+                    marginLeft: index === 0 ? '12.5%' : '0',
+                    marginRight: index === 2 ? '12.5%' : '0'
+                  }}
+                />
+              ))}
+            </div>
+            
+            <div className="space-y-10 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-x-8 md:gap-y-10">
+              {steps.map((step, index) => (
+                <div key={step.title} className="relative">
+                  <div className="flex flex-col items-center text-center md:flex-row md:text-left md:items-start lg:flex-col lg:text-center lg:items-center">
+                    <div className="flex items-center justify-center h-12 w-12 rounded-md bg-primary-600 text-white mb-4 md:mb-0 md:mr-4 lg:mb-4 lg:mr-0 relative z-10">
                       <step.icon className="h-6 w-6" aria-hidden="true" />
                     </div>
-                  </div>
-                  <div className="flex-1">
-                    <span className="text-4xl font-bold text-gray-200">{step.number}</span>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-center md:justify-start lg:justify-center space-x-2 mb-2">
+                        <span className="text-2xl font-bold text-primary-600">{step.number}</span>
+                      </div>
+                      <h3 className="text-lg leading-6 font-medium text-gray-900 mb-2">{step.title}</h3>
+                      <p className="text-base text-gray-500">{step.description}</p>
+                    </div>
                   </div>
                 </div>
-                <div className="mt-4">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900">{step.title}</h3>
-                  <p className="mt-2 text-base text-gray-500">{step.description}</p>
-                </div>
-                {index < steps.length - 1 && (
-                  <div className="hidden lg:block absolute top-6 left-full w-full">
-                    <div className="w-full border-t-2 border-dashed border-gray-300"></div>
-                  </div>
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>
