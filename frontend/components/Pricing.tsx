@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import WaitlistModal from "./WaitlistModal";
 import CTAButton from "./CTAButton";
+import { PlatformBadges } from "./TrustBadges";
 
 const plans = [
   {
@@ -180,6 +181,11 @@ export default function Pricing() {
           ))}
         </div>
 
+        {/* Social Proof Section */}
+        <div className="mt-16 mb-8">
+          <PlatformBadges />
+        </div>
+
         {/* Additional Note */}
         <div className="mt-12 text-center">
           <p className="text-sm text-gray-600 mb-4">
@@ -190,7 +196,7 @@ export default function Pricing() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm text-gray-600">
               <div className="flex items-center">
                 <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                Full analytics (views, time, completion rate)
+                Full analytics
               </div>
               <div className="flex items-center">
                 <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
