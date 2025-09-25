@@ -18,40 +18,15 @@ function SourceForgeBadge({
     const badgeRef = useRef<HTMLDivElement>(null);
     const scriptLoadedRef = useRef(false);
 
-    useEffect(() => {
-        // Only load script once and only on client side
-        if (typeof window === 'undefined' || scriptLoadedRef.current) {
-            return undefined;
-        }
+  useEffect(() => {
+    if (typeof window === 'undefined' || scriptLoadedRef.current) return;
 
-        const loadSourceForgeScript = () => {
-            // Check if script already exists
-            if (document.querySelector('script[src*="sf-syn.com"]')) {
-                scriptLoadedRef.current = true;
-                return;
-            }
-
-            const script = document.createElement('script');
-            script.async = true;
-            script.src = 'https://b.sf-syn.com/badge_js?sf_id=3913790&variant_id=sf';
-            script.onload = () => {
-                scriptLoadedRef.current = true;
-            };
-            script.onerror = () => {
-                console.warn('SourceForge badge script failed to load');
-            };
-
-            // Append to head instead of body to avoid React conflicts
-            document.head.appendChild(script);
-        };
-
-        // Delay script loading to avoid hydration conflicts
-        const timer = setTimeout(loadSourceForgeScript, 100);
-
-        return () => {
-            clearTimeout(timer);
-        };
-    }, []);
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = 'https://b.sf-syn.com/badge_js?sf_id=3913790&variant_id=sf';
+    script.onload = () => { scriptLoadedRef.current = true; };
+    document.head.appendChild(script);
+  }, []);
 
     const linkClasses = variant === "footer"
         ? "text-gray-400 hover:text-white transition-colors text-sm"
