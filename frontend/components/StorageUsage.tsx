@@ -264,7 +264,7 @@ export default function StorageUsage() {
                 Join Waitlist for Pro Plans
               </button>
               <p className="text-xs sm:text-sm text-gray-500 text-center">
-                Premium plans launching Q3 2025
+                Premium plans launching Q4 2025
               </p>
             </div>
           )}

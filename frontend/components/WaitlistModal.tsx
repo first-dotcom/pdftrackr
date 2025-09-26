@@ -99,7 +99,7 @@ export default function WaitlistModal() {
             <div className="flex items-center p-4 bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg border border-primary-200">
               <Bell className="h-5 w-5 text-primary-600 mr-3 flex-shrink-0" />
               <p className="text-sm text-primary-700 font-medium">
-                Be the first to know when paid plans launch in Q3 2025!
+                Be the first to know when paid plans launch in Q4 2025!
               </p>
             </div>
 
@@ -175,7 +175,7 @@ export default function WaitlistModal() {
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">You're on the list!</h3>
               <p className="text-gray-600 mb-4">
-                We'll email you when paid plans launch in Q3 2025.
+                We'll email you when paid plans launch in Q4 2025.
               </p>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-500">
