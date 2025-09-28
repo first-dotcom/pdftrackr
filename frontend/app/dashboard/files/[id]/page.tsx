@@ -30,6 +30,7 @@ export default function FileDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const { toasts, removeToast, showSuccess } = useToasts();
   const showSuccessRef = useRef(showSuccess);
+  const [quickShareLoading, setQuickShareLoading] = useState(false);
 
   // Update ref when showSuccess changes
   useEffect(() => {
@@ -109,6 +110,41 @@ export default function FileDetailPage() {
     setEditingShareLink(link);
     setSelectedFile(file);
     setShareModalOpen(true);
+  };
+
+  const handleQuickShare = async () => {
+    if (!file) return;
+    
+    setQuickShareLoading(true);
+    try {
+      const payload = {
+        fileId: file.id,
+        title: `${file.title || file.originalName} - Shared`,
+        emailGatingEnabled: false,
+        downloadEnabled: true,
+        watermarkEnabled: false,
+      };
+
+      const response = await api.shareLinks.create(payload);
+      
+      if (response.success) {
+        // Refresh share links to show the new one
+        await fetchShareLinks();
+        showSuccessRef.current("Share link created successfully!");
+      } else {
+        console.error("API Error:", response.error);
+        const errorMessage = 
+          typeof response.error === "string" 
+            ? response.error 
+            : "Failed to create share link";
+        alert(errorMessage);
+      }
+    } catch (error) {
+      console.error("Failed to create quick share link:", error);
+      alert("Failed to create share link");
+    } finally {
+      setQuickShareLoading(false);
+    }
   };
 
   const handleDeleteShareLink = async (shareId: string) => {
@@ -515,17 +551,37 @@ export default function FileDetailPage() {
                   <p className="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">
                     Create a share link to securely share this document and track who views it.
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedFile(file);
-                      setShareModalOpen(true);
-                    }}
-                    className="btn-primary btn-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 focus:ring-4 focus:ring-primary-200"
-                  >
-                    <Share2 className="h-5 w-5 mr-2" />
-                    Create Your First Share Link
-                  </button>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button
+                      type="button"
+                      onClick={handleQuickShare}
+                      disabled={quickShareLoading}
+                      className="btn-primary btn-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 focus:ring-4 focus:ring-primary-200 flex items-center justify-center"
+                    >
+                      {quickShareLoading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                          Creating...
+                        </>
+                      ) : (
+                        <>
+                          <Share2 className="h-5 w-5 mr-2" />
+                          Quick Share
+                        </>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedFile(file);
+                        setShareModalOpen(true);
+                      }}
+                      className="btn-outline btn-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 focus:ring-4 focus:ring-primary-200 flex items-center justify-center"
+                    >
+                      <Share2 className="h-5 w-5 mr-2" />
+                      Custom Share
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
