@@ -74,8 +74,6 @@ router.post(
     const totalPagesNum = parseInt(totalPages);
     const durationNum = duration ? Math.max(0, Math.round(Number(duration))) : 0;
 
-    // Debug logging for duration tracking
-    logger.info(`Page view tracking: page=${pageNum}, duration=${duration}ms, parsed=${durationNum}ms, shareId=${shareId}`);
 
     if (isNaN(pageNum) || pageNum <= 0 || pageNum > totalPagesNum) {
       logger.warn("Invalid page number", { page, totalPages, shareId });
@@ -103,14 +101,12 @@ router.post(
             viewedAt: new Date(),
           });
 
-          logger.debug(`Page view stored: ${shareId} page ${pageNum} - duration: ${durationNum}ms`);
         } catch (dbError) {
           logger.warn("Failed to store enhanced page view data:", dbError);
           // Continue with audit logging even if enhanced data fails
         }
       }
 
-      logger.debug(`Page view tracked: ${shareId} page ${pageNum}/${totalPagesNum}`);
 
       res.json({
         success: true,

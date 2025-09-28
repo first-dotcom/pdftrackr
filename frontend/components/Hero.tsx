@@ -15,38 +15,78 @@ interface PublicAnalytics {
   avgSession: number;
 }
 
+interface GlobalAnalytics {
+  totalViews: number;
+  totalUniqueViews: number;
+  totalDuration: number;
+  avgDuration: number; // in milliseconds
+  totalFiles: number;
+  totalShares: number;
+  totalEmailCaptures: number;
+}
+
 export default function Hero({ isSignedIn = false }: HeroProps) {
-  const [publicAnalytics, setPublicAnalytics] = useState<PublicAnalytics | null>(null);
+  const [globalAnalytics, setGlobalAnalytics] = useState<GlobalAnalytics | null>(null);
   const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(true);
 
   useEffect(() => {
-    const fetchPublicAnalytics = async () => {
+    const fetchGlobalAnalytics = async () => {
       try {
-        const response = await apiClient.analytics.getPublicStats();
+        const response = await apiClient.analytics.getGlobal();
         if (response.success && response.data) {
-          setPublicAnalytics(response.data as PublicAnalytics);
+          setGlobalAnalytics(response.data as GlobalAnalytics);
         }
       } catch (error) {
-        console.error("Failed to fetch public analytics:", error);
+        console.error("Failed to fetch global analytics:", error);
         // Fallback to default values if API fails
-        setPublicAnalytics({
+        setGlobalAnalytics({
           totalViews: 156,
-          totalDocs: 42,
-          avgSession: 154, // 2m 34s in seconds
+          totalUniqueViews: 89,
+          totalDuration: 0,
+          avgDuration: 154000, // 2m 34s in milliseconds
+          totalFiles: 42,
+          totalShares: 67,
+          totalEmailCaptures: 23,
         });
       } finally {
         setIsLoadingAnalytics(false);
       }
     };
 
-    fetchPublicAnalytics();
+    fetchGlobalAnalytics();
   }, []);
 
-  // Format session duration for display
-  const formatSessionDuration = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}m ${remainingSeconds}s`;
+  // Format session duration for display - same logic as dashboard
+  const formatSessionDuration = (milliseconds: number) => {
+    if (milliseconds < 0) {
+      return "0ms";
+    }
+
+    const totalMs = Math.round(milliseconds);
+    const ms = totalMs % 1000;
+    const totalSeconds = Math.floor(totalMs / 1000);
+    const seconds = totalSeconds % 60;
+    const totalMinutes = Math.floor(totalSeconds / 60);
+    const minutes = totalMinutes % 60;
+    const hours = Math.floor(totalMinutes / 60);
+
+    // Build parts array and join only non-zero parts (but always show at least ms)
+    const parts: string[] = [];
+    
+    if (hours > 0) {
+      parts.push(`${hours.toString().padStart(2, '0')}h`);
+    }
+    if (minutes > 0 || hours > 0) {
+      parts.push(`${minutes.toString().padStart(2, '0')}m`);
+    }
+    if (seconds > 0 || minutes > 0 || hours > 0) {
+      parts.push(`${seconds.toString().padStart(2, '0')}s`);
+    }
+    
+    // Always show milliseconds
+    parts.push(`${ms.toString().padStart(3, '0')}ms`);
+    
+    return parts.join(':');
   };
 
   return (
@@ -119,7 +159,7 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
                         <span className="text-sm font-medium text-green-700">
                           {isLoadingAnalytics
                             ? "..."
-                            : publicAnalytics?.totalViews.toLocaleString() || "0"}
+                            : globalAnalytics?.totalViews.toLocaleString() || "0"}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
@@ -127,19 +167,19 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
                         <span className="text-sm font-medium text-green-700">
                           {isLoadingAnalytics
                             ? "..."
-                            : publicAnalytics?.totalDocs.toLocaleString() || "0"}
+                            : globalAnalytics?.totalFiles.toLocaleString() || "0"}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Avg. Session</span>
-                        <span className="text-sm font-medium text-green-700">
-                          {isLoadingAnalytics
-                            ? "..."
-                            : publicAnalytics
-                              ? formatSessionDuration(publicAnalytics.avgSession)
-                              : "0s"}
-                        </span>
-                      </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm text-gray-600">Avg Duration</span>
+                                  <span className="text-sm font-medium text-green-700">
+                                    {isLoadingAnalytics
+                                      ? "..."
+                                      : globalAnalytics
+                                        ? formatSessionDuration(globalAnalytics.avgDuration)
+                                        : "0ms"}
+                                  </span>
+                                </div>
                     </div>
                   </div>
                 </div>

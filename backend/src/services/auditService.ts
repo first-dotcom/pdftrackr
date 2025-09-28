@@ -3,6 +3,7 @@ import { auditLogs, viewSessions, pageViews, files, shareLinks } from "../models
 import { db } from "../utils/database";
 import { logger } from "../utils/logger";
 import { geolocationService } from "./geolocation";
+import { globalAnalyticsService } from "./globalAnalyticsService";
 import { v4 as uuidv4 } from "uuid";
 
 export interface AuditLogData {
@@ -305,6 +306,9 @@ export class AuditService {
             lastActiveAt: new Date(),
           })
           .where(eq(viewSessions.sessionId, data.sessionId));
+
+        // Update global analytics with new session data
+        await globalAnalyticsService.updateDurationMetrics(data.durationMs);
 
         // Do not overwrite per-page durations; they are tracked on page exit
       } catch (error) {

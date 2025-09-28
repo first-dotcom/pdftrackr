@@ -363,6 +363,10 @@ class ApiClient {
     // Public analytics for homepage
     getPublicStats: () =>
       this.get("/api/analytics/public/stats", { skipCSRF: true, skipAuth: true }),
+
+    // Global analytics - resilient to data deletion
+    getGlobal: () =>
+      this.get("/api/analytics/global", { skipCSRF: true, skipAuth: true }),
   };
 }
 

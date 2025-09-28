@@ -27,6 +27,7 @@ import {
   shareLinks,
   viewSessions,
 } from "../models/schema";
+import { globalAnalyticsService } from "../services/globalAnalyticsService";
 import { db } from "../utils/database";
 import { logger } from "../utils/logger";
 import { deleteCache, getCache, getCacheKeys, setCache } from "../utils/redis";
@@ -334,9 +335,9 @@ router.get(
       startDate: startDate.toISOString(),
     });
 
-    // Cache key based on user and time range
+    // Cache key based on user and time range (without timestamp for better cache hits)
     const cacheKey = `dashboard:${userId}:${days}d`;
-    const CACHE_TTL = 30; // 30 seconds (reduced for more responsive updates)
+    const CACHE_TTL = 60; // 1 minute cache for better performance
 
     try {
       // Try to get cached data first
@@ -376,33 +377,40 @@ router.get(
         .from(files)
         .where(eq(files.userId, userId));
 
-      // Get view statistics with fallback duration calculation
+
+      // Get view statistics with proper fallback duration calculation
       const viewStats =
         shareIds.length > 0
-          ? await db
-              .select({
-                totalViews: sql<number>`COUNT(${viewSessions.id})`,
-                totalUniqueViews: sql<number>`SUM(CASE WHEN ${viewSessions.isUnique} THEN 1 ELSE 0 END)`,
-                totalDuration: sql<number>`COALESCE(SUM(${viewSessions.totalDuration}), 0)`,
-                // Use fallback duration calculation like individual analytics
-                avgDuration: sql<number>`COALESCE(AVG(
+          ? await db.execute(sql`
+              SELECT 
+                COUNT(*) as "totalViews",
+                SUM(CASE WHEN is_unique THEN 1 ELSE 0 END) as "totalUniqueViews",
+                SUM(
                   CASE 
-                    WHEN ${viewSessions.totalDuration} > 0 THEN ${viewSessions.totalDuration}
-                    ELSE (
-                      SELECT COALESCE(SUM(CASE WHEN pv.duration > 0 THEN pv.duration ELSE 0 END), 1000)
-                      FROM page_views pv WHERE pv.session_id = ${viewSessions.sessionId}
-                    )
+                    WHEN total_duration > 0 THEN total_duration
+                    ELSE COALESCE((
+                      SELECT SUM(duration) 
+                      FROM page_views pv 
+                      WHERE pv.session_id = view_sessions.session_id
+                    ), 1000)
                   END
-                ), 0)`,
-              })
-              .from(viewSessions)
-              .where(
-                and(
-                  inArray(viewSessions.shareId, shareIds),
-                  gte(viewSessions.startedAt, startDate),
-                ),
-              )
+                ) as "totalDuration",
+                AVG(
+                  CASE 
+                    WHEN total_duration > 0 THEN total_duration
+                    ELSE COALESCE((
+                      SELECT SUM(duration) 
+                      FROM page_views pv 
+                      WHERE pv.session_id = view_sessions.session_id
+                    ), 1000)
+                  END
+                ) as "avgDuration"
+              FROM view_sessions
+              WHERE share_id IN (${sql.join(shareIds.map(id => sql`${id}`), sql`, `)})
+                AND started_at >= ${startDate}
+            `)
           : [{ totalViews: 0, totalUniqueViews: 0, totalDuration: 0, avgDuration: 0 }];
+
 
       // Get email captures (separate query to avoid cartesian product)
       const emailStats =
@@ -521,15 +529,6 @@ router.get(
               .orderBy(sql`DATE(${viewSessions.startedAt})`)
           : [];
 
-      logger.debug("Dashboard analytics calculated", {
-        userId,
-        totalFiles: stats?.totalFiles,
-        totalViews: stats?.totalViews,
-        totalUniqueViews: stats?.totalUniqueViews,
-        recentViewsCount: recentViews.length,
-        topFilesCount: topFiles.length,
-        viewsByDayCount: viewsByDay.length,
-      });
 
       const responseData = {
         totalFiles: Number(stats?.totalFiles) || 0,
@@ -896,8 +895,8 @@ router.get(
       },
     };
 
-    // Cache the response for 2 minutes (shorter TTL for analytics)
-    await setCache(cacheKey, JSON.stringify(responseData), 30);
+    // Cache the response for 5 minutes (optimized TTL for analytics)
+    await setCache(cacheKey, JSON.stringify(responseData), 300);
 
     res.json(responseData);
   }),
@@ -1062,22 +1061,29 @@ router.get(
     // Format sessions with their page views and calculate fallback duration
     const sessions = sessionsResult.map((session) => {
       let finalDuration = session.totalDuration;
-      
+
       // Fallback: If session duration is 0 or null, calculate from page views
       if (!finalDuration || finalDuration === 0) {
         const sessionPages = pageViewsBySession.get(session.sessionId) || [];
         // Sum all page durations (already filtered to non-zero at SQL level)
-        const totalPageDuration = sessionPages.reduce((sum, page) => sum + (page.avgDuration || 0), 0);
+        const totalPageDuration = sessionPages.reduce(
+          (sum, page) => sum + (page.avgDuration || 0),
+          0,
+        );
         if (totalPageDuration > 0) {
           finalDuration = Math.round(totalPageDuration);
-          logger.info(`Using fallback duration for session ${session.sessionId}: ${finalDuration}ms from ${sessionPages.length} page views`);
+          logger.info(
+            `Using fallback duration for session ${session.sessionId}: ${finalDuration}ms from ${sessionPages.length} page views`,
+          );
         } else {
           // Last resort: use a minimum estimated duration (1 second) if no data available
           finalDuration = 1000; // 1 second minimum
-          logger.debug(`Using minimum fallback duration for session ${session.sessionId}: ${finalDuration}ms`);
+          logger.debug(
+            `Using minimum fallback duration for session ${session.sessionId}: ${finalDuration}ms`,
+          );
         }
       }
-      
+
       return {
         sessionId: session.sessionId,
         startedAt: session.startedAt,
@@ -1440,14 +1446,14 @@ export async function invalidateFileAnalyticsCache(fileId: number, userId: numbe
   try {
     // Collect all cache patterns for this file
     const cachePatterns = [
-      `aggregate:${fileId}:${userId}:*`,  // Aggregate analytics
-      `individual:${fileId}:${userId}:*`, // Individual analytics  
-      `dashboard:${userId}:*`,            // User dashboard (may include this file)
-      `user_profile:${userId}`,           // User profile cache
+      `aggregate:${fileId}:${userId}:*`, // Aggregate analytics
+      `individual:${fileId}:${userId}:*`, // Individual analytics
+      `dashboard:${userId}:*`, // User dashboard (may include this file)
+      `user_profile:${userId}`, // User profile cache
     ];
-    
+
     let totalKeysDeleted = 0;
-    
+
     for (const pattern of cachePatterns) {
       const keys = await getCacheKeys(pattern);
       if (keys.length > 0) {
@@ -1457,16 +1463,76 @@ export async function invalidateFileAnalyticsCache(fileId: number, userId: numbe
         totalKeysDeleted += keys.length;
       }
     }
-    
-    logger.info("Invalidated file analytics cache", { 
-      fileId, 
-      userId, 
-      keysDeleted: totalKeysDeleted 
+
+    logger.info("Invalidated file analytics cache", {
+      fileId,
+      userId,
+      keysDeleted: totalKeysDeleted,
     });
   } catch (error) {
     logger.error("Failed to invalidate file analytics cache", { fileId, userId, error });
   }
 }
+
+// Global analytics endpoint - resilient to data deletion
+router.get(
+  "/global",
+  asyncHandler(async (req: Request, res: Response) => {
+    const cacheKey = "global:analytics:stats";
+    const CACHE_TTL = 60; // 1 minute cache for global data
+
+    try {
+      // Try to get cached data first
+      const cachedData = await getCache(cacheKey);
+      if (cachedData) {
+        logger.debug("Global analytics served from cache");
+        return successResponse(res, cachedData);
+      }
+
+      logger.debug("Cache miss, calculating global analytics");
+
+      // Get global analytics data using the service
+      const globalStats = await globalAnalyticsService.getGlobalAnalytics();
+
+      // Format the response data with same logic as dashboard
+      const responseData = {
+        totalViews: globalStats.totalViews,
+        totalUniqueViews: globalStats.totalUniqueViews,
+        totalDuration: globalStats.totalDuration,
+        avgDuration: globalStats.avgSessionDuration, // Show average session duration for consistency
+        totalFiles: globalStats.totalFiles,
+        totalShares: globalStats.totalShares,
+        totalEmailCaptures: globalStats.totalEmailCaptures,
+      };
+
+      // Cache the calculated data
+      await setCache(cacheKey, responseData, CACHE_TTL);
+      logger.debug("Global analytics cached", {
+        totalViews: responseData.totalViews,
+        totalFiles: responseData.totalFiles,
+        avgDuration: responseData.avgDuration,
+      });
+
+      successResponse(res, responseData);
+    } catch (error) {
+      logger.error("Global analytics calculation failed", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+
+      // Return safe fallback data
+      successResponse(res, {
+        totalViews: 0,
+        totalUniqueViews: 0,
+        totalDuration: 0,
+        avgDuration: 0,
+        totalFiles: 0,
+        totalShares: 0,
+        totalEmailCaptures: 0,
+      });
+    }
+  }),
+);
 
 // Public analytics endpoint - optimized for homepage display
 router.get(

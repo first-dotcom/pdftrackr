@@ -320,6 +320,25 @@ export const feedbackRelations = relations(feedback, ({ one }) => ({
   }),
 }));
 
+// Global Analytics table - resilient to data deletion
+export const globalAnalytics = pgTable(
+  "global_analytics",
+  {
+    id: serial("id").primaryKey(),
+    totalViews: integer("total_views").notNull().default(0),
+    totalUniqueViews: integer("total_unique_views").notNull().default(0),
+    totalDuration: integer("total_duration").notNull().default(0), // in milliseconds
+    avgSessionDuration: integer("avg_session_duration").notNull().default(0), // in milliseconds
+    totalFiles: integer("total_files").notNull().default(0),
+    totalShares: integer("total_shares").notNull().default(0),
+    totalEmailCaptures: integer("total_email_captures").notNull().default(0),
+    lastUpdated: timestamp("last_updated").defaultNow().notNull(),
+  },
+  (table) => ({
+    singleRowIdx: uniqueIndex("global_analytics_single_row_idx").on(table.id),
+  }),
+);
+
 // Audit Logs table
 export const auditLogs = pgTable(
   "audit_logs",

@@ -21,6 +21,7 @@ import { fileUploads, storageQuotaRejections } from "../middleware/metrics";
 import { normalizeIp, validateFileUpload } from "../middleware/security";
 import { validateBody, validateParams, validateQuery } from "../middleware/validation";
 import { files, shareLinks, users, viewSessions } from "../models/schema";
+import { globalAnalyticsService } from "../services/globalAnalyticsService";
 import { deleteFromS3, uploadToS3 } from "../services/storage";
 import { db } from "../utils/database";
 import { logger } from "../utils/logger";
@@ -160,6 +161,13 @@ router.post(
           storageUrl: uploadResult.url,
         })
         .where(eq(files.id, result.id));
+
+      // Update global analytics with new file
+      try {
+        await globalAnalyticsService.incrementFiles();
+      } catch (error) {
+        logger.warn("Failed to update global analytics for file creation", { error });
+      }
 
       fileUploads.labels("success", user.plan).inc();
 

@@ -12,6 +12,7 @@ import { normalizeIp } from "../middleware/security";
 import { validateBody } from "../middleware/validation";
 import { emailCaptures, files, pageViews, shareLinks, viewSessions } from "../models/schema";
 import { auditService } from "../services/auditService";
+import { globalAnalyticsService } from "../services/globalAnalyticsService";
 import {
   getFileMetadata,
   getSignedDownloadUrl,
@@ -112,6 +113,13 @@ router.post(
 
       return result[0];
     });
+
+    // Update global analytics with new share link
+    try {
+      await globalAnalyticsService.incrementShares();
+    } catch (error) {
+      logger.warn("Failed to update global analytics for share link creation", { error });
+    }
 
     // ✅ FIXED: Invalidate caches ONLY after successful database transaction
     await invalidateUserDashboardCache(req.user?.id);
@@ -402,6 +410,13 @@ router.post(
       })
       .where(eq(shareLinks.id, link.id));
 
+    // Update global analytics with new view
+    try {
+      await globalAnalyticsService.incrementViewsWithUnique(isUnique);
+    } catch (error) {
+      logger.warn("Failed to update global analytics for view", { error });
+    }
+
     // Store email capture if provided
     if (email) {
       await db.insert(emailCaptures).values({
@@ -412,6 +427,13 @@ router.post(
         userAgent: req.get("User-Agent"),
         referer: req.get("Referer"),
       });
+
+      // Update global analytics with new email capture
+      try {
+        await globalAnalyticsService.incrementEmailCaptures();
+      } catch (error) {
+        logger.warn("Failed to update global analytics for email capture", { error });
+      }
     }
 
     // Record metrics

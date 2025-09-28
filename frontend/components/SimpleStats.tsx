@@ -38,7 +38,7 @@ export default function SimpleStats({ userId }: SimpleStatsProps) {
           totalFiles: data.totalFiles || 0,
           totalViews: data.totalViews || 0,
           totalShares: data.totalShares || 0,
-          avgViewTime: data.avgDuration || 0, // Keep in seconds for better precision
+          avgViewTime: data.avgDuration || 0, // Should be average duration in ms
         });
       } else {
         setError("Failed to load stats");
