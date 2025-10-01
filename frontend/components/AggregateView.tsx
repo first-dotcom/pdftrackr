@@ -19,11 +19,12 @@ interface AggregateViewProps {
   fileId: number;
   totalPages: number;
   days?: number;
+  mock?: AggregateAnalytics | null;
 }
 
-export default function AggregateView({ fileId, totalPages, days = 30 }: AggregateViewProps) {
-  const [data, setData] = useState<AggregateAnalytics | null>(null);
-  const [loading, setLoading] = useState(true);
+export default function AggregateView({ fileId, totalPages, days = 30, mock = null }: AggregateViewProps) {
+  const [data, setData] = useState<AggregateAnalytics | null>(mock);
+  const [loading, setLoading] = useState(!mock);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
@@ -46,8 +47,14 @@ export default function AggregateView({ fileId, totalPages, days = 30 }: Aggrega
   }, [fileId, days]);
 
   useEffect(() => {
+    if (mock) {
+      setData(mock);
+      setLoading(false);
+      setError(null);
+      return;
+    }
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, mock]);
 
   // Process data for the line chart
   const chartData = useMemo(() => {
@@ -95,12 +102,12 @@ export default function AggregateView({ fileId, totalPages, days = 30 }: Aggrega
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Reading Time Chart */}
-      <div className="bg-white p-6 rounded-lg border">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Reading Time by Page</h3>
-        <p className="text-sm text-gray-600 mb-6">
-          Average time spent on each page (like a price chart showing reading patterns)
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Reading Time by Page</h3>
+        <p className="text-sm text-gray-600 mb-4">
+          Average time spent on each page (seconds). Detailed format in tooltip.
         </p>
 
         {chartData.length > 0 ? (
@@ -114,7 +121,19 @@ export default function AggregateView({ fileId, totalPages, days = 30 }: Aggrega
               />
               <YAxis
                 tick={{ fontSize: 12 }}
-                label={{ value: "Time (seconds)", angle: -90, position: "insideLeft" }}
+                allowDecimals={false}
+                tickFormatter={(v: number) => {
+                  const ms = Number(v) || 0;
+                  const s = ms / 1000;
+                  // Use mm:ss for readability above a minute, else seconds with up to 2 decimals
+                  if (s >= 60) {
+                    const m = Math.floor(s / 60);
+                    const rs = Math.round(s % 60).toString().padStart(2, "0");
+                    return `${m}:${rs}`;
+                  }
+                  return s.toFixed(s < 10 ? 2 : 0);
+                }}
+                tickCount={5}
               />
               <Tooltip
                 formatter={(value: any) => [formatDuration(value), "Average Time"]}

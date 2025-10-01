@@ -12,23 +12,42 @@ interface SimpleFileStats {
 }
 
 interface SimpleFileStatsProps {
-  shareId: string;
+  shareId?: string;
+  shareIds?: string[];
   title?: string;
+  mock?: {
+    totalViews: number;
+    uniqueViewers: number;
+    avgViewTime: number;
+  } | null;
 }
 
-export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps) {
-  const [stats, setStats] = useState<SimpleFileStats | null>(null);
-  const [loading, setLoading] = useState(true);
+export default function SimpleFileStats({ shareId, shareIds, title, mock = null }: SimpleFileStatsProps) {
+  const [stats, setStats] = useState<SimpleFileStats | null>(mock || null);
+  const [loading, setLoading] = useState(!mock);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchFileStats();
-  }, [shareId]);
+    if (mock) {
+      setStats(mock);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+    if (shareIds && shareIds.length > 0) {
+      fetchAggregatedStats(shareIds);
+    } else if (shareId) {
+      fetchFileStats(shareId);
+    } else {
+      setLoading(false);
+      setError("No share id provided");
+    }
+  }, [shareId, JSON.stringify(shareIds), mock]);
 
-  const fetchFileStats = async () => {
+  const fetchFileStats = async (id: string) => {
     try {
       setLoading(true);
-      const response = await apiClient.analytics.getDocumentStats(shareId);
+      const response = await apiClient.analytics.getDocumentStats(id);
 
       if (response.success) {
         const data = response.data as any;
@@ -40,6 +59,48 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
       } else {
         setError("Failed to load file stats");
       }
+    } catch (err) {
+      setError("Failed to load file stats");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchAggregatedStats = async (ids: string[]) => {
+    try {
+      setLoading(true);
+      const results = await Promise.all(
+        ids.map((id) => apiClient.analytics.getDocumentStats(id))
+      );
+
+      const successful = results.filter((r) => r.success && r.data) as Array<{ success: true; data: any }>;
+      if (successful.length === 0) {
+        setError("Failed to load file stats");
+        setStats(null);
+        return;
+      }
+
+      let totalViews = 0;
+      let uniqueViewers = 0;
+      let weightedDurationSum = 0;
+
+      for (const r of successful) {
+        const data = r.data as any;
+        const views = Number(data.totalViews) || 0;
+        const uniques = Number(data.uniqueViewers) || 0;
+        const avgMs = Number(data.avgSessionDuration) || 0;
+        totalViews += views;
+        uniqueViewers += uniques;
+        weightedDurationSum += avgMs * views;
+      }
+
+      const avgViewTime = totalViews > 0 ? weightedDurationSum / totalViews : 0;
+
+      setStats({
+        totalViews,
+        uniqueViewers,
+        avgViewTime,
+      });
     } catch (err) {
       setError("Failed to load file stats");
     } finally {
@@ -122,7 +183,7 @@ export default function SimpleFileStats({ shareId, title }: SimpleFileStatsProps
     <div className="space-y-4">
       <div>
         <h3 className="text-lg font-medium text-gray-900">
-          {title ? `Analytics for "${title}"` : "Document Analytics"}
+          {title ? title : "Document Analytics"}
         </h3>
         <p className="mt-1 text-sm text-gray-600">View statistics for this shared document</p>
       </div>

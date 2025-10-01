@@ -11,6 +11,7 @@ export default authMiddleware({
     "/sso-callback",
     "/cookies",
     "/data-rights",
+    "/demo", // Public demo dashboard
     "/view/(.*)", // Allow public access to shared files
     "/api/public/(.*)",
     "/api/health",

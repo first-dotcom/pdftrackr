@@ -11,6 +11,7 @@ interface ShareLinkModalProps {
   file: FileType;
   onSuccess?: () => void;
   existingShareLink?: ShareLink | null; // For editing
+  isDemo?: boolean; // For demo mode
 }
 
 interface ShareLinkForm {
@@ -30,6 +31,7 @@ export default function ShareLinkModal({
   file,
   onSuccess,
   existingShareLink,
+  isDemo = false,
 }: ShareLinkModalProps) {
   const [loading, setLoading] = useState(false);
   const [shareLink, setShareLink] = useState<ShareLink | null>(null);
@@ -101,6 +103,42 @@ export default function ShareLinkModal({
     setLoading(true);
 
     try {
+      if (isDemo) {
+        // Demo mode - simulate success with mock data
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
+        
+        const mockShareLink: ShareLink = {
+          id: Date.now(),
+          fileId: file.id,
+          shareId: `demo-${Date.now()}`,
+          title: form.title.trim(),
+          description: form.description.trim() || null,
+          password: form.password.trim() || null,
+          viewCount: 0,
+          uniqueViewCount: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          isActive: true,
+          emailGatingEnabled: form.emailGatingEnabled,
+          downloadEnabled: form.downloadEnabled,
+          watermarkEnabled: form.watermarkEnabled,
+          maxViews: form.maxViews.trim() ? parseInt(form.maxViews.trim()) : null,
+          expiresAt: form.expiresAt.trim() ? new Date(form.expiresAt).toISOString() : null,
+        };
+
+        setShareLink(mockShareLink);
+        
+        // Show demo email capture info if email gating is enabled
+        if (form.emailGatingEnabled) {
+          setTimeout(() => {
+            alert("Demo mode - Email gating enabled. Viewers will be required to provide their email to access this link.");
+          }, 500);
+        }
+        
+        setLoading(false);
+        return;
+      }
+
       const payload: CreateShareLinkRequest = {
         fileId: file.id,
         title: form.title.trim(),

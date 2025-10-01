@@ -14,7 +14,12 @@ interface StorageInfo {
   plan: string;
 }
 
-export default function StorageUsage() {
+interface StorageUsageProps {
+  // Demo mode props
+  demoStorage?: StorageInfo;
+}
+
+export default function StorageUsage({ demoStorage }: StorageUsageProps) {
   const { isLoaded: authLoaded } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
   const api = useApi();
@@ -33,10 +38,14 @@ export default function StorageUsage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (isReady && user) {
+    if (demoStorage) {
+      // Demo mode - use provided storage data
+      setStorage(demoStorage);
+      setLoading(false);
+    } else if (isReady && user) {
       fetchStorageInfo();
     }
-  }, [isReady, user]);
+  }, [isReady, user, demoStorage]);
 
   const fetchStorageInfo = async () => {
     if (!user) return;
@@ -76,8 +85,8 @@ export default function StorageUsage() {
   const filesPercentage =
     storage.filesQuota === -1 ? 0 : calculatePercentage(storage.filesCount, storage.filesQuota);
 
-  // Show loading state while Clerk is initializing
-  if (!isReady) {
+  // Show loading state while Clerk is initializing (skip in demo mode)
+  if (!demoStorage && !isReady) {
     return (
       <div className="card">
         <div className="card-header">
@@ -95,8 +104,8 @@ export default function StorageUsage() {
     );
   }
 
-  // Show empty state if user is not authenticated
-  if (!user) {
+  // Show empty state if user is not authenticated (skip in demo mode)
+  if (!demoStorage && !user) {
     return (
       <div className="card">
         <div className="card-header">

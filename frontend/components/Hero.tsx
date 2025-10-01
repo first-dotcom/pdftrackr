@@ -129,6 +129,15 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
 
               <div className="mt-3 sm:mt-0 sm:ml-3">
                 <Link
+                  href="/demo"
+                  className="w-full flex items-center justify-center px-6 py-2.5 border border-primary-300 text-base font-medium rounded-md text-primary-700 bg-white hover:bg-primary-50 md:py-3 md:px-8 transition-colors"
+                >
+                  Try Demo
+                </Link>
+              </div>
+
+              <div className="mt-3 sm:mt-0 sm:ml-3">
+                <Link
                   href="#features"
                   className="w-full flex items-center justify-center px-6 py-2.5 border border-transparent text-base font-medium rounded-md text-primary-700 bg-primary-100 hover:bg-primary-200 md:py-3 md:px-8"
                 >
@@ -223,6 +232,15 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
                 <CTAButton size="lg">
                   {isSignedIn ? "Go to Dashboard" : "Start Free - No Card Required"}
                 </CTAButton>
+
+                <div className="mt-3 sm:mt-0 sm:ml-3">
+                  <Link
+                    href="/demo"
+                    className="w-full flex items-center justify-center px-6 py-2.5 border border-primary-300 text-base font-medium rounded-md text-primary-700 bg-white hover:bg-primary-50 md:py-3 md:px-8 transition-colors"
+                  >
+                    Try Demo
+                  </Link>
+                </div>
 
                 <div className="mt-3 sm:mt-0 sm:ml-3">
                   <Link

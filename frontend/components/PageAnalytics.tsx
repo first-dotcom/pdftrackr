@@ -7,9 +7,14 @@ import IndividualView from "./IndividualView";
 interface PageAnalyticsProps {
   fileId: number;
   totalPages: number;
+  // Optional mock controls for demos
+  mock?: {
+    aggregate?: import("@/shared/types").AggregateAnalytics;
+    individual?: import("@/shared/types").PaginatedSessionsResponse;
+  };
 }
 
-export default function PageAnalytics({ fileId, totalPages }: PageAnalyticsProps) {
+export default function PageAnalytics({ fileId, totalPages, mock }: PageAnalyticsProps) {
   const [viewMode, setViewMode] = useState<"aggregate" | "individual">("aggregate");
   const [days, setDays] = useState(30);
 
@@ -63,9 +68,9 @@ export default function PageAnalytics({ fileId, totalPages }: PageAnalyticsProps
       </div>
 
       {viewMode === "aggregate" ? (
-        <AggregateView fileId={fileId} totalPages={totalPages} days={days} />
+        <AggregateView fileId={fileId} totalPages={totalPages} days={days} mock={mock?.aggregate} />
       ) : (
-        <IndividualView fileId={fileId} />
+        <IndividualView fileId={fileId} mock={mock?.individual} />
       )}
     </div>
   );

@@ -14,18 +14,29 @@ interface SimpleStats {
 
 interface SimpleStatsProps {
   userId?: string;
+  // Demo mode props
+  demoStats?: {
+    totalFiles: number;
+    totalViews: number;
+    totalShares: number;
+    avgViewTime: number;
+  };
 }
 
-export default function SimpleStats({ userId }: SimpleStatsProps) {
+export default function SimpleStats({ userId, demoStats }: SimpleStatsProps) {
   const [stats, setStats] = useState<SimpleStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (userId) {
+    if (demoStats) {
+      // Demo mode - use provided stats
+      setStats(demoStats);
+      setLoading(false);
+    } else if (userId) {
       fetchSimpleStats();
     }
-  }, [userId]);
+  }, [userId, demoStats]);
 
   const fetchSimpleStats = async () => {
     try {

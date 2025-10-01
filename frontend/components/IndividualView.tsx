@@ -22,11 +22,12 @@ import LoadingSpinner from "./LoadingSpinner";
 
 interface IndividualViewProps {
   fileId: number;
+  mock?: PaginatedSessionsResponse | null;
 }
 
-export default function IndividualView({ fileId }: IndividualViewProps) {
-  const [data, setData] = useState<PaginatedSessionsResponse | null>(null);
-  const [loading, setLoading] = useState(false);
+export default function IndividualView({ fileId, mock = null }: IndividualViewProps) {
+  const [data, setData] = useState<PaginatedSessionsResponse | null>(mock);
+  const [loading, setLoading] = useState(!mock);
   const [error, setError] = useState<string | null>(null);
 
   // Filter state
@@ -60,8 +61,14 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
   }, [fileId, filters, currentPage]);
 
   useEffect(() => {
+    if (mock) {
+      setData(mock);
+      setLoading(false);
+      setError(null);
+      return;
+    }
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, mock]);
 
   const handleFilterChange = useCallback((key: keyof AppliedFilters, value: string) => {
     setFilters((prev) => ({
@@ -395,11 +402,18 @@ export default function IndividualView({ fileId }: IndividualViewProps) {
                             />
                             <YAxis
                               tick={{ fontSize: 12 }}
-                              label={{
-                                value: "Time (seconds)",
-                                angle: -90,
-                                position: "insideLeft",
+                              allowDecimals={false}
+                              tickFormatter={(v: number) => {
+                                const ms = Number(v) || 0;
+                                const s = ms / 1000;
+                                if (s >= 60) {
+                                  const m = Math.floor(s / 60);
+                                  const rs = Math.round(s % 60).toString().padStart(2, "0");
+                                  return `${m}:${rs}`;
+                                }
+                                return s.toFixed(s < 10 ? 2 : 0);
                               }}
+                              tickCount={5}
                             />
                             <Tooltip
                               formatter={(value: any) => [formatDuration(value), "Average Time"]}
