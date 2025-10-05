@@ -32,6 +32,53 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
+  // Demo pages (high priority - conversion intent)
+  const demoPages: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/demo`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/demo/upload`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.85,
+    },
+    // Individual demo file experiences
+    {
+      url: `${baseUrl}/demo/files/q3-financial-report-2025`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/demo/files/product-launch-strategy-2025`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/demo/files/client-proposal-template`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/demo/files/september-team-meeting-notes`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/demo/files/fall-marketing-campaign-brief`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+  ];
+
   // Educational content pages (high priority - informational intent)
   const contentPages: MetadataRoute.Sitemap = [
     {
@@ -89,5 +136,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   // Combine all pages in priority order
-  return [...corePages, ...contentPages, ...legalPages];
+  return [...corePages, ...demoPages, ...contentPages, ...legalPages];
 }

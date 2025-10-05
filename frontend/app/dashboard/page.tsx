@@ -6,8 +6,9 @@ import StorageUsage from "@/components/StorageUsage";
 import { useApi } from "@/hooks/useApi";
 import { config } from "@/lib/config";
 import { formatDuration } from "@/utils/formatters";
+import { trackEvent } from "@/hooks/useAnalyticsConsent";
 import { useAuth, useUser } from "@clerk/nextjs";
-import { BarChart3, Clock, Eye, FileText, Mail, Plus, TrendingUp, Users } from "lucide-react";
+import { BarChart3, Clock, Eye, FileText, Mail, Plus, TrendingUp, Users, Play } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -64,6 +65,16 @@ export default function DashboardPage() {
       fetchDashboardData();
     }
   }, [isReady, user]);
+
+  // Track empty dashboard views
+  useEffect(() => {
+    if (isReady && user && dashboardData && dashboardData.totalFiles === 0) {
+      trackEvent("empty_dashboard_views", {
+        user_id: user.id,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }, [isReady, user, dashboardData]);
 
   const fetchDashboardData = async () => {
     if (!user) return;
@@ -164,31 +175,69 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Key Metrics - Mobile Responsive */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
-        {statCards.map((stat) => (
-          <div key={stat.name} className="card">
-            <div className="card-body p-3 sm:p-4">
-              <div className="flex items-center">
-                <div className={`flex-shrink-0 ${stat.color} p-1.5 sm:p-2 rounded-md`}>
-                  <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-                </div>
-                <div className="ml-2 sm:ml-4 flex-1 min-w-0">
-                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">
-                    {stat.name}
-                  </p>
-                  <p className="text-lg sm:text-2xl font-semibold text-gray-900">
-                    {formatNumber(stat.value)}
-                  </p>
+      {/* New User Onboarding - Single Focused Experience */}
+      {dashboardData && dashboardData.totalFiles === 0 && (
+        <div className="card bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+          <div className="card-body text-center py-12 sm:py-16">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 sm:mb-8">
+              <Play className="h-8 w-8 sm:h-10 sm:w-10 text-blue-600" />
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
+              Welcome to PDFTrackr!
+            </h2>
+            <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-lg mx-auto">
+              See how PDF tracking works with our interactive demo, then upload your own files.
+            </p>
+            <div className="space-y-4">
+              <Link
+                href="/demo"
+                onClick={() => {
+                  trackEvent("demo_clicked_from_dashboard", {
+                    user_id: user?.id,
+                    source: "empty_dashboard",
+                    timestamp: new Date().toISOString(),
+                  });
+                }}
+                className="btn-primary btn-lg w-full sm:w-auto flex items-center justify-center"
+              >
+                <Play className="h-5 w-5 mr-2" />
+                Try the Demo First
+              </Link>
+              <p className="text-sm text-gray-500">
+                Takes 2 minutes • No signup required
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Key Metrics - Only show for users with files */}
+      {dashboardData && dashboardData.totalFiles > 0 && (
+        <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+          {statCards.map((stat) => (
+            <div key={stat.name} className="card">
+              <div className="card-body p-3 sm:p-4">
+                <div className="flex items-center">
+                  <div className={`flex-shrink-0 ${stat.color} p-1.5 sm:p-2 rounded-md`}>
+                    <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                  </div>
+                  <div className="ml-2 sm:ml-4 flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">
+                      {stat.name}
+                    </p>
+                    <p className="text-lg sm:text-2xl font-semibold text-gray-900">
+                      {formatNumber(stat.value)}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
-      {/* Storage Usage */}
-      <StorageUsage />
+      {/* Storage Usage - Only show for users with files */}
+      {dashboardData && dashboardData.totalFiles > 0 && <StorageUsage />}
 
       {/* Recent Activity - Mobile Responsive */}
       {dashboardData && dashboardData.recentViews && dashboardData.recentViews.length > 0 && (
@@ -270,28 +319,6 @@ export default function DashboardPage() {
                   </Link>
                 </div>
               ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Empty State - Mobile Responsive */}
-      {dashboardData && dashboardData.totalFiles === 0 && (
-        <div className="card">
-          <div className="card-body text-center py-8 sm:py-12">
-            <FileText className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-400" />
-            <h3 className="mt-4 text-base sm:text-lg font-medium text-gray-900">No files yet</h3>
-            <p className="mt-2 text-sm sm:text-base text-gray-600 max-w-sm mx-auto">
-              Upload your first PDF to start tracking views and sharing securely.
-            </p>
-            <div className="mt-4 sm:mt-6">
-              <Link
-                href="/dashboard/files/upload"
-                className="btn-primary btn-lg flex items-center justify-center w-full sm:w-auto"
-              >
-                <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-                Upload PDF
-              </Link>
             </div>
           </div>
         </div>

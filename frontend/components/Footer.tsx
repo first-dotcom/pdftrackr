@@ -43,6 +43,11 @@ export default function Footer() {
                           Pricing
                         </Link>
                       </li>
+                      <li>
+                        <Link href="/demo" className="text-base text-gray-300 hover:text-white">
+                          Demo
+                        </Link>
+                      </li>
                     </>
                   ) : (
                     <>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useAdmin } from "@/hooks/useAdmin";
-import { UserButton } from "@clerk/nextjs";
+import { UserButton, useAuth } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs";
 import { clsx } from "clsx";
 import { FileText, LayoutDashboard, Menu, Settings, Shield } from "lucide-react";
@@ -23,6 +23,7 @@ export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderPr
   const pathname = usePathname();
   const { user } = useUser();
   const { isAdmin } = useAdmin();
+  const { isSignedIn } = useAuth();
 
   // Get contextual title based on current path (for mobile)
   const getContextualTitle = () => {
@@ -63,7 +64,7 @@ export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderPr
             </button>
 
             {/* PDFTrackr Logo - Responsive */}
-            <Link href="/" className="flex-shrink-0">
+            <Link href="/dashboard" className="flex-shrink-0">
               <Logo size="lg" />
             </Link>
 
