@@ -119,7 +119,7 @@ export default function SimpleStats({ userId, demoStats }: SimpleStatsProps) {
       iconColor: "text-purple-600",
     },
     {
-      label: "Avg Duration",
+      label: "Average Duration",
       value: stats.avgViewTime > 0 ? formatDuration(stats.avgViewTime) : "-",
       icon: Clock,
       bgGradient: "from-orange-50 to-orange-100",

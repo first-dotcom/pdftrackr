@@ -483,6 +483,8 @@ router.get(
                 fileId: files.id,
                 title: files.title,
                 originalName: files.originalName,
+                size: files.size,
+                createdAt: files.createdAt,
                 viewCount: sql<number>`COUNT(${viewSessions.id})`,
                 uniqueViewCount: sql<number>`SUM(CASE WHEN ${viewSessions.isUnique} THEN 1 ELSE 0 END)`,
                 totalDuration: sql<number>`COALESCE(SUM(${viewSessions.totalDuration}), 0)`,
@@ -496,18 +498,40 @@ router.get(
                   or(isNull(shareLinks.expiresAt), gt(shareLinks.expiresAt, new Date())),
                 ),
               )
-              .innerJoin(
-                viewSessions,
-                and(
-                  eq(shareLinks.shareId, viewSessions.shareId),
-                  gte(viewSessions.startedAt, startDate),
-                ),
-              )
+              .innerJoin(viewSessions, eq(shareLinks.shareId, viewSessions.shareId))
               .where(eq(files.userId, userId))
               .groupBy(files.id)
               .orderBy(desc(sql`COUNT(${viewSessions.id})`))
               .limit(5)
           : [];
+
+      // Fetch share links for these top files to support consistent UI actions
+      const topFileIds = topFiles.map((f) => f.fileId);
+      const topShareLinks = topFileIds.length
+        ? await db
+            .select({
+              fileId: shareLinks.fileId,
+              id: shareLinks.id,
+              isActive: shareLinks.isActive,
+              expiresAt: shareLinks.expiresAt,
+            })
+            .from(shareLinks)
+            .where(inArray(shareLinks.fileId, topFileIds))
+        : [];
+
+      const fileIdToShareLinks = topShareLinks.reduce<Record<number, Array<{ id: number; isActive: boolean; expiresAt: Date | null }>>>(
+        (acc, row) => {
+          if (!acc[row.fileId]) acc[row.fileId] = [];
+          acc[row.fileId].push({ id: row.id as number, isActive: row.isActive, expiresAt: row.expiresAt });
+          return acc;
+        },
+        {},
+      );
+
+      const enrichedTopFiles = topFiles.map((f) => ({
+        ...f,
+        shareLinks: fileIdToShareLinks[f.fileId] || [],
+      }));
 
       // Get views by day for the last 30 days (separate query to avoid cartesian product)
       const viewsByDay =
@@ -539,7 +563,7 @@ router.get(
         emailCaptures: Number(stats?.emailCaptures) || 0,
         totalShares: Number(stats?.totalShares) || 0,
         recentViews,
-        topFiles,
+        topFiles: enrichedTopFiles,
         viewsByDay,
       };
 

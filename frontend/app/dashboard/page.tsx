@@ -1,16 +1,17 @@
 "use client";
 
-import SimpleStats from "@/components/SimpleStats";
 import SkeletonLoader from "@/components/SkeletonLoader";
-import StorageUsage from "@/components/StorageUsage";
 import { useApi } from "@/hooks/useApi";
 import { config } from "@/lib/config";
 import { formatDuration } from "@/utils/formatters";
 import { trackEvent } from "@/hooks/useAnalyticsConsent";
 import { useAuth, useUser } from "@clerk/nextjs";
-import { BarChart3, Clock, Eye, FileText, Mail, Plus, TrendingUp, Users, Play } from "lucide-react";
+import { BarChart3, Clock, Eye, FileText, Mail, Plus, TrendingUp, Play, Share2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { FileCard } from "@/components/FileCard";
+import type { File } from "@/shared/types";
+import { useRouter } from "next/navigation";
 
 interface DashboardData {
   totalFiles: number;
@@ -37,6 +38,9 @@ interface DashboardData {
     fileId: number;
     title: string | null;
     originalName: string;
+    size?: number;
+    createdAt?: string | null;
+    shareLinks?: Array<{ id: number; isActive: boolean; expiresAt: string | null }>;
     viewCount: number;
     uniqueViewCount: number;
     totalDuration: number;
@@ -57,6 +61,7 @@ export default function DashboardPage() {
   const { isLoaded: authLoaded } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
   const api = useApi();
+  const router = useRouter();
 
   const isReady = authLoaded && userLoaded;
 
@@ -108,30 +113,37 @@ export default function DashboardPage() {
     return Number(num).toLocaleString();
   };
 
-  const statCards = [
+  const statCards: Array<{
+    name: string;
+    value: number;
+    icon: any;
+    color: string;
+    isDuration?: boolean;
+  }> = [
     {
-      name: "Total Files",
+      name: "Files",
       value: dashboardData?.totalFiles || 0,
       icon: FileText,
       color: "bg-blue-500",
     },
     {
-      name: "Total Views",
+      name: "Views",
       value: dashboardData?.totalViews || 0,
       icon: Eye,
       color: "bg-green-500",
     },
     {
-      name: "Unique Viewers",
-      value: dashboardData?.totalUniqueViews || 0,
-      icon: Users,
-      color: "bg-purple-500",
-    },
-    {
       name: "Email Captures",
       value: dashboardData?.emailCaptures || 0,
       icon: Mail,
+      color: "bg-yellow-500",
+    },
+    {
+      name: "Average Duration",
+      value: dashboardData?.avgDuration || 0,
+      icon: Clock,
       color: "bg-orange-500",
+      isDuration: true,
     },
   ];
 
@@ -211,32 +223,78 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Key Metrics - Only show for users with files */}
-      {dashboardData && dashboardData.totalFiles > 0 && (
-        <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
-          {statCards.map((stat) => (
-            <div key={stat.name} className="card">
-              <div className="card-body p-3 sm:p-4">
-                <div className="flex items-center">
-                  <div className={`flex-shrink-0 ${stat.color} p-1.5 sm:p-2 rounded-md`}>
-                    <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-                  </div>
-                  <div className="ml-2 sm:ml-4 flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">
-                      {stat.name}
-                    </p>
-                    <p className="text-lg sm:text-2xl font-semibold text-gray-900">
-                      {formatNumber(stat.value)}
-                    </p>
+      {/* Overall metrics container */}
+      {dashboardData && (
+        <div className="card">
+          <div className="card-header">
+            <h3 className="text-base sm:text-lg font-medium text-gray-900">The overall metric</h3>
+          </div>
+          <div className="card-body p-3 sm:p-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+              {statCards.map((stat) => (
+                <div key={stat.name} className="border border-gray-200 rounded-md p-3 sm:p-4">
+                  <div className="flex items-center">
+                    <div className={`flex-shrink-0 ${stat.color} p-1.5 sm:p-2 rounded-md`}>
+                      <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                    </div>
+                    <div className="ml-2 sm:ml-4 flex-1 min-w-0">
+                      <p className="text-[11px] sm:text-xs font-medium text-gray-600 truncate">
+                        {stat.name}
+                      </p>
+                      <p className="text-base sm:text-xl font-semibold text-gray-900">
+                        {stat.isDuration ? formatDuration(stat.value) : formatNumber(stat.value)}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       )}
 
-      {/* Storage Usage removed from dashboard per redesign */}
+
+      {/* Top Files - Mobile Responsive */}
+      {dashboardData && dashboardData.topFiles && dashboardData.topFiles.length > 0 && (
+        <div className="card">
+          <div className="card-header">
+            <h3 className="text-base sm:text-lg font-medium text-gray-900 flex items-center">
+              <TrendingUp className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              Top Files
+            </h3>
+          </div>
+          <div className="card-body p-3 sm:p-4">
+            <div className="space-y-3 sm:space-y-4">
+              {dashboardData.topFiles.slice(0, 5).map((f) => {
+                const fileLike: File = {
+                  id: f.fileId,
+                  userId: "",
+                  title: f.title || f.originalName || "Untitled Document",
+                  originalName: f.originalName || f.title || "Untitled Document",
+                  size: f.size || 0,
+                  mimeType: "application/pdf",
+                  createdAt: f.createdAt ? new Date(f.createdAt as any).toISOString() : "",
+                  updatedAt: "",
+                  storagePath: "",
+                  shareLinks: (f.shareLinks as any) || [],
+                  viewCount: f.viewCount,
+                } as unknown as File;
+
+                return (
+                  <FileCard
+                    key={f.fileId}
+                    file={fileLike}
+                    onView={(id) => router.push(`/dashboard/files/${id}`)}
+                    onShare={() => router.push(`/dashboard/files`)}
+                    onDelete={() => router.push(`/dashboard/files`)}
+                    hideActions
+                  />
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Recent Activity - Mobile Responsive */}
       {dashboardData && dashboardData.recentViews && dashboardData.recentViews.length > 0 && (
@@ -277,54 +335,6 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
-
-      {/* Top Files - Mobile Responsive */}
-      {dashboardData && dashboardData.topFiles && dashboardData.topFiles.length > 0 && (
-        <div className="card">
-          <div className="card-header">
-            <h3 className="text-base sm:text-lg font-medium text-gray-900 flex items-center">
-              <TrendingUp className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-              Top Files
-            </h3>
-          </div>
-          <div className="card-body p-3 sm:p-4">
-            <div className="space-y-2 sm:space-y-3">
-              {dashboardData.topFiles.slice(0, 5).map((file, index) => (
-                <div
-                  key={file.fileId}
-                  className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex items-center flex-1 min-w-0">
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs sm:text-sm font-bold text-green-600">
-                        #{index + 1}
-                      </span>
-                    </div>
-                    <div className="ml-2 sm:ml-3 flex-1 min-w-0">
-                      <div className="text-sm font-medium text-gray-900 truncate">
-                        {file.title || "Untitled Document"}
-                      </div>
-                      <div className="text-xs text-gray-500 truncate">
-                        {formatNumber(file.viewCount)} views • {formatNumber(file.uniqueViewCount)}{" "}
-                        unique
-                      </div>
-                    </div>
-                  </div>
-                  <Link
-                    href={`/dashboard/files/${file.fileId}`}
-                    className="text-primary-600 hover:text-primary-800 text-xs sm:text-sm font-medium flex-shrink-0 ml-2"
-                  >
-                    View
-                  </Link>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Simple Stats - Show if user has files */}
-      {dashboardData && dashboardData.totalFiles > 0 && <SimpleStats userId={user?.id} />}
     </div>
   );
 }

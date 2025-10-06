@@ -170,7 +170,7 @@ export default function SimpleFileStats({ shareId, shareIds, title, mock = null 
       iconColor: "text-green-600",
     },
     {
-      label: "Avg Duration",
+      label: "Average Duration",
       value: (Number(stats.avgViewTime) || 0) > 0 ? formatDuration(Number(stats.avgViewTime) || 0) : "-",
       icon: Clock,
       bgGradient: "from-orange-50 to-orange-100",
