@@ -3,6 +3,7 @@
 import { useAnalyticsConsent } from "@/hooks/useAnalyticsConsent";
 import { useApi } from "@/hooks/useApi";
 import { planQuotas } from "@/shared/types";
+import StorageUsage from "@/components/StorageUsage";
 import { calculatePercentage, formatFileSize, getProgressColor } from "@/utils/formatters";
 import { Bell, Cookie, Download, HardDrive, Shield, Trash2, TrendingUp, User } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -165,58 +166,8 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Storage Usage */}
-      <div className="card">
-        <div className="card-header">
-          <h3 className="text-base sm:text-lg font-medium text-gray-900 flex items-center">
-            <div className="w-8 h-8 bg-gradient-to-br from-green-50 to-green-100 rounded-lg flex items-center justify-center border border-green-200 mr-3">
-              <HardDrive className="h-4 w-4 text-green-600" />
-            </div>
-            Storage & Plan
-          </h3>
-          <p className="mt-1 text-sm text-gray-500">Monitor your storage usage and plan details</p>
-        </div>
-        <div className="card-body p-4 sm:p-6 space-y-4">
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-gray-700">Storage Used</span>
-              <span className="text-sm font-semibold text-gray-900">
-                {formatFileSize(settings.storage.used)} / {formatFileSize(settings.storage.limit)}
-              </span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-              <div
-                className={`h-2.5 rounded-full transition-all duration-500 ease-out shadow-sm ${getProgressColor(
-                  calculatePercentage(settings.storage.used, settings.storage.limit),
-                )}`}
-                style={{
-                  width: `${Math.min(
-                    calculatePercentage(settings.storage.used, settings.storage.limit),
-                    100,
-                  )}%`,
-                }}
-              />
-            </div>
-            <div className="flex items-center justify-between mt-2">
-              <p className="text-xs text-gray-500">
-                {calculatePercentage(settings.storage.used, settings.storage.limit).toFixed(1)}%
-                used
-              </p>
-              <p className="text-xs font-medium text-gray-700 capitalize">
-                {settings.storage.plan} Plan
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="btn-outline btn-md w-full sm:w-auto flex items-center justify-center"
-            onClick={() => document.getElementById("waitlist-modal")?.classList.remove("hidden")}
-          >
-            <TrendingUp className="h-4 w-4 mr-2" />
-            Upgrade Plan
-          </button>
-        </div>
-      </div>
+      {/* Usage & Plan: moved from Dashboard, unchanged visuals */}
+      <StorageUsage />
 
       {/* Notifications */}
       <div className="card">

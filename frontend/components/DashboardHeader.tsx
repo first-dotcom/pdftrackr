@@ -8,6 +8,7 @@ import { FileText, LayoutDashboard, Menu, Settings, Shield } from "lucide-react"
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Logo from "./Logo";
+import HeaderUsageRings from "./HeaderUsageRings";
 
 interface DashboardHeaderProps {
   onMobileMenuClick?: () => void;
@@ -108,7 +109,8 @@ export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderPr
             )}
           </div>
 
-          <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
+          <div className="flex items-center space-x-3 sm:space-x-5 flex-shrink-0">
+            <HeaderUsageRings />
             <UserButton
               afterSignOutUrl="/"
               appearance={{

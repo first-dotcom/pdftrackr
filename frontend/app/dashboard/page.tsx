@@ -236,8 +236,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Storage Usage - Only show for users with files */}
-      {dashboardData && dashboardData.totalFiles > 0 && <StorageUsage />}
+      {/* Storage Usage removed from dashboard per redesign */}
 
       {/* Recent Activity - Mobile Responsive */}
       {dashboardData && dashboardData.recentViews && dashboardData.recentViews.length > 0 && (
