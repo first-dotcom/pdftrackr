@@ -54,7 +54,7 @@ interface DashboardData {
 
 export default function DashboardPage() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
-  const [_timeRange] = useState("30d");
+  const [_timeRange] = useState("all");
   const [_loading, setLoading] = useState(true);
   const [_error, setError] = useState<string | null>(null);
 
@@ -223,32 +223,27 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Overall metrics container */}
+      {/* Overall metrics - borderless chip row */}
       {dashboardData && (
-        <div className="card">
-          <div className="card-header">
-            <h3 className="text-base sm:text-lg font-medium text-gray-900">The overall metric</h3>
-          </div>
-          <div className="card-body p-3 sm:p-4">
-            <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
-              {statCards.map((stat) => (
-                <div key={stat.name} className="border border-gray-200 rounded-md p-3 sm:p-4">
-                  <div className="flex items-center">
-                    <div className={`flex-shrink-0 ${stat.color} p-1.5 sm:p-2 rounded-md`}>
-                      <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-                    </div>
-                    <div className="ml-2 sm:ml-4 flex-1 min-w-0">
-                      <p className="text-[11px] sm:text-xs font-medium text-gray-600 truncate">
-                        {stat.name}
-                      </p>
-                      <p className="text-base sm:text-xl font-semibold text-gray-900">
-                        {stat.isDuration ? formatDuration(stat.value) : formatNumber(stat.value)}
-                      </p>
-                    </div>
+        <div className="">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
+            {statCards.map((stat) => (
+              <div key={stat.name} className="bg-white rounded-lg p-2.5 sm:p-3 border border-gray-200 shadow-xs">
+                <div className="flex items-center">
+                  <div className={`flex-shrink-0 ${stat.color} p-1.5 sm:p-1.5 rounded-md`}>
+                    <stat.icon className="h-4 w-4 text-white" />
+                  </div>
+                  <div className="ml-2 sm:ml-3 flex-1 min-w-0">
+                    <p className="text-[11px] sm:text-[12px] font-medium text-gray-700 truncate">
+                      {stat.name}
+                    </p>
+                    <p className="text-sm sm:text-lg font-semibold text-gray-900">
+                      {stat.isDuration ? formatDuration(stat.value) : formatNumber(stat.value)}
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

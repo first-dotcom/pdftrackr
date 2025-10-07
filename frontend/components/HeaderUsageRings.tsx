@@ -12,10 +12,10 @@ interface UsageData {
   filesQuota: number; // -1 means unlimited
 }
 
-function getRingColorClass(percent: number): string {
-  if (percent >= 90) return "text-red-500";
-  if (percent >= 80) return "text-yellow-500";
-  return "text-primary-600";
+function getGradientStops(percent: number): { from: string; to: string } {
+  if (percent >= 90) return { from: "#dc2626", to: "#b91c1c" }; // red-600 → red-700 (higher contrast)
+  if (percent >= 80) return { from: "#d97706", to: "#b45309" }; // amber-600 → amber-700 (higher contrast)
+  return { from: "#3b82f6", to: "#2563eb" }; // primary-500 → primary-600
 }
 
 function Ring({
@@ -25,13 +25,14 @@ function Ring({
   label: string;
   percent: number;
 }) {
-  const size = 28; // px on base
-  const stroke = 3;
+  const size = 30; // px base (slightly larger)
+  const stroke = 4; // thicker for better contrast
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const clamped = Math.min(Math.max(percent, 0), 100);
   const dash = (clamped / 100) * circumference;
-  const colorClass = getRingColorClass(clamped);
+  const { from, to } = getGradientStops(clamped);
+  const gradientId = `ringGradient-${label}`;
 
   return (
     <div className="flex items-center space-x-1 sm:space-x-2">
@@ -40,14 +41,20 @@ function Ring({
         width={size}
         height={size}
         viewBox={`0 0 ${size} ${size}`}
-        className="block"
+        className="block transition-transform duration-150 ease-out group-hover:scale-[1.04] sm:scale-[1.08]"
         aria-hidden="true"
       >
+        <defs>
+          <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor={from} />
+            <stop offset="100%" stopColor={to} />
+          </linearGradient>
+        </defs>
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="#e5e7eb"
+          stroke="#d1d5db" // bg-gray-300 for better contrast
           strokeWidth={stroke}
           fill="none"
         />
@@ -57,18 +64,18 @@ function Ring({
           r={radius}
           strokeWidth={stroke}
           fill="none"
-          className={colorClass}
-          stroke="currentColor"
+          stroke={`url(#${gradientId})`}
           strokeDasharray={`${dash} ${circumference - dash}`}
           strokeLinecap="round"
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          style={{ transition: "stroke-dasharray 250ms ease-out" }}
         />
         <text
           x="50%"
           y="50%"
           dominantBaseline="middle"
           textAnchor="middle"
-          className="text-[8px] sm:text-[9px] fill-gray-700"
+          className="text-[8px] sm:text-[9px] fill-gray-800"
         >
           {Math.round(clamped)}%
         </text>
@@ -142,7 +149,7 @@ export default function HeaderUsageRings() {
 
   return (
     <div
-      className="relative flex items-center space-x-3 sm:space-x-4 mr-1"
+      className="relative flex items-center space-x-3 sm:space-x-4 mr-1 rounded-full border border-gray-200 bg-white/80 backdrop-blur px-2 py-1 group"
       ref={containerRef}
       onMouseEnter={() => {
         if (closeTimer.current) {

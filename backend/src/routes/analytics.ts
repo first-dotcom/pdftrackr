@@ -325,18 +325,19 @@ router.get(
   ),
   asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user?.id;
-    const days = parseInt(req.query.days as string) || 30;
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+    const daysParam = req.query.days as string | undefined;
+    const parsedDays = daysParam !== undefined ? parseInt(daysParam, 10) : undefined;
+    const hasWindow = parsedDays !== undefined && !Number.isNaN(parsedDays) && parsedDays > 0;
+    const startDate = hasWindow ? new Date(Date.now() - parsedDays! * 24 * 60 * 60 * 1000) : undefined;
 
     logger.debug("Analytics dashboard request", {
       userId,
-      days,
-      startDate: startDate.toISOString(),
+      days: hasWindow ? parsedDays : "all",
+      startDate: hasWindow ? startDate!.toISOString() : "all-time",
     });
 
     // Cache key based on user and time range (without timestamp for better cache hits)
-    const cacheKey = `dashboard:${userId}:${days}d`;
+    const cacheKey = `dashboard:${userId}:${hasWindow ? `${parsedDays}d` : "all"}`;
     const CACHE_TTL = 60; // 1 minute cache for better performance
 
     try {
@@ -347,7 +348,7 @@ router.get(
         return successResponse(res, cachedData);
       }
 
-      logger.debug("Cache miss, calculating dashboard data", { userId, days });
+      logger.debug("Cache miss, calculating dashboard data", { userId, days: hasWindow ? parsedDays : "all" });
       // Get user's active share links first
       const userShareLinks = await db
         .select({
@@ -466,11 +467,16 @@ router.get(
         .innerJoin(shareLinks, eq(viewSessions.shareId, shareLinks.shareId))
         .innerJoin(files, and(eq(shareLinks.fileId, files.id), eq(files.userId, userId)))
         .where(
-          and(
-            gte(viewSessions.startedAt, startDate),
-            eq(shareLinks.isActive, true),
-            or(isNull(shareLinks.expiresAt), gt(shareLinks.expiresAt, new Date())),
-          ),
+          hasWindow
+            ? and(
+                gte(viewSessions.startedAt, startDate!),
+                eq(shareLinks.isActive, true),
+                or(isNull(shareLinks.expiresAt), gt(shareLinks.expiresAt, new Date())),
+              )
+            : and(
+                eq(shareLinks.isActive, true),
+                or(isNull(shareLinks.expiresAt), gt(shareLinks.expiresAt, new Date())),
+              ),
         )
         .orderBy(desc(viewSessions.startedAt))
         .limit(5);
@@ -544,10 +550,9 @@ router.get(
               })
               .from(viewSessions)
               .where(
-                and(
-                  inArray(viewSessions.shareId, shareIds),
-                  gte(viewSessions.startedAt, startDate),
-                ),
+                hasWindow
+                  ? and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, startDate!))
+                  : inArray(viewSessions.shareId, shareIds),
               )
               .groupBy(sql`DATE(${viewSessions.startedAt})`)
               .orderBy(sql`DATE(${viewSessions.startedAt})`)

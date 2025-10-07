@@ -316,7 +316,12 @@ class ApiClient {
       return this.get(`/api/analytics/files/${fileId}/individual${query ? `?${query}` : ""}`);
     },
     share: (shareId: string) => this.get(`/api/analytics/shares/${shareId}`),
-    dashboard: () => this.get("/api/analytics/dashboard"),
+    dashboard: (params?: { days?: number }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.days !== undefined) searchParams.append("days", String(params.days));
+      const query = searchParams.toString();
+      return this.get(`/api/analytics/dashboard${query ? `?${query}` : ""}`);
+    },
 
     // 📊 HIGH-VALUE ANALYTICS TRACKING
     // Session start is handled on backend when share link is accessed
