@@ -4,6 +4,7 @@ import { apiClient } from "@/lib/api-client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import CTAButton from "./CTAButton";
+import { PlatformBadges } from "./TrustBadges";
 
 interface HeroProps {
   isSignedIn?: boolean;
@@ -124,7 +125,7 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
 
             <div className="mt-5 sm:mt-8 sm:flex sm:justify-start">
               <div className="flex flex-col">
-                <CTAButton size="lg">
+                <CTAButton size="lg" className="w-full sm:w-auto sm:min-w-[200px]">
                   {isSignedIn ? "Go to Dashboard" : "Upload PDF"}
                 </CTAButton>
                 {!isSignedIn && (
@@ -142,6 +143,11 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
                   View Demo
                 </Link>
               </div>
+            </div>
+
+            {/* Trust Badges - Desktop */}
+            <div className="mt-6 hidden sm:block">
+              <PlatformBadges variant="minimal" />
             </div>
           </div>
 
@@ -228,7 +234,7 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
 
               <div className="mt-5 sm:mt-8 sm:flex sm:justify-center">
                 <div className="flex flex-col">
-                  <CTAButton size="lg">
+                  <CTAButton size="lg" className="w-full sm:w-auto sm:min-w-[200px]">
                     {isSignedIn ? "Go to Dashboard" : "Upload PDF"}
                   </CTAButton>
                   {!isSignedIn && (
@@ -255,6 +261,11 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
                     See Features
                   </Link>
                 </div>
+              </div>
+
+              {/* Trust Badges - Mobile */}
+              <div className="mt-6 sm:hidden">
+                <PlatformBadges variant="minimal" />
               </div>
             </div>
           </div>

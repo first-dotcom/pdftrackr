@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import WaitlistModal from "./WaitlistModal";
 import CTAButton from "./CTAButton";
-import { PlatformBadges } from "./TrustBadges";
 
 const plans = [
   {
@@ -181,10 +180,6 @@ export default function Pricing() {
           ))}
         </div>
 
-        {/* Social Proof Section */}
-        <div className="mt-16 mb-8">
-          <PlatformBadges />
-        </div>
 
         {/* Additional Note */}
         <div className="mt-12 text-center">

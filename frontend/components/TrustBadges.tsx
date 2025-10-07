@@ -184,6 +184,39 @@ export function PlatformBadges({
   variant?: "default" | "minimal";
   className?: string;
 }) {
+  if (variant === "minimal") {
+    return (
+      <div className={`text-left mt-8 ${className}`}>
+        <p className="text-sm text-gray-600 mb-3 font-medium">
+          Trusted by professionals:
+        </p>
+        <div className="flex items-center space-x-4">
+          {/* Product Hunt Badge - Keep original colors */}
+          <a 
+            href="https://www.producthunt.com/products/pdftrackr?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-pdftrackr" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:opacity-80 transition-opacity"
+          >
+            <img 
+              src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1019185&theme=light&t=1758799078030" 
+              alt="PDFTrackr - Track PDF engagement with page-by-page insights | Product Hunt" 
+              className="h-8 w-auto" 
+              width="120" 
+              height="32" 
+            />
+          </a>
+          
+          {/* SourceForge Badge - Keep original colors */}
+          <SourceForgeBadge 
+            variant="inline"
+            width="90px"
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`text-center ${className}`}>
       <p className="text-sm text-gray-600 mb-4 font-medium">
@@ -209,7 +242,7 @@ export function PlatformBadges({
         {/* SourceForge Badge */}
         <SourceForgeBadge 
           variant="inline"
-          width={variant === "minimal" ? "100px" : "110px"}
+          width="110px"
         />
       </div>
     </div>

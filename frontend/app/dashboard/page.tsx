@@ -6,7 +6,7 @@ import { config } from "@/lib/config";
 import { formatDuration } from "@/utils/formatters";
 import { trackEvent } from "@/hooks/useAnalyticsConsent";
 import { useAuth, useUser } from "@clerk/nextjs";
-import { BarChart3, Clock, Eye, FileText, Mail, Plus, TrendingUp, Play, Share2 } from "lucide-react";
+import { BarChart3, Clock, Eye, FileText, Mail, Plus, TrendingUp, Play, Share2, Upload } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FileCard } from "@/components/FileCard";
@@ -198,26 +198,32 @@ export default function DashboardPage() {
               Welcome to PDFTrackr!
             </h2>
             <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-lg mx-auto">
-              See how PDF tracking works with our interactive demo, then upload your own files.
+              Upload your first PDF to start tracking views and analytics, or try our demo to see how it works.
             </p>
             <div className="space-y-4">
               <Link
-                href="/demo"
-                onClick={() => {
-                  trackEvent("demo_clicked_from_dashboard", {
-                    user_id: user?.id,
-                    source: "empty_dashboard",
-                    timestamp: new Date().toISOString(),
-                  });
-                }}
+                href="/dashboard/files/upload"
                 className="btn-primary btn-lg w-full sm:w-auto flex items-center justify-center"
               >
-                <Play className="h-5 w-5 mr-2" />
-                Try the Demo First
+                <Upload className="h-5 w-5 mr-2" />
+                Upload Your First PDF
               </Link>
-              <p className="text-sm text-gray-500">
-                Takes 2 minutes • No signup required
-              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-4">
+                <Link
+                  href="/demo"
+                  onClick={() => {
+                    trackEvent("demo_clicked_from_dashboard", {
+                      user_id: user?.id,
+                      source: "empty_dashboard",
+                      timestamp: new Date().toISOString(),
+                    });
+                  }}
+                  className="text-primary-600 hover:text-primary-700 text-sm font-medium underline"
+                >
+                  Try Demo Instead
+                </Link>
+                <span className="text-sm text-gray-500">• Takes 2 minutes</span>
+              </div>
             </div>
           </div>
         </div>
