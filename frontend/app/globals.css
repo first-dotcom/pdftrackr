@@ -48,29 +48,50 @@
     @apply inline-flex items-center justify-center px-4 py-2 rounded-md font-medium transition-colors hover:bg-secondary-100 active:bg-secondary-200;
   }
   
-  /* Mobile-first button sizes with better touch targets */
+  /* Standardized button sizes with consistent touch targets */
   .btn-sm {
-    @apply h-12 px-4 text-sm sm:h-10 sm:px-3 sm:text-xs;
+    @apply h-10 px-3 text-sm font-medium; /* 40px height, compact */
   }
   
   .btn-md {
-    @apply h-14 px-6 py-3 text-base sm:h-12 sm:px-4 sm:py-2 sm:text-sm;
+    @apply h-12 px-4 text-sm font-medium; /* 48px height, standard */
   }
   
   .btn-lg {
-    @apply h-16 px-8 text-lg sm:h-14 sm:text-base;
+    @apply h-14 px-6 text-base font-medium; /* 56px height, prominent */
+  }
+  
+  /* Icon button sizes */
+  .btn-icon-sm {
+    @apply w-8 h-8 p-0; /* 32px square */
+  }
+  
+  .btn-icon-md {
+    @apply w-10 h-10 p-0; /* 40px square */
+  }
+  
+  .btn-icon-lg {
+    @apply w-12 h-12 p-0; /* 48px square */
   }
   
   .card {
-    @apply bg-white rounded-lg border border-secondary-200 shadow-sm;
+    @apply bg-white rounded-lg border border-gray-200 shadow-sm;
   }
   
   .card-header {
-    @apply px-4 py-4 sm:px-6 border-b border-secondary-200;
+    @apply px-4 py-4 sm:px-6 border-b border-gray-200;
   }
   
   .card-body {
     @apply px-4 py-4 sm:px-6;
+  }
+  
+  .card-compact {
+    @apply bg-white rounded-lg border border-gray-200 shadow-sm p-3 sm:p-4;
+  }
+  
+  .card-elevated {
+    @apply bg-white rounded-lg border border-gray-200 shadow-md hover:shadow-lg transition-shadow;
   }
   
   .input {
@@ -94,6 +115,68 @@
   /* Better focus states for accessibility */
   .focus-ring {
     @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+  
+  .focus-ring-inset {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset;
+  }
+  
+  .focus-ring-red {
+    @apply focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2;
+  }
+  
+  .focus-ring-gray {
+    @apply focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+  }
+
+  /* Typography hierarchy */
+  .text-h1 {
+    @apply text-xl sm:text-2xl font-bold text-gray-900; /* 20px/24px */
+  }
+  
+  .text-h2 {
+    @apply text-lg sm:text-xl font-semibold text-gray-900; /* 18px/20px */
+  }
+  
+  .text-h3 {
+    @apply text-base sm:text-lg font-semibold text-gray-900; /* 16px/18px */
+  }
+  
+  .text-body {
+    @apply text-sm sm:text-base text-gray-700; /* 14px/16px */
+  }
+  
+  .text-meta {
+    @apply text-xs sm:text-sm text-gray-500; /* 12px/14px */
+  }
+  
+  .text-caption {
+    @apply text-[10px] sm:text-xs text-gray-400; /* 10px/12px */
+  }
+
+  /* Skeleton loading states */
+  .skeleton {
+    @apply animate-pulse bg-gray-200 rounded;
+  }
+  
+  .skeleton-text {
+    @apply skeleton h-4 w-full;
+  }
+  
+  .skeleton-text-sm {
+    @apply skeleton h-3 w-3/4;
+  }
+  
+  .skeleton-avatar {
+    @apply skeleton w-12 h-12 rounded-lg;
+  }
+  
+  .skeleton-button {
+    @apply skeleton w-20 h-10 rounded-md;
+  }
+  
+  .skeleton-card {
+    @apply skeleton w-full h-24 rounded-lg;
   }
 
   /* Hover states that only work on devices with hover capability */

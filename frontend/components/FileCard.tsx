@@ -53,7 +53,7 @@ export const FileCard: React.FC<FileCardProps> = ({
   return (
     <div
       ref={cardRef}
-      className="group relative bg-white border border-gray-200 rounded-lg p-4 sm:p-6 transition-all duration-200 hover:shadow-sm focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2"
+      className="group relative card-elevated p-4 sm:p-6 transition-all duration-200 focus-ring"
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
       tabIndex={0}
@@ -62,7 +62,7 @@ export const FileCard: React.FC<FileCardProps> = ({
     >
       <div className="flex items-start space-x-4">
         <div className="flex-shrink-0">
-          <div className="w-12 h-12 bg-gradient-to-br from-red-50 to-red-100 rounded-lg flex items-center justify-center border border-red-200">
+          <div className="w-12 h-12 bg-red-50 rounded-lg flex items-center justify-center border border-red-200">
             <FileText className="h-6 w-6 text-red-600" aria-hidden="true" />
           </div>
         </div>
@@ -118,7 +118,7 @@ export const FileCard: React.FC<FileCardProps> = ({
                   type="button"
                   onClick={() => onShare(file)}
                   disabled={isSharing || isDeleting}
-                  className="flex items-center justify-center w-12 h-12 text-primary-600 hover:text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                  className="btn-icon-lg text-primary-600 hover:text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors focus-ring disabled:opacity-50 disabled:cursor-not-allowed"
                   aria-label="Create share link"
                   onKeyDown={(e) => handleKeyDown(e, () => onShare(file))}
                 >
@@ -132,7 +132,7 @@ export const FileCard: React.FC<FileCardProps> = ({
                   type="button"
                   onClick={() => onDelete(file.id)}
                   disabled={isDeleting || isSharing}
-                  className="flex items-center justify-center w-12 h-12 text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                  className="btn-icon-lg text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors focus-ring-red disabled:opacity-50 disabled:cursor-not-allowed"
                   aria-label="Delete file"
                   onKeyDown={(e) => handleKeyDown(e, () => onDelete(file.id))}
                 >
@@ -153,7 +153,7 @@ export const FileCard: React.FC<FileCardProps> = ({
                       type="button"
                       onClick={() => onShare(file)}
                       disabled={isSharing || isDeleting}
-                      className="flex items-center justify-center w-8 h-8 text-primary-600 hover:text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="btn-icon-md text-primary-600 hover:text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-md transition-colors focus-ring disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="Create share link"
                       onKeyDown={(e) => handleKeyDown(e, () => onShare(file))}
                     >
@@ -167,7 +167,7 @@ export const FileCard: React.FC<FileCardProps> = ({
                       type="button"
                       onClick={() => onDelete(file.id)}
                       disabled={isDeleting || isSharing}
-                      className="flex items-center justify-center w-8 h-8 text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="btn-icon-md text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-md transition-colors focus-ring-red disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="Delete file"
                       onKeyDown={(e) => handleKeyDown(e, () => onDelete(file.id))}
                     >

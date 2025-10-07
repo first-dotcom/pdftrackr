@@ -391,68 +391,68 @@ export default function FileDetailPageContent({
         </div>
       ) : file ? (
         <>
-          {/* File Info - compact single row */}
-          <div className="bg-white border border-gray-200 rounded-lg px-3 sm:px-4 py-3">
+          {/* File Info - larger and better spaced */}
+          <div className="bg-white border border-gray-200 rounded-lg px-4 py-4">
             <div className="flex items-center justify-between">
               {/* Left: icon + title */}
-              <div className="flex items-center min-w-0">
-                <div className="w-10 h-10 sm:w-11 sm:h-11 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <FileText className="h-5 w-5 text-red-600" />
+              <div className="flex items-center min-w-0 flex-1">
+                <div className="w-12 h-12 bg-red-50 rounded-lg flex items-center justify-center flex-shrink-0 border border-red-200">
+                  <FileText className="h-6 w-6 text-red-600" />
                 </div>
-                <h2 className="ml-3 text-base sm:text-lg font-medium text-gray-900 truncate">
+                <h2 className="ml-4 text-lg font-semibold text-gray-900 truncate">
                   {file.title || "Untitled Document"}
                 </h2>
               </div>
 
-              {/* Middle: chips */}
-              <div className="hidden sm:flex items-center flex-shrink-0 space-x-2 mx-3">
-                <span className="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-gray-700 text-xs font-medium">
+              {/* Middle: chips - desktop only */}
+              <div className="hidden lg:flex items-center flex-shrink-0 space-x-3 mx-6">
+                <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 text-sm font-medium">
                   {formatFileSize(file.size)}
                 </span>
-                <span className="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-gray-700 text-xs font-medium">
+                <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 text-sm font-medium">
                   {formatDistanceToNow(new Date(file.createdAt), { addSuffix: true })}
                 </span>
                 {file.pageCount ? (
-                  <span className="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-gray-700 text-xs font-medium">
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 text-sm font-medium">
                     {file.pageCount} pages
                   </span>
                 ) : null}
               </div>
 
               {/* Right: actions */}
-              <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
+              <div className="flex items-center space-x-2 flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => router.back()}
-                  className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                  className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
                   title="Back"
                   aria-label="Back"
                 >
-                  <ArrowLeft className="h-4 w-4" />
+                  <ArrowLeft className="h-5 w-5" />
                 </button>
                 {!isDemo && (
                   <button
                     type="button"
                     onClick={handleDeleteFile}
-                    className="p-2 rounded-md text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="w-10 h-10 flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
                     title="Delete"
                     aria-label="Delete"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-5 w-5" />
                   </button>
                 )}
               </div>
             </div>
-            {/* Mobile chips below title */}
-            <div className="mt-2 flex sm:hidden items-center flex-wrap gap-2">
-              <span className="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-gray-700 text-xs font-medium">
+            {/* Mobile chips below title - better spaced */}
+            <div className="mt-3 flex lg:hidden items-center flex-wrap gap-2">
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 text-sm font-medium">
                 {formatFileSize(file.size)}
               </span>
-              <span className="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-gray-700 text-xs font-medium">
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 text-sm font-medium">
                 {formatDistanceToNow(new Date(file.createdAt), { addSuffix: true })}
               </span>
               {file.pageCount ? (
-                <span className="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-gray-700 text-xs font-medium">
+                <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 text-sm font-medium">
                   {file.pageCount} pages
                 </span>
               ) : null}

@@ -223,21 +223,25 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Overall metrics - borderless chip row */}
+      {/* Overall metrics - properly grouped */}
       {dashboardData && (
-        <div className="">
-          <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
+        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-h3">Overall Metrics</h3>
+            <div className="text-meta">All time</div>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
             {statCards.map((stat) => (
-              <div key={stat.name} className="bg-white rounded-lg p-2.5 sm:p-3 border border-gray-200 shadow-xs">
+              <div key={stat.name} className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center">
-                  <div className={`flex-shrink-0 ${stat.color} p-1.5 sm:p-1.5 rounded-md`}>
+                  <div className={`flex-shrink-0 ${stat.color} p-2 rounded-lg shadow-sm`}>
                     <stat.icon className="h-4 w-4 text-white" />
                   </div>
-                  <div className="ml-2 sm:ml-3 flex-1 min-w-0">
-                    <p className="text-[11px] sm:text-[12px] font-medium text-gray-700 truncate">
+                  <div className="ml-3 flex-1 min-w-0">
+                    <p className="text-meta truncate">
                       {stat.name}
                     </p>
-                    <p className="text-sm sm:text-lg font-semibold text-gray-900">
+                    <p className="text-h2">
                       {stat.isDuration ? formatDuration(stat.value) : formatNumber(stat.value)}
                     </p>
                   </div>
@@ -253,7 +257,7 @@ export default function DashboardPage() {
       {dashboardData && dashboardData.topFiles && dashboardData.topFiles.length > 0 && (
         <div className="card">
           <div className="card-header">
-            <h3 className="text-base sm:text-lg font-medium text-gray-900 flex items-center">
+            <h3 className="text-h3 flex items-center">
               <TrendingUp className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Top Files
             </h3>
@@ -295,7 +299,7 @@ export default function DashboardPage() {
       {dashboardData && dashboardData.recentViews && dashboardData.recentViews.length > 0 && (
         <div className="card">
           <div className="card-header">
-            <h3 className="text-base sm:text-lg font-medium text-gray-900 flex items-center">
+            <h3 className="text-h3 flex items-center">
               <Clock className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Recent Views
             </h3>

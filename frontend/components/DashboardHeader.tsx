@@ -65,7 +65,7 @@ export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderPr
             </button>
 
             {/* PDFTrackr Logo - Responsive */}
-            <Link href="/dashboard" className="flex-shrink-0 h-12 flex items-center px-3 rounded-md hover:bg-gray-50">
+            <Link href="/" className="flex-shrink-0 h-12 flex items-center px-3 rounded-md hover:bg-gray-50">
               <Logo size="lg" />
             </Link>
 
@@ -109,13 +109,13 @@ export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderPr
             )}
           </div>
 
-          <div className="flex items-center space-x-4 flex-shrink-0 h-12">
+          <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0 h-12">
             <HeaderUsageRings />
             <UserButton
               afterSignOutUrl="/"
               appearance={{
                 elements: {
-                  avatarBox: "w-8 h-8 rounded-full",
+                  avatarBox: "w-7 h-7 sm:w-8 sm:h-8 rounded-full",
                   userButtonTrigger: "focus:shadow-none",
                 },
               }}

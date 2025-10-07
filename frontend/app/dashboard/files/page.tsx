@@ -141,35 +141,35 @@ function Pagination({
 // Loading Skeleton for File Cards
 function FileCardSkeleton() {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 animate-pulse">
+    <div className="card p-4 sm:p-6">
       <div className="flex items-start space-x-4">
         <div className="flex-shrink-0">
-          <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
+          <div className="skeleton-avatar"></div>
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
             <div className="flex-1 min-w-0">
-              <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
+              <div className="skeleton-text mb-2 w-3/4"></div>
               <div className="space-y-2 sm:hidden">
-                <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                <div className="skeleton-text-sm w-1/4"></div>
+                <div className="skeleton-text-sm w-1/2"></div>
+                <div className="skeleton-text-sm w-1/3"></div>
               </div>
               <div className="hidden sm:flex sm:items-center sm:space-x-6 sm:mt-2">
-                <div className="h-4 bg-gray-200 rounded w-16"></div>
-                <div className="h-4 bg-gray-200 rounded w-20"></div>
-                <div className="h-4 bg-gray-200 rounded w-24"></div>
-                <div className="h-4 bg-gray-200 rounded w-20"></div>
+                <div className="skeleton-text-sm w-16"></div>
+                <div className="skeleton-text-sm w-20"></div>
+                <div className="skeleton-text-sm w-24"></div>
+                <div className="skeleton-text-sm w-20"></div>
               </div>
             </div>
             <div className="mt-4 sm:mt-0 sm:ml-4">
               <div className="sm:hidden flex space-x-2">
-                <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
-                <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
+                <div className="skeleton-button w-12 h-12"></div>
+                <div className="skeleton-button w-12 h-12"></div>
               </div>
               <div className="hidden sm:flex sm:space-x-2">
-                <div className="w-8 h-8 bg-gray-200 rounded-md"></div>
-                <div className="w-8 h-8 bg-gray-200 rounded-md"></div>
+                <div className="skeleton-button w-8 h-8"></div>
+                <div className="skeleton-button w-8 h-8"></div>
               </div>
             </div>
           </div>

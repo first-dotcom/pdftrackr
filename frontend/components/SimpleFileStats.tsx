@@ -112,7 +112,7 @@ export default function SimpleFileStats({ shareId, shareIds, title, mock = null 
     return (
       <div className="space-y-4">
         <div className="h-6 bg-gray-200 rounded w-1/3 animate-pulse"></div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 xl:gap-6">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="card animate-pulse">
               <div className="card-body p-4 sm:p-6">
@@ -188,7 +188,7 @@ export default function SimpleFileStats({ shareId, shareIds, title, mock = null 
         <p className="mt-1 text-sm text-gray-600">View statistics for this shared document</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 xl:gap-6">
         {statItems.map((item) => (
           <div
             key={item.label}

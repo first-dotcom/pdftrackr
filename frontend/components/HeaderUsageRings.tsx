@@ -13,8 +13,8 @@ interface UsageData {
 }
 
 function getGradientStops(percent: number): { from: string; to: string } {
-  if (percent >= 90) return { from: "#dc2626", to: "#b91c1c" }; // red-600 → red-700 (higher contrast)
-  if (percent >= 80) return { from: "#d97706", to: "#b45309" }; // amber-600 → amber-700 (higher contrast)
+  if (percent >= 90) return { from: "#dc2626", to: "#b91c1c" }; // red-600 → red-700
+  if (percent >= 80) return { from: "#d97706", to: "#b45309" }; // amber-600 → amber-700
   return { from: "#3b82f6", to: "#2563eb" }; // primary-500 → primary-600
 }
 
@@ -25,8 +25,8 @@ function Ring({
   label: string;
   percent: number;
 }) {
-  const size = 30; // px base (slightly larger)
-  const stroke = 4; // thicker for better contrast
+  const size = 36; // Larger to give more space for text
+  const stroke = 3; // Thinner stroke to not cover the text
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const clamped = Math.min(Math.max(percent, 0), 100);
@@ -35,13 +35,13 @@ function Ring({
   const gradientId = `ringGradient-${label}`;
 
   return (
-    <div className="flex items-center space-x-1 sm:space-x-2">
-      <span className="text-[10px] sm:text-xs text-gray-600">{label}</span>
+    <div className="flex items-center space-x-1 sm:space-x-1.5">
+      <span className="text-[9px] sm:text-[10px] text-gray-700 font-medium">{label}</span>
       <svg
         width={size}
         height={size}
         viewBox={`0 0 ${size} ${size}`}
-        className="block transition-transform duration-150 ease-out group-hover:scale-[1.04] sm:scale-[1.08]"
+        className="block transition-all duration-200 ease-out group-hover:scale-105 drop-shadow-sm"
         aria-hidden="true"
       >
         <defs>
@@ -49,15 +49,25 @@ function Ring({
             <stop offset="0%" stopColor={from} />
             <stop offset="100%" stopColor={to} />
           </linearGradient>
+          <filter id={`glow-${label}`}>
+            <feGaussianBlur stdDeviation="1" result="coloredBlur"/>
+            <feMerge> 
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
         </defs>
+        {/* Background circle with better contrast */}
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="#d1d5db" // bg-gray-300 for better contrast
+          stroke="#9ca3af" // Darker gray for better contrast
           strokeWidth={stroke}
           fill="none"
+          opacity={0.3}
         />
+        {/* Progress circle with glow effect */}
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -68,14 +78,19 @@ function Ring({
           strokeDasharray={`${dash} ${circumference - dash}`}
           strokeLinecap="round"
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
-          style={{ transition: "stroke-dasharray 250ms ease-out" }}
+          style={{ 
+            transition: "stroke-dasharray 300ms ease-out",
+            filter: `url(#glow-${label})`
+          }}
         />
+        {/* Percentage text with better contrast and more space */}
         <text
           x="50%"
           y="50%"
           dominantBaseline="middle"
           textAnchor="middle"
-          className="text-[8px] sm:text-[9px] fill-gray-800"
+          className="text-[10px] sm:text-[11px] fill-gray-900 font-bold"
+          style={{ fontSize: '10px' }}
         >
           {Math.round(clamped)}%
         </text>
@@ -149,7 +164,7 @@ export default function HeaderUsageRings() {
 
   return (
     <div
-      className="relative flex items-center space-x-3 sm:space-x-4 mr-1 rounded-full border border-gray-200 bg-white/80 backdrop-blur px-2 py-1 group"
+      className="relative flex items-center space-x-2 sm:space-x-3 mr-1 rounded-full border border-gray-200 bg-white/80 backdrop-blur px-1.5 sm:px-2 py-1 group"
       ref={containerRef}
       onMouseEnter={() => {
         if (closeTimer.current) {
