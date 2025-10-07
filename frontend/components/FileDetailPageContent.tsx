@@ -391,63 +391,86 @@ export default function FileDetailPageContent({
         </div>
       ) : file ? (
         <>
-          {/* File Info */}
-          <div className="card">
-            <div className="card-header">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                    <FileText className="h-6 w-6 text-red-600" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-medium text-gray-900">
-                      {file.title || "Untitled Document"}
-                    </h2>
-                  </div>
+          {/* File Info - compact single row */}
+          <div className="bg-white border border-gray-200 rounded-lg px-3 sm:px-4 py-3">
+            <div className="flex items-center justify-between">
+              {/* Left: icon + title */}
+              <div className="flex items-center min-w-0">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <FileText className="h-5 w-5 text-red-600" />
                 </div>
-                <div className="flex items-center space-x-3">
-                  {!isDemo && (
-                    <button
-                      type="button"
-                      onClick={handleDeleteFile}
-                      className="btn-outline btn-sm flex items-center text-red-600 border-red-200 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
-                    </button>
-                  )}
+                <h2 className="ml-3 text-base sm:text-lg font-medium text-gray-900 truncate">
+                  {file.title || "Untitled Document"}
+                </h2>
+              </div>
+
+              {/* Middle: chips */}
+              <div className="hidden sm:flex items-center flex-shrink-0 space-x-2 mx-3">
+                <span className="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-gray-700 text-xs font-medium">
+                  {formatFileSize(file.size)}
+                </span>
+                <span className="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-gray-700 text-xs font-medium">
+                  {formatDistanceToNow(new Date(file.createdAt), { addSuffix: true })}
+                </span>
+                {file.pageCount ? (
+                  <span className="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-gray-700 text-xs font-medium">
+                    {file.pageCount} pages
+                  </span>
+                ) : null}
+              </div>
+
+              {/* Right: actions */}
+              <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={() => router.back()}
+                  className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                  title="Back"
+                  aria-label="Back"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </button>
+                {!isDemo && (
                   <button
                     type="button"
-                    onClick={() => router.back()}
-                    className="btn-outline btn-sm flex items-center"
+                    onClick={handleDeleteFile}
+                    className="p-2 rounded-md text-red-600 hover:text-red-700 hover:bg-red-50"
+                    title="Delete"
+                    aria-label="Delete"
                   >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
+                    <Trash2 className="h-4 w-4" />
                   </button>
-                </div>
+                )}
               </div>
             </div>
-            <div className="card-body">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex items-center space-x-3">
-                  <Calendar className="h-5 w-5 text-gray-400" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {formatDistanceToNow(new Date(file.createdAt), { addSuffix: true })}
-                    </p>
-                    <p className="text-xs text-gray-500">Uploaded</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Download className="h-5 w-5 text-gray-400" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{formatFileSize(file.size)}</p>
-                    <p className="text-xs text-gray-500">File Size</p>
-                  </div>
-                </div>
-              </div>
+            {/* Mobile chips below title */}
+            <div className="mt-2 flex sm:hidden items-center flex-wrap gap-2">
+              <span className="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-gray-700 text-xs font-medium">
+                {formatFileSize(file.size)}
+              </span>
+              <span className="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-gray-700 text-xs font-medium">
+                {formatDistanceToNow(new Date(file.createdAt), { addSuffix: true })}
+              </span>
+              {file.pageCount ? (
+                <span className="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-gray-700 text-xs font-medium">
+                  {file.pageCount} pages
+                </span>
+              ) : null}
             </div>
           </div>
+
+          {/* Page-by-Page Analytics Section - only when share links exist */}
+          {shareLinks.length > 0 && (
+            <div className="card">
+              <div className="card-body">
+                <PageAnalytics
+                  fileId={isDemo ? 0 : parseInt(fileId)}
+                  totalPages={file.pageCount || Math.max(1, Math.ceil((file.size || 0) / 50000))}
+                  mock={isDemo ? { aggregate: mockAggregate, individual: mockIndividual } : undefined}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Share Links */}
           <div className="card">
@@ -711,19 +734,6 @@ export default function FileDetailPageContent({
               )}
             </div>
           </div>
-
-          {/* Page-by-Page Analytics Section */}
-          {file && (
-            <div className="card">
-              <div className="card-body">
-                <PageAnalytics
-                  fileId={isDemo ? 0 : parseInt(fileId)}
-                  totalPages={file.pageCount || Math.max(1, Math.ceil((file.size || 0) / 50000))}
-                  mock={isDemo ? { aggregate: mockAggregate, individual: mockIndividual } : undefined}
-                />
-              </div>
-            </div>
-          )}
 
           {/* Simple Analytics Section - Combined across all share links */}
           {shareLinks.length > 0 && (

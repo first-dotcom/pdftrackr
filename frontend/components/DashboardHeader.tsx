@@ -51,9 +51,9 @@ export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderPr
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
-      <div className="px-4 py-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
+      <div className="px-4 py-2 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-12">
+          <div className="flex items-center space-x-4 min-w-0 flex-1">
             {/* Mobile menu button */}
             <button
               type="button"
@@ -65,12 +65,12 @@ export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderPr
             </button>
 
             {/* PDFTrackr Logo - Responsive */}
-            <Link href="/dashboard" className="flex-shrink-0">
+            <Link href="/dashboard" className="flex-shrink-0 h-12 flex items-center px-3 rounded-md hover:bg-gray-50">
               <Logo size="lg" />
             </Link>
 
             {/* Desktop Navigation Tabs */}
-            <nav className="hidden lg:flex space-x-8 ml-8">
+            <nav className="hidden lg:flex space-x-4 ml-4">
               {[
                 ...navigation,
                 ...(isAdmin ? [{ name: "Admin", href: "/dashboard/admin", icon: Shield }] : []),
@@ -86,7 +86,7 @@ export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderPr
                     key={item.name}
                     href={item.href}
                     className={clsx(
-                      "flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                      "flex items-center h-12 space-x-2 px-3 text-sm font-medium rounded-md transition-colors",
                       isActive
                         ? "text-primary-600 bg-primary-50 border-primary-200"
                         : "text-gray-600 hover:text-gray-900 hover:bg-gray-50",
@@ -109,13 +109,13 @@ export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderPr
             )}
           </div>
 
-          <div className="flex items-center space-x-3 sm:space-x-5 flex-shrink-0">
+          <div className="flex items-center space-x-4 flex-shrink-0 h-12">
             <HeaderUsageRings />
             <UserButton
               afterSignOutUrl="/"
               appearance={{
                 elements: {
-                  avatarBox: "w-7 h-7 sm:w-8 sm:h-8 rounded-full",
+                  avatarBox: "w-8 h-8 rounded-full",
                   userButtonTrigger: "focus:shadow-none",
                 },
               }}
