@@ -105,9 +105,8 @@ export default function AggregateView({ fileId, totalPages, days = 30, mock = nu
     <div className="space-y-4">
       {/* Reading Time Chart */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Reading Time by Page</h3>
         <p className="text-sm text-gray-600 mb-4">
-          Average time spent on each page (seconds). Detailed format in tooltip.
+          Average time spent on each page. Detailed format in tooltip.
         </p>
 
         {chartData.length > 0 ? (
@@ -136,7 +135,7 @@ export default function AggregateView({ fileId, totalPages, days = 30, mock = nu
                 tickCount={5}
               />
               <Tooltip
-                formatter={(value: any) => [formatDuration(value), "Average Time"]}
+                formatter={(value: any) => [formatDuration(value), "Average Time Spent"]}
                 labelFormatter={(label) => label}
               />
               <Line

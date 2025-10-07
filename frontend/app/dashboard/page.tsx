@@ -139,7 +139,7 @@ export default function DashboardPage() {
       color: "bg-yellow-500",
     },
     {
-      name: "Average Duration",
+      name: "Average Time Spent",
       value: dashboardData?.avgDuration || 0,
       icon: Clock,
       color: "bg-orange-500",

@@ -51,7 +51,7 @@ export default function PageAnalytics({ fileId, totalPages, mock }: PageAnalytic
                   : "text-gray-600 hover:text-gray-900"
               }`}
             >
-              Aggregate
+              All
             </button>
             <button
               onClick={() => setViewMode("individual")}
