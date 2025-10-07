@@ -19,8 +19,8 @@ export default async function HomePage() {
       <Header />
       <main>
         <Hero isSignedIn={isSignedIn} />
-        <Features />
         <HowItWorks />
+        <Features />
         <UseCases />
         <Pricing />
 
@@ -64,9 +64,11 @@ export default async function HomePage() {
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 Welcome back! Ready to manage your PDFs?
               </h2>
-              <CTAButton size="lg">
-                Go to Dashboard
-              </CTAButton>
+              <div className="flex flex-col items-center">
+                <CTAButton size="lg">
+                  Go to Dashboard
+                </CTAButton>
+              </div>
             </div>
           </div>
         )}

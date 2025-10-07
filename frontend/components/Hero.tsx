@@ -123,25 +123,23 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
             </p>
 
             <div className="mt-5 sm:mt-8 sm:flex sm:justify-start">
-              <CTAButton size="lg">
-                {isSignedIn ? "Go to Dashboard" : "Start Free - No Card Required"}
-              </CTAButton>
+              <div className="flex flex-col">
+                <CTAButton size="lg">
+                  {isSignedIn ? "Go to Dashboard" : "Upload PDF"}
+                </CTAButton>
+                {!isSignedIn && (
+                  <p className="mt-2 text-sm text-gray-500">
+                    Start Free - No Card Required
+                  </p>
+                )}
+              </div>
 
               <div className="mt-3 sm:mt-0 sm:ml-3">
                 <Link
                   href="/demo"
                   className="w-full flex items-center justify-center px-6 py-2.5 border border-primary-300 text-base font-medium rounded-md text-primary-700 bg-white hover:bg-primary-50 md:py-3 md:px-8 transition-colors"
                 >
-                  Try Demo
-                </Link>
-              </div>
-
-              <div className="mt-3 sm:mt-0 sm:ml-3">
-                <Link
-                  href="#features"
-                  className="w-full flex items-center justify-center px-6 py-2.5 border border-transparent text-base font-medium rounded-md text-primary-700 bg-primary-100 hover:bg-primary-200 md:py-3 md:px-8"
-                >
-                  See Features
+                  View Demo
                 </Link>
               </div>
             </div>
@@ -229,9 +227,16 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
               </p>
 
               <div className="mt-5 sm:mt-8 sm:flex sm:justify-center">
-                <CTAButton size="lg">
-                  {isSignedIn ? "Go to Dashboard" : "Start Free - No Card Required"}
-                </CTAButton>
+                <div className="flex flex-col">
+                  <CTAButton size="lg">
+                    {isSignedIn ? "Go to Dashboard" : "Upload PDF"}
+                  </CTAButton>
+                  {!isSignedIn && (
+                    <p className="mt-2 text-sm text-gray-500 text-center">
+                      Start Free - No Card Required
+                    </p>
+                  )}
+                </div>
 
                 <div className="mt-3 sm:mt-0 sm:ml-3">
                   <Link

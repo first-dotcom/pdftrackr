@@ -66,7 +66,7 @@ export default function DashboardHeader({ onMobileMenuClick }: DashboardHeaderPr
 
             {/* PDFTrackr Logo - Responsive */}
             <Link href="/" className="flex-shrink-0 h-12 flex items-center px-3 rounded-md hover:bg-gray-50">
-              <Logo size="lg" />
+              <Logo size="md" />
             </Link>
 
             {/* Desktop Navigation Tabs */}
