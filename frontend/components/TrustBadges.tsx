@@ -239,7 +239,7 @@ export function PlatformBadges({
           <ProductHuntBadge className="h-8 w-auto" width="120" height="32" />
           
           {/* GoodFirms Badge */}
-          <GoodFirmsBadge className="h-8 w-auto" width="120" height="32" />
+          <GoodFirmsBadge className="h-12 w-auto" width="180" height="48" />
           
           {/* SourceForge Badge - Keep original colors */}
           <SourceForgeBadge 
@@ -262,7 +262,7 @@ export function PlatformBadges({
         <ProductHuntBadge className="w-[180px] h-auto sm:w-[200px]" width="200" height="42" />
         
         {/* GoodFirms Badge */}
-        <GoodFirmsBadge className="h-[42px] w-auto" width="243" height="42" />
+        <GoodFirmsBadge className="h-[60px] w-auto" width="300" height="60" />
         
         {/* SourceForge Badge */}
         <SourceForgeBadge 
