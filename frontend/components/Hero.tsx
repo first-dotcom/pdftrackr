@@ -146,7 +146,7 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
             </div>
 
             {/* Trust Badges - Desktop */}
-            <div className="mt-6 hidden sm:block">
+            <div className="hidden sm:block">
               <PlatformBadges variant="minimal" />
             </div>
           </div>
@@ -264,7 +264,7 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
               </div>
 
               {/* Trust Badges - Mobile */}
-              <div className="mt-6 sm:hidden">
+              <div className="sm:hidden">
                 <PlatformBadges variant="minimal" />
               </div>
             </div>
