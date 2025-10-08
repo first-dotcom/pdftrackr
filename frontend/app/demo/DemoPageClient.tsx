@@ -181,13 +181,13 @@ export default function DemoPageClient() {
       color: "bg-green-500",
     },
     {
-      name: "Email Captures",
+      name: "Emails captured",
       value: sampleDashboardData.emailCaptures,
       icon: Mail,
       color: "bg-yellow-500",
     },
     {
-      name: "Average Time Spent",
+      name: "Average view time",
       value: sampleDashboardData.avgDuration,
       icon: Clock,
       color: "bg-orange-500",
@@ -225,7 +225,7 @@ export default function DemoPageClient() {
           {/* Header with Upload Button - Mobile Responsive */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-900">Demo Dashboard</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Demo dashboard</h1>
               <p className="text-gray-600">Experience PDFTrackr's full analytics capabilities</p>
             </div>
             <div className="sm:ml-4" />
@@ -241,7 +241,7 @@ export default function DemoPageClient() {
             <div className="card-header">
               <h3 className="text-h3 flex items-center">
                 <TrendingUp className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                Top Files
+                Top files
               </h3>
             </div>
             <div className="card-body p-3 sm:p-4">
@@ -281,7 +281,7 @@ export default function DemoPageClient() {
             <div className="card-header">
               <h3 className="text-h3 flex items-center">
                 <Clock className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                Recent Views
+                Recent views
               </h3>
             </div>
             <div className="card-body p-3 sm:p-4">

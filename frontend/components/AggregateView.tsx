@@ -135,7 +135,7 @@ export default function AggregateView({ fileId, totalPages, days = 30, mock = nu
                 tickCount={5}
               />
               <Tooltip
-                formatter={(value: any) => [formatDuration(value), "Average Time Spent"]}
+                formatter={(value: any) => [formatDuration(value), "Average view time"]}
                 labelFormatter={(label) => label}
               />
               <Line

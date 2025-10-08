@@ -203,7 +203,7 @@ export default function FreePdfTrackingPage() {
           </p>
           <div className="text-center">
             <CTAButton size="lg" variant="secondary">
-              Get Started Free
+              Sign up free
               <Gift className="ml-2 h-5 w-5" />
             </CTAButton>
           </div>

@@ -26,7 +26,7 @@ const plans = [
       "Page-by-page tracking",
       "Geography & device analytics",
     ],
-    cta: "Get Started Free",
+    cta: "Sign up free",
     href: "/sign-up",
     featured: true,
     available: true,

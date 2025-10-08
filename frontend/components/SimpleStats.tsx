@@ -111,7 +111,7 @@ export default function SimpleStats({ userId, demoStats }: SimpleStatsProps) {
       iconColor: "text-green-600",
     },
     {
-      label: "Share Links",
+      label: "Share links",
       value: stats.totalShares.toLocaleString(),
       icon: Share2,
       bgGradient: "from-purple-50 to-purple-100",
@@ -119,7 +119,7 @@ export default function SimpleStats({ userId, demoStats }: SimpleStatsProps) {
       iconColor: "text-purple-600",
     },
     {
-      label: "Average Time Spent",
+      label: "Average view time",
       value: stats.avgViewTime > 0 ? formatDuration(stats.avgViewTime) : "-",
       icon: Clock,
       bgGradient: "from-orange-50 to-orange-100",

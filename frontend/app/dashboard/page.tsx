@@ -134,13 +134,13 @@ export default function DashboardPage() {
       color: "bg-green-500",
     },
     {
-      name: "Email Captures",
+      name: "Emails captured",
       value: dashboardData?.emailCaptures || 0,
       icon: Mail,
       color: "bg-yellow-500",
     },
     {
-      name: "Average Time Spent",
+      name: "Average view time",
       value: dashboardData?.avgDuration || 0,
       icon: Clock,
       color: "bg-orange-500",
@@ -164,7 +164,7 @@ export default function DashboardPage() {
         <div className="card">
           <div className="card-body text-center py-12">
             <BarChart3 className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">Authentication Required</h3>
+            <h3 className="mt-2 text-sm font-medium text-gray-900">Authentication required</h3>
             <p className="mt-1 text-sm text-gray-500">Please sign in to view your dashboard.</p>
           </div>
         </div>
@@ -196,10 +196,10 @@ export default function DashboardPage() {
               <Play className="h-8 w-8 sm:h-10 sm:w-10 text-blue-600" />
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
-              Welcome to PDFTrackr!
+              Welcome to PDFTrackr
             </h2>
             <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-lg mx-auto">
-              Upload your first PDF to start tracking views and analytics, or try our demo to see how it works.
+            Upload your first PDF to start tracking views and analytics, or try our demo to see how it works.
             </p>
             <div className="space-y-4">
               <Link
@@ -221,7 +221,7 @@ export default function DashboardPage() {
                   }}
                   className="text-primary-600 hover:text-primary-700 text-sm font-medium underline"
                 >
-                  View Demo Instead
+                  View demo instead
                 </Link>
                 <span className="text-sm text-gray-500">• Takes 2 minutes</span>
               </div>
@@ -240,7 +240,7 @@ export default function DashboardPage() {
           <div className="card-header">
             <h3 className="text-h3 flex items-center">
               <TrendingUp className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-              Top Files
+              Top files
             </h3>
           </div>
           <div className="card-body p-3 sm:p-4">
@@ -282,7 +282,7 @@ export default function DashboardPage() {
           <div className="card-header">
             <h3 className="text-h3 flex items-center">
               <Clock className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-              Recent Views
+              Recent views
             </h3>
           </div>
           <div className="card-body p-3 sm:p-4">

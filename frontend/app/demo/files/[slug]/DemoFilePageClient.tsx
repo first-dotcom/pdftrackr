@@ -329,7 +329,7 @@ export default function DemoFilePageClient() {
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-500">Demo File Analytics</div>
               <Link href="/sign-up" className="btn-outline btn-sm">
-                Sign Up Free
+                Sign up free
               </Link>
             </div>
           </div>

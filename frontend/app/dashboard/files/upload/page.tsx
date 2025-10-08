@@ -58,25 +58,18 @@ export default function UploadPage() {
       // Check file size against user's plan limit
       if (userProfile) {
         if (file.size > userProfile.quotas.fileSize) {
-          return `File size must be less than ${formatFileSize(userProfile.quotas.fileSize)}`;
+          return `This file exceeds your plan’s size limit (${formatFileSize(userProfile.quotas.fileSize)} max).`;
         }
       } else {
-        // Fallback to a reasonable limit while profile is loading
-        const fallbackLimit = getFileSizeLimit("free"); // Use free plan limit as fallback
-        if (file.size > fallbackLimit) {
-          return `File size must be less than ${formatFileSize(
-            fallbackLimit,
-          )} (loading plan limits...)`;
-        }
+        // While loading profile, avoid misleading size errors
+        // Accept temporarily; final limits will validate server-side
       }
 
       // Check user quotas if available
       if (userProfile) {
         // Check storage quota
         if (userProfile.user.storageUsed + file.size > userProfile.quotas.storage) {
-          return `Upload would exceed storage quota (${formatFileSize(
-            userProfile.user.storageUsed,
-          )} / ${formatFileSize(userProfile.quotas.storage)})`;
+          return `This upload exceeds your storage limit.`;
         }
 
         // Check file count quota (if not unlimited)
@@ -84,7 +77,7 @@ export default function UploadPage() {
           userProfile.quotas.fileCount !== -1 &&
           userProfile.user.filesCount >= userProfile.quotas.fileCount
         ) {
-          return `Upload would exceed file count limit (${userProfile.user.filesCount} / ${userProfile.quotas.fileCount})`;
+          return `You’ve reached your file limit for your plan.`;
         }
       }
 
@@ -502,7 +495,9 @@ export default function UploadPage() {
                 />
               </div>
               <p className="text-sm text-gray-500 mt-3">
-                PDF files only, up to {formatFileSize(getFileSizeLimit("free"))} each
+                {userProfile
+                  ? `PDF files only, up to ${formatFileSize(userProfile.quotas.fileSize)} each`
+                  : `PDF files only`}
               </p>
             </div>
           </div>

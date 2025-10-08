@@ -200,7 +200,7 @@ export default function TrackDocumentsOnlinePage() {
             href="/sign-up"
             className="inline-flex items-center px-8 py-4 bg-white text-primary-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
           >
-            Get Started Free
+            Sign up free
             <Cloud className="ml-2 h-5 w-5" />
           </Link>
         </div>

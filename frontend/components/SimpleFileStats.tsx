@@ -170,7 +170,7 @@ export default function SimpleFileStats({ shareId, shareIds, title, mock = null 
       iconColor: "text-green-600",
     },
     {
-      label: "Average Time Spent",
+      label: "Average view time",
       value: (Number(stats.avgViewTime) || 0) > 0 ? formatDuration(Number(stats.avgViewTime) || 0) : "-",
       icon: Clock,
       bgGradient: "from-orange-50 to-orange-100",
@@ -183,7 +183,7 @@ export default function SimpleFileStats({ shareId, shareIds, title, mock = null 
     <div className="space-y-4">
       <div>
         <h3 className="text-lg font-medium text-gray-900">
-          {title ? title : "Document Analytics"}
+          {title ? title : "Link analytics"}
         </h3>
         <p className="mt-1 text-sm text-gray-600">View statistics for this shared document</p>
       </div>

@@ -184,7 +184,7 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
                         </span>
                       </div>
                                 <div className="flex items-center justify-between">
-                                  <span className="text-sm text-gray-600">Average Time Spent</span>
+                                  <span className="text-sm text-gray-600">Average view time</span>
                                   <span className="text-sm font-medium text-green-700">
                                     {isLoadingAnalytics
                                       ? "..."

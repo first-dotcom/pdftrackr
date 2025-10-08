@@ -90,7 +90,7 @@ export const FileCard: React.FC<FileCardProps> = ({
                   </span>
                   <span className="flex items-center">
                     <Share2 className="h-4 w-4 mr-1" aria-hidden="true" />
-                    {getActiveShareLinks(file.shareLinks)} links
+                    {getActiveShareLinks(file.shareLinks)} share links
                   </span>
                 </div>
                 <div className="text-sm text-gray-500">{formatDate(file.createdAt)}</div>
@@ -104,7 +104,7 @@ export const FileCard: React.FC<FileCardProps> = ({
                 </span>
                 <span className="flex items-center">
                   <Share2 className="h-4 w-4 mr-1" aria-hidden="true" />
-                  {getActiveShareLinks(file.shareLinks)} links
+                  {getActiveShareLinks(file.shareLinks)} share links
                 </span>
                 <span>{formatDate(file.createdAt)}</span>
               </div>

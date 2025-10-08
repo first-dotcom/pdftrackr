@@ -252,7 +252,7 @@ export default function DocumentTrackingSystemPage() {
             Reliable platform • Simple workflows • Secure sharing • 500MB free storage
           </p>
           <CTAButton size="lg" variant="secondary">
-            Get Started Free
+            Sign up free
             <Database className="ml-2 h-5 w-5" />
           </CTAButton>
         </div>

@@ -358,10 +358,10 @@ export default function FileDetailPageContent({
             </div>
             <div className="ml-3">
               <h3 className="text-sm font-medium text-blue-800">
-                Demo Mode - Try All Features
+                Demo mode
               </h3>
               <p className="text-sm text-blue-700 mt-1">
-                You're viewing a demo with sample data. All features work but changes aren't saved.
+                You’re viewing a demo with sample data. Changes aren’t saved.
               </p>
             </div>
           </div>
