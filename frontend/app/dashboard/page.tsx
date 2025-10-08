@@ -10,6 +10,7 @@ import { BarChart3, Clock, Eye, FileText, Mail, Plus, TrendingUp, Play, Share2, 
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FileCard } from "@/components/FileCard";
+import OverallMetrics from "@/components/OverallMetrics";
 import type { File } from "@/shared/types";
 import { useRouter } from "next/navigation";
 
@@ -220,7 +221,7 @@ export default function DashboardPage() {
                   }}
                   className="text-primary-600 hover:text-primary-700 text-sm font-medium underline"
                 >
-                  Try Demo Instead
+                  View Demo Instead
                 </Link>
                 <span className="text-sm text-gray-500">• Takes 2 minutes</span>
               </div>
@@ -230,33 +231,7 @@ export default function DashboardPage() {
       )}
 
       {/* Overall metrics - properly grouped */}
-      {dashboardData && (
-        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-h3">Overall Metrics</h3>
-            <div className="text-meta">All time</div>
-          </div>
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-            {statCards.map((stat) => (
-              <div key={stat.name} className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center">
-                  <div className={`flex-shrink-0 ${stat.color} p-2 rounded-lg shadow-sm`}>
-                    <stat.icon className="h-4 w-4 text-white" />
-                  </div>
-                  <div className="ml-3 flex-1 min-w-0">
-                    <p className="text-meta truncate">
-                      {stat.name}
-                    </p>
-                    <p className="text-h2">
-                      {stat.isDuration ? formatDuration(stat.value) : formatNumber(stat.value)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {dashboardData && <OverallMetrics items={statCards} />}
 
 
       {/* Top Files - Mobile Responsive */}

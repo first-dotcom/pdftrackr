@@ -249,7 +249,7 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
                     href="/demo"
                     className="w-full flex items-center justify-center px-6 py-2.5 border border-primary-300 text-base font-medium rounded-md text-primary-700 bg-white hover:bg-primary-50 md:py-3 md:px-8 transition-colors"
                   >
-                    Try Demo
+                    View Demo
                   </Link>
                 </div>
 

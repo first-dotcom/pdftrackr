@@ -1,11 +1,14 @@
 "use client";
 
-import SimpleStats from "@/components/SimpleStats";
-import StorageUsage from "@/components/StorageUsage";
+// import SimpleStats from "@/components/SimpleStats";
+import { FileCard } from "@/components/FileCard";
+import OverallMetrics from "@/components/OverallMetrics";
+import type { File } from "@/shared/types";
 import { formatDuration } from "@/utils/formatters";
-import { ArrowLeft, BarChart3, Clock, Eye, FileText, Mail, TrendingUp, Users } from "lucide-react";
+import { ArrowLeft, Clock, Eye, FileText, Mail, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 // Sample data for the demo dashboard
 const sampleDashboardData = {
@@ -145,17 +148,11 @@ const sampleDashboardData = {
   ],
 };
 
-// Sample storage data
-const sampleStorageData = {
-  storageUsed: 156.7, // MB
-  storageQuota: 500, // MB
-  filesCount: 8,
-  filesQuota: 50,
-  plan: "free",
-};
+// Storage demo data removed; demo no longer shows storage widget to match dashboard
 
 export default function DemoPageClient() {
   const { isSignedIn } = useAuth();
+  const router = useRouter();
 
   const formatNumber = (num: number | string | undefined | null) => {
     if (num === undefined || num === null) {
@@ -164,30 +161,37 @@ export default function DemoPageClient() {
     return Number(num).toLocaleString();
   };
 
-  const statCards = [
+  const statCards: Array<{
+    name: string;
+    value: number;
+    icon: any;
+    color: string;
+    isDuration?: boolean;
+  }> = [
     {
-      name: "Total Files",
+      name: "Files",
       value: sampleDashboardData.totalFiles,
       icon: FileText,
       color: "bg-blue-500",
     },
     {
-      name: "Total Views",
+      name: "Views",
       value: sampleDashboardData.totalViews,
       icon: Eye,
       color: "bg-green-500",
     },
     {
-      name: "Unique Viewers",
-      value: sampleDashboardData.totalUniqueViews,
-      icon: Users,
-      color: "bg-purple-500",
-    },
-    {
       name: "Email Captures",
       value: sampleDashboardData.emailCaptures,
       icon: Mail,
+      color: "bg-yellow-500",
+    },
+    {
+      name: "Average Time Spent",
+      value: sampleDashboardData.avgDuration,
+      icon: Clock,
       color: "bg-orange-500",
+      isDuration: true,
     },
   ];
 
@@ -227,93 +231,55 @@ export default function DemoPageClient() {
             <div className="sm:ml-4" />
           </div>
 
-          {/* Demo Navigation Guide */}
-          <div className="card bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-            <div className="card-body p-4 sm:p-6">
-              <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Eye className="h-4 w-4 text-blue-600" />
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Try the Full Viewer Experience
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    Click on any file below to see how your shared PDFs appear to viewers, complete with analytics, 
-                    reading patterns, and geographic data. Each demo file shows a different scenario.
-                  </p>
-                <div className="flex flex-wrap gap-2">
-                    <Link
-                      href="/demo/files/q3-financial-report-2025"
-                      className="btn-outline btn-sm"
-                    >
-                      Q3 Financial Report
-                    </Link>
-                    <Link
-                      href="/demo/files/product-launch-strategy-2025"
-                      className="btn-outline btn-sm"
-                    >
-                      Product Launch Strategy
-                    </Link>
-                    <Link
-                      href="/demo/files/client-proposal-template"
-                      className="btn-outline btn-sm"
-                    >
-                      Client Proposal
-                    </Link>
-                    <Link
-                      href="/demo/files/september-team-meeting-notes"
-                      className="btn-outline btn-sm"
-                    >
-                      Meeting Notes
-                    </Link>
-                    <Link
-                      href="/demo/files/fall-marketing-campaign-brief"
-                      className="btn-outline btn-sm"
-                    >
-                      Marketing Brief
-                    </Link>
-                    <Link href="/demo/upload" className="btn-outline btn-sm">
-                      Try Upload Demo
-                    </Link>
-                  </div>
-                </div>
+          {/* Demo Navigation Guide removed to match dashboard */}
+
+          {/* Overall metrics - shared component */}
+          <OverallMetrics items={statCards} />
+
+          {/* Top Files - reuse FileCard for parity with dashboard (placed before Recent Views) */}
+          <div className="card">
+            <div className="card-header">
+              <h3 className="text-h3 flex items-center">
+                <TrendingUp className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                Top Files
+              </h3>
+            </div>
+            <div className="card-body p-3 sm:p-4">
+              <div className="space-y-3 sm:space-y-4">
+                {sampleDashboardData.topFiles.slice(0, 5).map((f) => {
+                  const fileLike: File = {
+                    id: f.fileId,
+                    userId: "",
+                    title: f.title || f.originalName || "Untitled Document",
+                    originalName: f.originalName || f.title || "Untitled Document",
+                    size: 0,
+                    mimeType: "application/pdf",
+                    createdAt: "",
+                    updatedAt: "",
+                    storagePath: "",
+                    shareLinks: [],
+                    viewCount: f.viewCount,
+                  } as unknown as File;
+
+                  return (
+                    <FileCard
+                      key={f.fileId}
+                      file={fileLike}
+                      onView={() => router.push(`/demo/files/${f.slug}`)}
+                      onShare={() => router.push(`/demo`)}
+                      onDelete={() => router.push(`/demo`)}
+                      hideActions
+                    />
+                  );
+                })}
               </div>
             </div>
           </div>
 
-          {/* Key Metrics - Mobile Responsive */}
-          <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
-            {statCards.map((stat) => (
-              <div key={stat.name} className="card">
-                <div className="card-body p-3 sm:p-4">
-                  <div className="flex items-center">
-                    <div className={`flex-shrink-0 ${stat.color} p-1.5 sm:p-2 rounded-md`}>
-                      <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-                    </div>
-                    <div className="ml-2 sm:ml-4 flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">
-                        {stat.name}
-                      </p>
-                      <p className="text-lg sm:text-2xl font-semibold text-gray-900">
-                        {formatNumber(stat.value)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Storage Usage - Using Real Component */}
-          <StorageUsage demoStorage={sampleStorageData} />
-
-          {/* Recent Activity - Mobile Responsive */}
+          {/* Recent Activity - synced heading */}
           <div className="card">
             <div className="card-header">
-              <h3 className="text-base sm:text-lg font-medium text-gray-900 flex items-center">
+              <h3 className="text-h3 flex items-center">
                 <Clock className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 Recent Views
               </h3>
@@ -347,87 +313,7 @@ export default function DemoPageClient() {
             </div>
           </div>
 
-          {/* Top Files - Mobile Responsive */}
-          <div className="card">
-            <div className="card-header">
-              <h3 className="text-base sm:text-lg font-medium text-gray-900 flex items-center">
-                <TrendingUp className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                Top Files - Click to View Demo
-              </h3>
-            </div>
-            <div className="card-body p-3 sm:p-4">
-              <div className="space-y-2 sm:space-y-3">
-                {sampleDashboardData.topFiles.slice(0, 5).map((file, index) => (
-                  <div
-                    key={file.fileId}
-                    className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    <div className="flex items-center flex-1 min-w-0">
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs sm:text-sm font-bold text-green-600">
-                          #{index + 1}
-                        </span>
-                      </div>
-                      <div className="ml-2 sm:ml-3 flex-1 min-w-0">
-                        <div className="text-sm font-medium text-gray-900 truncate">
-                          {file.title || "Untitled Document"}
-                        </div>
-                        <div className="text-xs text-gray-500 truncate">
-                          {formatNumber(file.viewCount)} views • {formatNumber(file.uniqueViewCount)} unique
-                        </div>
-                      </div>
-                    </div>
-                    <Link
-                      href={`/demo/files/${file.slug}`}
-                      className="btn-primary btn-sm flex-shrink-0 ml-2"
-                    >
-                      View Demo
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Simple Stats - Using Real Component */}
-          <SimpleStats demoStats={{
-            totalFiles: sampleDashboardData.totalFiles,
-            totalViews: sampleDashboardData.totalViews,
-            totalShares: 12, // Mock share count
-            avgViewTime: sampleDashboardData.avgDuration,
-          }} />
-
-          {/* Demo Stats */}
-          <div className="card">
-            <div className="card-body p-3 sm:p-4">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <BarChart3 className="h-8 w-8 text-primary-600" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Ready to Get Started?
-                </h3>
-                <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-                  This is a live demo of PDFTrackr's dashboard. Sign up for free to start 
-                  tracking your own PDFs and gain valuable insights into your document engagement.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link
-                    href="/sign-up"
-                    className="btn-primary btn-lg"
-                  >
-                    Sign Up Free
-                  </Link>
-                  <Link
-                    href="/"
-                    className="btn-outline btn-lg"
-                  >
-                    Learn More
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Removed extra demo-only sections to mirror dashboard layout */}
         </div>
       </div>
     </div>
