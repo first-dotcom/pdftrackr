@@ -62,7 +62,7 @@ const plans = [
       "Up to 500 PDF files",
       "Unlimited share links",
       `${getFileSizeLimitDisplay("pro")} max file size`,
-      "Bulk operations",
+      "Email notifications",
       "Export analytics",
     ],
     cta: "Join Waitlist",
@@ -98,7 +98,7 @@ export default function Pricing() {
   const { isSignedIn } = useAuth();
 
   return (
-    <section id="pricing" className="bg-white py-12">
+    <section id="pricing" className="bg-white py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="sm:text-center">
           <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
@@ -183,50 +183,9 @@ export default function Pricing() {
 
         {/* Additional Note */}
         <div className="mt-12 text-center">
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-sm text-gray-600">
             All plans include secure hosting, GDPR compliance, and automatic backups
           </p>
-          <div className="bg-gray-50 rounded-lg p-6 max-w-4xl mx-auto">
-            <h4 className="text-sm font-medium text-gray-900 mb-3">All Plans Include:</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm text-gray-600">
-              <div className="flex items-center">
-                <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                Full analytics
-              </div>
-              <div className="flex items-center">
-                <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                Password protection
-              </div>
-              <div className="flex items-center">
-                <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                Link expiration
-              </div>
-              <div className="flex items-center">
-                <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                Email gating
-              </div>
-              <div className="flex items-center">
-                <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                Download control
-              </div>
-              <div className="flex items-center">
-                <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                Virus scanning
-              </div>
-              <div className="flex items-center">
-                <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                30-day analytics history
-              </div>
-              <div className="flex items-center">
-                <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                Geography & device tracking
-              </div>
-              <div className="flex items-center">
-                <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                Page-by-page analytics
-              </div>
-            </div>
-          </div>
         </div>
       </div>
       <WaitlistModal />

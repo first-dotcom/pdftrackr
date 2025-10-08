@@ -23,7 +23,7 @@ const useCases = [
 
 export default function UseCases() {
   return (
-    <section className="py-12 bg-white">
+    <section className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
@@ -35,7 +35,7 @@ export default function UseCases() {
         </div>
 
         <div className="mt-10">
-          <div className="space-y-10 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-x-8 md:gap-y-10">
+          <div className="space-y-10 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-x-8 md:gap-y-10">
             {useCases.map((useCase) => (
               <div
                 key={useCase.title}

@@ -61,13 +61,17 @@ const featureGroups = [
         title: "30-Day History",
         description: "Access detailed analytics for 30 days",
       },
+      {
+        title: "Bulk Operations",
+        description: "Manage multiple documents at once",
+      },
     ],
   },
 ];
 
 export default function Features() {
   return (
-    <section id="features" className="py-12 bg-gray-50">
+    <section id="features" className="py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="lg:text-center">
           <h2 className="text-base text-primary-600 font-semibold tracking-wide uppercase">
@@ -81,27 +85,27 @@ export default function Features() {
           </p>
         </div>
 
-        <div className="mt-16 space-y-16">
+        <div className="mt-16 space-y-20">
           {featureGroups.map((group) => (
             <div key={group.title} className="relative">
               {/* Group Header */}
-              <div className="text-center mb-12">
-                <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-primary-100 text-primary-600 mb-4">
+              <div className="text-center mb-16">
+                <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-primary-100 text-primary-600 mb-6">
                   <group.icon className="h-8 w-8" aria-hidden="true" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900">{group.title}</h3>
               </div>
 
               {/* Features Grid */}
-              <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-2">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
                 {group.features.map((feature) => (
-                  <div key={feature.title} className="relative">
-                    <div className="flex items-start">
+                  <div key={feature.title} className="relative group">
+                    <div className="flex items-start p-4 rounded-lg hover:bg-white hover:shadow-sm transition-all duration-200">
                       <div className="flex-shrink-0">
                         <CheckCircle className="h-6 w-6 text-green-500" aria-hidden="true" />
                       </div>
                       <div className="ml-4">
-                        <h4 className="text-lg font-medium text-gray-900">{feature.title}</h4>
+                        <h4 className="text-lg font-medium text-gray-900 group-hover:text-primary-600 transition-colors">{feature.title}</h4>
                         <p className="mt-2 text-base text-gray-500">{feature.description}</p>
                       </div>
                     </div>

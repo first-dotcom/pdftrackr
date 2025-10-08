@@ -25,37 +25,39 @@ export default async function HomePage() {
         <Pricing />
 
         {/* Learn More Section */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <LearnMoreSection 
-            title="Learn More About PDF Tracking"
-            guides={[
-              {
-                href: "/document-tracking-system",
-                title: "Document Tracking System",
-                description: "Learn about our comprehensive document tracking system for freelancers and small teams.",
-                label: "Learn More"
-              },
-              {
-                href: "/track-documents-online",
-                title: "Track Documents Online",
-                description: "Discover how to track documents online with our cloud-based platform.",
-                label: "Learn More"
-              },
-              {
-                href: "/how-to-track-pdf-views",
-                title: "How to Track PDF Views",
-                description: "Complete step-by-step guide to PDF tracking setup and implementation.",
-                label: "Read Guide"
-              },
-              {
-                href: "/free-pdf-tracking",
-                title: "Free PDF Tracking",
-                description: "Start tracking PDFs for free with 500MB storage and no credit card required.",
-                label: "Learn More"
-              }
-            ]}
-          />
-        </div>
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <LearnMoreSection 
+              title="Learn More About PDF Tracking"
+              guides={[
+                {
+                  href: "/document-tracking-system",
+                  title: "Document Tracking System",
+                  description: "Learn about our comprehensive document tracking system for freelancers and small teams.",
+                  label: "Learn More"
+                },
+                {
+                  href: "/track-documents-online",
+                  title: "Track Documents Online",
+                  description: "Discover how to track documents online with our cloud-based platform.",
+                  label: "Learn More"
+                },
+                {
+                  href: "/how-to-track-pdf-views",
+                  title: "How to Track PDF Views",
+                  description: "Complete step-by-step guide to PDF tracking setup and implementation.",
+                  label: "Read Guide"
+                },
+                {
+                  href: "/free-pdf-tracking",
+                  title: "Free PDF Tracking",
+                  description: "Start tracking PDFs for free with 500MB storage and no credit card required.",
+                  label: "Learn More"
+                }
+              ]}
+            />
+          </div>
+        </section>
 
         {/* SEO-friendly CTA for authenticated users */}
         {isSignedIn && (

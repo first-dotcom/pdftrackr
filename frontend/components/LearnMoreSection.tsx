@@ -46,7 +46,7 @@ export default function LearnMoreSection({
   const displayGuides = guides && guides.length > 0 ? guides : defaultGuides;
 
   return (
-    <div className={`bg-white rounded-lg p-8 mb-16 shadow-sm ${className}`}>
+    <div className={`${className}`}>
       <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
         {title}
       </h2>
@@ -55,7 +55,7 @@ export default function LearnMoreSection({
           <Link
             key={index}
             href={guide.href}
-            className="block p-6 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
+            className="block p-6 bg-white rounded-lg border border-gray-200 hover:border-primary-300 hover:shadow-md transition-all duration-200"
           >
             <h3 className="font-semibold text-gray-900 mb-2">{guide.title}</h3>
             <p className="text-sm text-gray-600 mb-3">{guide.description}</p>
