@@ -125,7 +125,7 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
 
             <div className="mt-5 sm:mt-8 sm:flex sm:justify-start">
               <div className="flex flex-col">
-                <CTAButton size="lg" className="w-full sm:w-auto sm:min-w-[200px]">
+                <CTAButton size="lg" className="w-full sm:w-auto sm:min-w-[200px]" afterAuthPath="/dashboard/files/upload">
                   {isSignedIn ? "Go to Dashboard" : "Upload PDF"}
                 </CTAButton>
                 {!isSignedIn && (
@@ -234,7 +234,7 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
 
               <div className="mt-5 sm:mt-8 sm:flex sm:justify-center">
                 <div className="flex flex-col">
-                  <CTAButton size="lg" className="w-full sm:w-auto sm:min-w-[200px]">
+                  <CTAButton size="lg" className="w-full sm:w-auto sm:min-w-[200px]" afterAuthPath="/dashboard/files/upload">
                     {isSignedIn ? "Go to Dashboard" : "Upload PDF"}
                   </CTAButton>
                   {!isSignedIn && (

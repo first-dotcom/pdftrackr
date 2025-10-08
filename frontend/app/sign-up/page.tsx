@@ -12,7 +12,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Page() {
+export default function Page({ searchParams }: { searchParams: { redirect_url?: string } }) {
+  const target = searchParams?.redirect_url || "/dashboard";
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -77,8 +78,8 @@ export default function Page() {
               colorWarning: "#F59E0B",
             },
           }}
-          redirectUrl="/dashboard"
-          afterSignUpUrl="/dashboard"
+          redirectUrl={target}
+          afterSignUpUrl={target}
         />
       </div>
     </div>

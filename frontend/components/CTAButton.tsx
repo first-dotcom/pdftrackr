@@ -10,13 +10,17 @@ interface CTAButtonProps {
   className?: string;
   variant?: "primary" | "secondary";
   size?: "sm" | "md" | "lg";
+  afterAuthPath?: string;
+  authMode?: "signin" | "signup"; // default signup for generic CTAs
 }
 
 export default function CTAButton({ 
   children, 
   className = "", 
   variant = "primary",
-  size = "md" 
+  size = "md",
+  afterAuthPath,
+  authMode = "signup",
 }: CTAButtonProps) {
   const { isSignedIn } = useAuth();
 
@@ -36,7 +40,12 @@ export default function CTAButton({
   const buttonClasses = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
 
   // Determine redirect URL based on auth state
-  const redirectUrl = isSignedIn ? "/dashboard" : "/sign-up";
+  const targetPath = afterAuthPath || "/dashboard";
+  const redirectUrl = isSignedIn
+    ? targetPath
+    : authMode === "signin"
+      ? `/sign-in?redirect_url=${encodeURIComponent(targetPath)}`
+      : `/sign-up?redirect_url=${encodeURIComponent(targetPath)}`;
 
   return (
     <Link href={redirectUrl} className={buttonClasses}>
