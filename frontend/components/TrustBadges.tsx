@@ -32,6 +32,12 @@ function SourceForgeBadge({
         ? "text-gray-400 hover:text-white transition-colors text-sm"
         : "text-gray-600 hover:text-gray-900 transition-colors text-sm";
 
+    // Reserve space to prevent layout shift. SourceForge badge respects width only,
+    // so we estimate height using a stable aspect ratio derived from their examples.
+    // Using 0.6 ratio keeps visual parity: height ≈ 0.6 * width (e.g., 100px → 60px).
+    const numericWidth = Number(String(width).replace(/[^0-9.]/g, "")) || 100;
+    const reservedHeight = Math.round(numericWidth * 0.6); // px
+
     return (
         <div
             ref={badgeRef}
@@ -39,7 +45,14 @@ function SourceForgeBadge({
             data-id="3913790"
             data-badge="customers-love-us-white"
             data-variant-id="sf"
-            style={{ width }}
+            style={{ 
+                width, 
+                minHeight: `${reservedHeight}px`,
+                height: `${reservedHeight}px`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+            }}
         >
             <a
                 href="https://sourceforge.net/software/product/PDFTrackr/"
@@ -71,7 +84,7 @@ export default function TrustBadges({
             textColor="text-green-800"
           />
           <ComplianceBadge
-            icon={<path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 616 0z" clipRule="evenodd" />}
+            icon={<path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />}
             text="EU Data Protection"
             bgColor="bg-blue-100"
             textColor="text-blue-800"
@@ -109,7 +122,7 @@ export default function TrustBadges({
                                 textColor="text-green-800"
                             />
                             <ComplianceBadge
-                                icon={<path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 616 0z" clipRule="evenodd" />}
+                                icon={<path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />}
                                 text="EU Data Protection"
                                 bgColor="bg-blue-100"
                                 textColor="text-blue-800"
@@ -198,7 +211,7 @@ export function ComplianceBadges({ className = "" }: { className?: string }) {
                 textColor="text-green-800"
             />
             <ComplianceBadge
-                icon={<path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 616 0z" clipRule="evenodd" />}
+                icon={<path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />}
                 text="EU Data Protection"
                 bgColor="bg-blue-100"
                 textColor="text-blue-800"
