@@ -344,7 +344,7 @@ router.get(
       // Try to get cached data first
       const cachedData = await getCache(cacheKey);
       if (cachedData) {
-        logger.debug("Dashboard data served from cache", { userId, days });
+        logger.debug("Dashboard data served from cache", { userId, days: hasWindow ? parsedDays : "all" });
         return successResponse(res, cachedData);
       }
 
@@ -574,7 +574,7 @@ router.get(
 
       // Cache the calculated data
       await setCache(cacheKey, responseData, CACHE_TTL);
-      logger.debug("Dashboard data cached", { userId, days, cacheKey });
+      logger.debug("Dashboard data cached", { userId, days: hasWindow ? parsedDays : "all", cacheKey });
 
       successResponse(res, responseData);
     } catch (error) {
