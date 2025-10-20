@@ -1563,66 +1563,6 @@ router.get(
   }),
 );
 
-// Public analytics endpoint - optimized for homepage display
-router.get(
-  "/public/stats",
-  asyncHandler(async (req: Request, res: Response) => {
-    const cacheKey = "public:analytics:stats";
-    const CACHE_TTL = 300; // 5 minutes cache for public data
-
-    try {
-      // Try to get cached data first
-      const cachedData = await getCache(cacheKey);
-      if (cachedData) {
-        logger.debug("Public analytics served from cache");
-        return successResponse(res, cachedData);
-      }
-
-      logger.debug("Cache miss, calculating public analytics");
-
-      // Get global statistics - optimized single query approach
-      const globalStats = await db
-        .select({
-          totalFiles: sql<number>`COUNT(DISTINCT ${files.id})`,
-          totalViews: sql<number>`COUNT(${viewSessions.id})`,
-          avgSessionDuration: sql<number>`COALESCE(AVG(${viewSessions.totalDuration}), 0)`,
-        })
-        .from(files)
-        .leftJoin(shareLinks, eq(files.id, shareLinks.fileId))
-        .leftJoin(viewSessions, eq(shareLinks.shareId, viewSessions.shareId));
-
-      const stats = globalStats[0];
-
-      // Format the response data
-      const responseData = {
-        totalViews: Number(stats?.totalViews) || 0,
-        totalDocs: Number(stats?.totalFiles) || 0,
-        avgSession: Math.round((Number(stats?.avgSessionDuration) || 0) / 1000), // Convert milliseconds to seconds for public API
-      };
-
-      // Cache the calculated data
-      await setCache(cacheKey, responseData, CACHE_TTL);
-      logger.debug("Public analytics cached", {
-        totalViews: responseData.totalViews,
-        totalDocs: responseData.totalDocs,
-        avgSession: responseData.avgSession,
-      });
-
-      successResponse(res, responseData);
-    } catch (error) {
-      logger.error("Public analytics calculation failed", {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-      });
-
-      // Return safe fallback data
-      successResponse(res, {
-        totalViews: 0,
-        totalDocs: 0,
-        avgSession: 0,
-      });
-    }
-  }),
-);
+// (Removed) Public analytics endpoint - was unused
 
 export default router;
