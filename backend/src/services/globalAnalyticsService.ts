@@ -13,45 +13,17 @@ export interface GlobalAnalyticsData {
   totalEmailCaptures: number;
 }
 
+/**
+ * Global analytics service - READ-ONLY totals
+ * 
+ * WARNING: Never recalculate totals from live data (view_sessions, files, etc.)
+ * This would decrease totals when historical data is pruned for GDPR compliance.
+ * 
+ * Only use increment methods to maintain lifetime totals:
+ * - incrementFiles(), incrementShares(), incrementEmailCaptures()
+ * - incrementViewsWithUnique(), updateDurationMetrics()
+ */
 export class GlobalAnalyticsService {
-  /**
-   * Update global analytics when new activity happens
-   * This ensures analytics remain accurate even when old data is deleted
-   */
-  async updateGlobalAnalytics(): Promise<void> {
-    try {
-      logger.debug("Updating global analytics");
-
-      // Calculate current totals using the same logic as dashboard analytics
-      const currentStats = await this.calculateCurrentStats();
-      
-      // Update the single global analytics row
-      await db
-        .update(globalAnalytics)
-        .set({
-          totalViews: currentStats.totalViews,
-          totalUniqueViews: currentStats.totalUniqueViews,
-          totalDuration: currentStats.totalDuration,
-          avgSessionDuration: currentStats.avgSessionDuration,
-          totalFiles: currentStats.totalFiles,
-          totalShares: currentStats.totalShares,
-          totalEmailCaptures: currentStats.totalEmailCaptures,
-          lastUpdated: new Date(),
-        })
-        .where(eq(globalAnalytics.id, 1));
-
-      logger.info("Global analytics updated successfully", {
-        totalViews: currentStats.totalViews,
-        totalUniqueViews: currentStats.totalUniqueViews,
-        avgSessionDuration: currentStats.avgSessionDuration,
-      });
-    } catch (error) {
-      logger.error("Failed to update global analytics", {
-        error: error instanceof Error ? error.message : String(error),
-      });
-      // Don't throw - analytics updates should not break main functionality
-    }
-  }
 
   /**
    * Get current global analytics data
@@ -98,73 +70,9 @@ export class GlobalAnalyticsService {
     }
   }
 
-  /**
-   * Calculate current stats using the same logic as dashboard analytics
-   * This ensures consistency between dashboard and global analytics
-   */
-  private async calculateCurrentStats(): Promise<GlobalAnalyticsData> {
-    // Get view statistics with fallback duration calculation (same as dashboard)
-    const viewStats = await db
-      .select({
-        totalViews: sql<number>`COUNT(${viewSessions.id})`,
-        totalUniqueViews: sql<number>`SUM(CASE WHEN ${viewSessions.isUnique} THEN 1 ELSE 0 END)`,
-        totalDuration: sql<number>`COALESCE(SUM(
-          CASE 
-            WHEN ${viewSessions.totalDuration} > 0 THEN ${viewSessions.totalDuration}
-            ELSE (
-              SELECT COALESCE(SUM(CASE WHEN pv.duration > 0 THEN pv.duration ELSE 0 END), 1000)
-              FROM page_views pv WHERE pv.session_id = ${viewSessions.sessionId}
-            )
-          END
-        ), 0)`,
-        avgSessionDuration: sql<number>`COALESCE(AVG(
-          CASE 
-            WHEN ${viewSessions.totalDuration} > 0 THEN ${viewSessions.totalDuration}
-            ELSE (
-              SELECT COALESCE(SUM(CASE WHEN pv.duration > 0 THEN pv.duration ELSE 0 END), 1000)
-              FROM page_views pv WHERE pv.session_id = ${viewSessions.sessionId}
-            )
-          END
-        ), 0)`,
-      })
-      .from(viewSessions);
-
-    // Get file count
-    const fileCountResult = await db
-      .select({
-        totalFiles: sql<number>`COUNT(DISTINCT ${files.id})`,
-      })
-      .from(files);
-
-    // Get share links count
-    const shareCountResult = await db
-      .select({
-        totalShares: sql<number>`COUNT(DISTINCT ${shareLinks.id})`,
-      })
-      .from(shareLinks);
-
-    // Get email captures count
-    const emailCountResult = await db
-      .select({
-        totalEmailCaptures: sql<number>`COUNT(DISTINCT ${emailCaptures.id})`,
-      })
-      .from(emailCaptures);
-
-    const stats = viewStats[0];
-    const fileStats = fileCountResult[0];
-    const shareStats = shareCountResult[0];
-    const emailStats = emailCountResult[0];
-
-    return {
-      totalViews: Number(stats?.totalViews) || 0,
-      totalUniqueViews: Number(stats?.totalUniqueViews) || 0,
-      totalDuration: Number(stats?.totalDuration) || 0,
-      avgSessionDuration: Math.round(Number(stats?.avgSessionDuration) || 0),
-      totalFiles: Number(fileStats?.totalFiles) || 0,
-      totalShares: Number(shareStats?.totalShares) || 0,
-      totalEmailCaptures: Number(emailStats?.totalEmailCaptures) || 0,
-    };
-  }
+  // REMOVED: calculateCurrentStats() method
+  // This method was dangerous as it recalculated from live data and could decrease totals
+  // when historical data is pruned for GDPR compliance. Only use increment methods.
 
   /**
    * Initialize global analytics table if it doesn't exist

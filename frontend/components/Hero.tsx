@@ -10,12 +10,6 @@ interface HeroProps {
   isSignedIn?: boolean;
 }
 
-interface PublicAnalytics {
-  totalViews: number;
-  totalDocs: number;
-  avgSession: number;
-}
-
 interface GlobalAnalytics {
   totalViews: number;
   totalUniqueViews: number;
