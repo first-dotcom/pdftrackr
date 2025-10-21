@@ -1,5 +1,8 @@
+"use client";
+
 import { getFileSizeLimitDisplay } from "@/shared/types";
-import { BarChart, Link, Shield, Upload } from "lucide-react";
+import { BarChart, Link as LinkIcon, Shield, Upload } from "lucide-react";
+import Link from "next/link";
 
 const steps = [
   {
@@ -14,7 +17,7 @@ const steps = [
     number: "2",
     title: "Create Secure Link",
     description: "Set passwords, expiration dates, and choose who can download.",
-    icon: Link,
+    icon: LinkIcon,
   },
   {
     number: "3",
@@ -32,21 +35,21 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section className="py-8 md:py-4 lg:py-6 bg-white md:min-h-[40vh] md:flex md:items-center">
+    <section className="py-8 md:py-4 lg:py-5 bg-white md:min-h-[49vh] md:flex md:items-center">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="lg:text-center">
           <h2 className="text-sm md:text-base text-primary-600 font-semibold tracking-wide uppercase">
             How It Works
           </h2>
-          <p className="mt-1 md:mt-2 text-2xl md:text-2xl lg:text-3xl leading-8 font-extrabold tracking-tight text-gray-900">
+          <p className="mt-1 md:mt-1.5 text-2xl md:text-2xl lg:text-3xl leading-8 font-extrabold tracking-tight text-gray-900">
             Share PDFs in 4 Simple Steps
           </p>
-          <p className="mt-2 md:mt-3 max-w-2xl text-base md:text-base lg:text-lg text-gray-500 lg:mx-auto">
+          <p className="mt-2 md:mt-2 max-w-2xl text-base md:text-base lg:text-base text-gray-500 lg:mx-auto">
             From upload to insights in minutes. No technical knowledge required.
           </p>
         </div>
 
-        <div className="mt-6 md:mt-6 lg:mt-8">
+        <div className="mt-4 md:mt-4 lg:mt-5">
           <div className="relative">
             {/* Desktop connecting lines */}
             <div className="hidden lg:flex absolute top-6 left-0 w-full justify-between items-center px-6 pointer-events-none">
@@ -66,15 +69,26 @@ export default function HowItWorks() {
               {steps.map((step, index) => (
                 <div key={step.title} className="relative">
                   <div className="flex flex-col items-center text-center md:flex-row md:text-left md:items-start lg:flex-col lg:text-center lg:items-center">
-                    <div className="flex items-center justify-center h-10 w-10 lg:h-12 lg:w-12 rounded-md bg-primary-600 text-white mb-3 lg:mb-3 md:mb-0 md:mr-4 lg:mr-0 relative z-10">
-                      <step.icon className="h-5 w-5 lg:h-6 lg:w-6" aria-hidden="true" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-center md:justify-start lg:justify-center space-x-2 mb-1 lg:mb-2">
-                        <span className="text-xl lg:text-2xl font-bold text-primary-600">{step.number}</span>
+                    {index === 0 ? (
+                      <Link 
+                        href="/sign-up?redirect_url=/dashboard/files/upload"
+                        className="flex items-center justify-center h-10 w-10 lg:h-12 lg:w-12 rounded-md bg-primary-600 text-white mb-3 lg:mb-3 md:mb-0 md:mr-4 lg:mr-0 relative z-10 hover:bg-primary-700 transition-all duration-300 hover:scale-110 animate-pulse-slow cursor-pointer group shadow-lg hover:shadow-xl"
+                      >
+                        <step.icon className="h-5 w-5 lg:h-6 lg:w-6 group-hover:scale-110 transition-transform" aria-hidden="true" />
+                        <span className="absolute -top-1 -right-1 h-3 w-3 bg-green-400 rounded-full animate-ping"></span>
+                        <span className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full"></span>
+                      </Link>
+                    ) : (
+                      <div className="flex items-center justify-center h-10 w-10 lg:h-12 lg:w-12 rounded-md bg-primary-600 text-white mb-3 lg:mb-3 md:mb-0 md:mr-4 lg:mr-0 relative z-10">
+                        <step.icon className="h-5 w-5 lg:h-6 lg:w-6" aria-hidden="true" />
                       </div>
-                      <h3 className="text-base lg:text-lg leading-6 font-medium text-gray-900 mb-1 lg:mb-2">{step.title}</h3>
-                      <p className="text-sm lg:text-base text-gray-500">{step.description}</p>
+                    )}
+                    <div className="flex-1">
+                      <div className="flex items-center justify-center md:justify-start lg:justify-center space-x-2 mb-1">
+                        <span className="text-xl lg:text-xl font-bold text-primary-600">{step.number}</span>
+                      </div>
+                      <h3 className="text-base lg:text-base leading-6 font-medium text-gray-900 mb-1">{step.title}</h3>
+                      <p className="text-sm text-gray-500 leading-tight">{step.description}</p>
                     </div>
                   </div>
                 </div>
