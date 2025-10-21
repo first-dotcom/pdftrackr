@@ -104,19 +104,6 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
               insights.
             </p>
 
-            <p className="mt-2 text-sm text-gray-500 sm:max-w-xl">
-              Need more than 500MB?{" "}
-              <button
-                type="button"
-                onClick={() =>
-                  document.getElementById("waitlist-modal")?.classList.remove("hidden")
-                }
-                className="text-primary-600 hover:text-primary-700 underline"
-              >
-                Join the waitlist for Pro plans launching Q4 2025
-              </button>
-            </p>
-
             <div className="mt-4 xl:mt-6 sm:flex sm:justify-start">
               <div className="flex flex-col">
                 <CTAButton size="lg" className="w-full sm:w-auto sm:min-w-[200px]" afterAuthPath="/dashboard/files/upload">
