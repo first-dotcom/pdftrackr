@@ -230,7 +230,7 @@ export function PlatformBadges({
 }) {
   if (variant === "minimal") {
     return (
-      <div className={`text-left mt-16 md:mt-24 ${className}`}>
+      <div className={`text-left mt-6 md:mt-8 ${className}`}>
         <p className="text-sm text-gray-600 mb-3 font-medium">
           Trusted by professionals:
         </p>

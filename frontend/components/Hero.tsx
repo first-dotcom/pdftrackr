@@ -85,20 +85,20 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
   };
 
   return (
-    <section className="relative overflow-hidden bg-white">
+    <section className="relative overflow-hidden bg-white md:min-h-[45vh] md:flex md:items-center">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50" />
 
       {/* Content */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         {/* Desktop Layout: Side by side */}
-        <div className="hidden lg:flex lg:items-center lg:py-16 lg:gap-8 lg:max-w-6xl lg:mx-auto">
+        <div className="hidden lg:flex lg:items-center lg:gap-6 xl:gap-8 lg:max-w-6xl lg:mx-auto md:py-4 lg:py-6">
           {/* Main Content - Takes most of the space */}
           <div className="flex-1 lg:max-w-3xl">
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+            <h1 className="text-3xl lg:text-4xl xl:text-4xl 2xl:text-5xl font-bold text-gray-900 mb-3 xl:mb-4 leading-tight">
               PDF Tracking & Analytics - Simple Document Sharing for Freelancers
             </h1>
-            <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            <p className="text-base lg:text-lg xl:text-lg 2xl:text-xl text-gray-600 mb-4 xl:mb-6 max-w-3xl">
               Track PDF views, capture emails, and control access with our secure sharing platform.
               Perfect for consultants, solopreneurs, and small teams who need professional document
               insights.
@@ -117,7 +117,7 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
               </button>
             </p>
 
-            <div className="mt-5 sm:mt-8 sm:flex sm:justify-start">
+            <div className="mt-4 xl:mt-6 sm:flex sm:justify-start">
               <div className="flex flex-col">
                 <CTAButton size="lg" className="w-full sm:w-auto sm:min-w-[200px]" afterAuthPath="/dashboard/files/upload">
                   {isSignedIn ? "Go to Dashboard" : "Upload PDF"}
@@ -132,7 +132,7 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
               <div className="mt-3 sm:mt-0 sm:ml-3">
                 <Link
                   href="/demo"
-                  className="w-full flex items-center justify-center px-6 py-2.5 border border-primary-300 text-base font-medium rounded-md text-primary-700 bg-white hover:bg-primary-50 md:py-3 md:px-8 transition-colors"
+                  className="w-full sm:w-auto sm:min-w-[200px] flex items-center justify-center px-8 py-4 border border-primary-300 text-lg font-medium rounded-lg text-primary-700 bg-white hover:bg-primary-50 transition-colors"
                 >
                   View Demo
                 </Link>
@@ -198,22 +198,22 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
         {/* Mobile/Tablet Layout: Stacked */}
         <div className="lg:hidden">
           {/* Main Content */}
-          <div className="pt-10 pb-8 sm:pt-12 sm:pb-16 md:pt-16 md:pb-20">
+          <div className="pt-8 pb-6 md:pt-6 md:pb-4">
             <div className="text-center">
-              <h2 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl">
+              <h2 className="text-3xl tracking-tight font-extrabold text-gray-900 md:text-4xl">
                 <span className="block">PDF Tracking & Analytics</span>
                 <span className="block text-primary-600">
                   - Simple Document Sharing for Freelancers
                 </span>
               </h2>
 
-              <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto">
+              <p className="mt-3 text-base text-gray-500 md:mt-4 md:text-lg md:max-w-xl md:mx-auto">
                 Track PDF views, capture emails, and control access with our secure sharing
                 platform. Perfect for consultants, solopreneurs, and small teams who need
                 professional document insights.
               </p>
 
-              <p className="mt-2 text-sm text-gray-500 sm:max-w-xl sm:mx-auto">
+              <p className="mt-2 text-sm text-gray-500 md:max-w-xl md:mx-auto">
                 Need more than 500MB?{" "}
                 <button
                   type="button"
@@ -226,7 +226,7 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
                 </button>
               </p>
 
-              <div className="mt-5 sm:mt-8 sm:flex sm:justify-center">
+              <div className="mt-4 md:mt-5 sm:flex sm:justify-center">
                 <div className="flex flex-col">
                   <CTAButton size="lg" className="w-full sm:w-auto sm:min-w-[200px]" afterAuthPath="/dashboard/files/upload">
                     {isSignedIn ? "Go to Dashboard" : "Upload PDF"}
@@ -241,7 +241,7 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
                 <div className="mt-3 sm:mt-0 sm:ml-3">
                   <Link
                     href="/demo"
-                    className="w-full flex items-center justify-center px-6 py-2.5 border border-primary-300 text-base font-medium rounded-md text-primary-700 bg-white hover:bg-primary-50 md:py-3 md:px-8 transition-colors"
+                    className="w-full sm:w-auto sm:min-w-[200px] flex items-center justify-center px-8 py-4 border border-primary-300 text-lg font-medium rounded-lg text-primary-700 bg-white hover:bg-primary-50 transition-colors"
                   >
                     View Demo
                   </Link>
@@ -250,7 +250,7 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
                 <div className="mt-3 sm:mt-0 sm:ml-3">
                   <Link
                     href="#features"
-                    className="w-full flex items-center justify-center px-6 py-2.5 border border-transparent text-base font-medium rounded-md text-primary-700 bg-primary-100 hover:bg-primary-200 md:py-3 md:px-8"
+                    className="w-full sm:w-auto sm:min-w-[200px] flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-lg text-primary-700 bg-primary-100 hover:bg-primary-200"
                   >
                     See Features
                   </Link>
