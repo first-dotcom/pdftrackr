@@ -85,7 +85,7 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
   };
 
   return (
-    <section className="relative overflow-hidden bg-white md:min-h-[45vh] md:flex md:items-center">
+    <section className="relative overflow-hidden bg-white md:min-h-[45vh]">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50" />
 
