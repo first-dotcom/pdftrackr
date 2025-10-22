@@ -290,7 +290,7 @@ export default function IndividualView({ fileId, mock = null }: IndividualViewPr
 
         {/* Clear Filters */}
         {Object.keys(filters).some((key) => filters[key as keyof AppliedFilters]) && (
-          <button onClick={clearFilters} className="text-sm text-gray-600 hover:text-gray-800">
+          <button type="button" onClick={clearFilters} className="text-sm text-gray-600 hover:text-gray-800">
             Clear all filters
           </button>
         )}

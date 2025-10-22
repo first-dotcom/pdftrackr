@@ -71,6 +71,7 @@ export const FileCard: React.FC<FileCardProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
             <div className="flex-1 min-w-0">
               <button
+                type="button"
                 onClick={() => onView(file.id)}
                 className="text-left w-full"
                 onKeyDown={(e) => handleKeyDown(e, () => onView(file.id))}

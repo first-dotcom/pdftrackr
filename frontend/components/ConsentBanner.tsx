@@ -75,12 +75,14 @@ export default function ConsentBanner() {
         </div>
         <div className="flex space-x-4">
           <button
+            type="button"
             onClick={handleDecline}
             className="px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors border border-gray-600 rounded-md hover:border-gray-500"
           >
             Decline All
           </button>
           <button
+            type="button"
             onClick={handleAccept}
             className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm rounded-md transition-colors"
           >

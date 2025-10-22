@@ -180,7 +180,9 @@ export default function DashboardPage() {
         <div className="sm:ml-4">
           <Link
             href="/dashboard/files/upload"
-            className="btn-primary btn-md flex items-center justify-center w-full sm:w-auto"
+            className={`btn-primary btn-md flex items-center justify-center w-full sm:w-auto ${
+              dashboardData?.totalFiles === 0 ? "invisible" : ""
+            }`}
           >
             <Plus className="h-4 w-4 mr-2" />
             Upload PDF
@@ -192,9 +194,6 @@ export default function DashboardPage() {
       {dashboardData && dashboardData.totalFiles === 0 && (
         <div className="card bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
           <div className="card-body text-center py-12 sm:py-16">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 sm:mb-8">
-              <Play className="h-8 w-8 sm:h-10 sm:w-10 text-blue-600" />
-            </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
               Welcome to PDFTrackr
             </h2>

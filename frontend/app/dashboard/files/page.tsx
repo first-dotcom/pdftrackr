@@ -510,11 +510,12 @@ export default function FilesPage() {
           <div className="flex justify-end">
             <Link
               href="/dashboard/files/upload"
-              className="btn-primary btn-lg w-full sm:w-auto flex items-center justify-center min-h-[44px]"
+              className={`btn-primary btn-md flex items-center justify-center w-full sm:w-auto ${
+                totalFiles === 0 ? "invisible" : ""
+              }`}
             >
-              <Plus className="h-5 w-5 mr-2" aria-hidden="true" />
-              <span className="hidden xs:inline">Upload PDF</span>
-              <span className="xs:hidden">Upload</span>
+              <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
+              Upload PDF
             </Link>
           </div>
         </div>
