@@ -497,57 +497,81 @@ export default function FileDetailPageContent({
 
               {shareLinks.length > 0 ? (
                 <div className="space-y-4">
-                  {shareLinks.map((link) => (
-                    <div key={link.id} className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-medium text-gray-900">{link.title}</h3>
-                          <div className="text-sm text-gray-500 mt-1">
-                            <a
-                              href={`/view/${link.shareId}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary-600 hover:text-primary-900"
-                            >
-                              /view/{link.shareId}
-                            </a>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-4">
-                          <div className="text-center">
-                            <div className="flex items-center text-sm font-medium text-gray-900">
-                              <Eye className="h-4 w-4 mr-1" />
-                              {link.viewCount}
+                  {shareLinks.map((link) => {
+                    const hasNoViews = link.viewCount === 0;
+                    return (
+                      <div 
+                        key={link.id} 
+                        className={`border rounded-lg p-4 transition-all duration-300 ${
+                          hasNoViews ? 'border-primary-200 bg-gradient-to-r from-primary-50/30 to-blue-50/30 animate-border-pulse' : ''
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-medium text-gray-900">{link.title}</h3>
+                              {hasNoViews && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 animate-pulse">
+                                  👉 Share this
+                                </span>
+                              )}
                             </div>
-                            <div className="text-xs text-gray-500">views</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-sm font-medium text-gray-900">
-                              {formatDistanceToNow(new Date(link.createdAt), { addSuffix: true })}
-                            </div>
-                            <div className="text-xs text-gray-500">created</div>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <button
-                              type="button"
-                              onClick={() => handleCopyLink(link.shareId)}
-                              className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-50"
-                              title="Copy link"
-                            >
-                              <svg
-                                className="h-4 w-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                            <div className="text-sm text-gray-500 mt-1">
+                              <a
+                                href={`/view/${link.shareId}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary-600 hover:text-primary-900"
                               >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                                />
-                              </svg>
-                            </button>
+                                /view/{link.shareId}
+                              </a>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-4">
+                            <div className="text-center">
+                              <div className="flex items-center text-sm font-medium text-gray-900">
+                                <Eye className="h-4 w-4 mr-1" />
+                                {link.viewCount}
+                              </div>
+                              <div className="text-xs text-gray-500">views</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-sm font-medium text-gray-900">
+                                {formatDistanceToNow(new Date(link.createdAt), { addSuffix: true })}
+                              </div>
+                              <div className="text-xs text-gray-500">created</div>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <button
+                                type="button"
+                                onClick={() => handleCopyLink(link.shareId)}
+                                className={`relative p-1 rounded transition-all duration-300 ${
+                                  hasNoViews 
+                                    ? 'text-primary-600 hover:text-primary-900 bg-primary-100 hover:bg-primary-200 animate-copy-pulse shadow-md hover:shadow-lg' 
+                                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                                }`}
+                                title={hasNoViews ? "Copy link and share to get your first view!" : "Copy link"}
+                              >
+                                {hasNoViews && (
+                                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-primary-500"></span>
+                                  </span>
+                                )}
+                                <svg
+                                  className="h-4 w-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                                  />
+                                </svg>
+                              </button>
                             <button
                               type="button"
                               onClick={() => handleToggleShareLink(link.shareId, !link.isActive)}
@@ -688,7 +712,8 @@ export default function FileDetailPageContent({
                         )}
                       </div>
                     </div>
-                  ))}
+                  );
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-12 bg-gradient-to-br from-primary-50 to-blue-50 rounded-lg border-2 border-dashed border-primary-200">

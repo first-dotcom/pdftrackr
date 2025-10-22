@@ -43,6 +43,8 @@ module.exports = {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'copy-pulse': 'copyPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'border-pulse': 'borderPulse 3s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -52,6 +54,26 @@ module.exports = {
         slideUp: {
           '0%': { transform: 'translateY(10px)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        copyPulse: {
+          '0%, 100%': { 
+            transform: 'scale(1)',
+            boxShadow: '0 0 0 0 rgba(37, 99, 235, 0.4)',
+          },
+          '50%': { 
+            transform: 'scale(1.05)',
+            boxShadow: '0 0 0 8px rgba(37, 99, 235, 0)',
+          },
+        },
+        borderPulse: {
+          '0%, 100%': { 
+            borderColor: 'rgba(37, 99, 235, 0.2)',
+            backgroundColor: 'rgba(37, 99, 235, 0.02)',
+          },
+          '50%': { 
+            borderColor: 'rgba(37, 99, 235, 0.4)',
+            backgroundColor: 'rgba(37, 99, 235, 0.05)',
+          },
         },
       },
     },
