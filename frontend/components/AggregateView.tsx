@@ -71,6 +71,20 @@ export default function AggregateView({ fileId, totalPages, days = 30, mock = nu
       .sort((a, b) => a.pageNumber - b.pageNumber);
   }, [data]);
 
+  // Generate mock data for preview when no real data exists
+  const mockChartData = useMemo(() => {
+    if (chartData.length > 0) return []; // Only use mock if no real data
+    
+    const pages = Math.min(totalPages, 20); // Cap at 20 pages for visualization
+    return Array.from({ length: pages }, (_, i) => ({
+      page: `Page ${i + 1}`,
+      avgTime: Math.random() * 180000 + 30000, // Random time between 30s and 3.5min
+      pageNumber: i + 1,
+    }));
+  }, [chartData.length, totalPages]);
+
+  const hasNoData = chartData.length === 0;
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -84,6 +98,7 @@ export default function AggregateView({ fileId, totalPages, days = 30, mock = nu
       <div className="text-center py-8">
         <p className="text-red-600 mb-4">{error}</p>
         <button
+          type="button"
           onClick={fetchData}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
@@ -96,7 +111,7 @@ export default function AggregateView({ fileId, totalPages, days = 30, mock = nu
   if (!data) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-600">No analytics data available yet.</p>
+        <p className="text-gray-600">No analytics data available yet</p>
       </div>
     );
   }
@@ -106,20 +121,23 @@ export default function AggregateView({ fileId, totalPages, days = 30, mock = nu
       {/* Reading Time Chart */}
       <div>
         <p className="text-sm text-gray-600 mb-4">
-          Average time spent on each page. Detailed format in tooltip.
+          Average time spent on each page
         </p>
 
-        {chartData.length > 0 ? (
+        <div className="relative">
           <ResponsiveContainer width="100%" height={320}>
-            <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
+            <LineChart 
+              data={hasNoData ? mockChartData : chartData} 
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke={hasNoData ? "#E5E7EB" : undefined} />
               <XAxis
                 dataKey="page"
-                tick={{ fontSize: 12 }}
-                interval={Math.max(1, Math.floor(chartData.length / 10))}
+                tick={{ fontSize: 12, fill: hasNoData ? "#D1D5DB" : "#6B7280" }}
+                interval={Math.max(1, Math.floor((hasNoData ? mockChartData : chartData).length / 10))}
               />
               <YAxis
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 12, fill: hasNoData ? "#D1D5DB" : "#6B7280" }}
                 allowDecimals={false}
                 tickFormatter={(v: number) => {
                   const ms = Number(v) || 0;
@@ -134,25 +152,33 @@ export default function AggregateView({ fileId, totalPages, days = 30, mock = nu
                 }}
                 tickCount={5}
               />
-              <Tooltip
-                formatter={(value: any) => [formatDuration(value), "Average view time"]}
-                labelFormatter={(label) => label}
-              />
+              {!hasNoData && (
+                <Tooltip
+                  formatter={(value: any) => [formatDuration(value), "Average view time"]}
+                  labelFormatter={(label) => label}
+                />
+              )}
               <Line
                 type="monotone"
                 dataKey="avgTime"
-                stroke="#3B82F6"
-                strokeWidth={3}
-                dot={{ fill: "#3B82F6", strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: "#3B82F6", strokeWidth: 2 }}
+                stroke={hasNoData ? "#D1D5DB" : "#3B82F6"}
+                strokeWidth={hasNoData ? 2 : 3}
+                dot={{ fill: hasNoData ? "#D1D5DB" : "#3B82F6", strokeWidth: hasNoData ? 1 : 2, r: hasNoData ? 3 : 4 }}
+                activeDot={hasNoData ? false : { r: 6, stroke: "#3B82F6", strokeWidth: 2 }}
               />
             </LineChart>
           </ResponsiveContainer>
-        ) : (
-          <div className="text-center py-8">
-            <p className="text-gray-600">No page data available yet.</p>
-          </div>
-        )}
+
+          {/* Overlay message when no data */}
+          {hasNoData && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 pointer-events-none">
+              <div className="text-center p-6 bg-white rounded-lg shadow-lg border-2 border-gray-200">
+                <p className="text-gray-700 font-medium mb-1">No page data available yet</p>
+                <p className="text-sm text-gray-500">This preview shows what your analytics will look like</p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

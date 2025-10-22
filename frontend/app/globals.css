@@ -63,15 +63,15 @@
   
   /* Icon button sizes */
   .btn-icon-sm {
-    @apply w-8 h-8 p-0; /* 32px square */
+    @apply w-8 h-8 p-0 flex items-center justify-center; /* 32px square */
   }
   
   .btn-icon-md {
-    @apply w-10 h-10 p-0; /* 40px square */
+    @apply w-10 h-10 p-0 flex items-center justify-center; /* 40px square */
   }
   
   .btn-icon-lg {
-    @apply w-12 h-12 p-0; /* 48px square */
+    @apply w-12 h-12 p-0 flex items-center justify-center; /* 48px square */
   }
   
   .card {

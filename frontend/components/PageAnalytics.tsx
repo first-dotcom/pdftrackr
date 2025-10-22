@@ -44,6 +44,7 @@ export default function PageAnalytics({ fileId, totalPages, mock }: PageAnalytic
           )}
           <div className="flex bg-gray-100 rounded-lg p-1">
             <button
+              type="button"
               onClick={() => setViewMode("aggregate")}
               className={`px-3 py-1 text-sm rounded ${
                 viewMode === "aggregate"
@@ -54,6 +55,7 @@ export default function PageAnalytics({ fileId, totalPages, mock }: PageAnalytic
               All
             </button>
             <button
+              type="button"
               onClick={() => setViewMode("individual")}
               className={`px-3 py-1 text-sm rounded ${
                 viewMode === "individual"

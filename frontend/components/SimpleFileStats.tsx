@@ -140,11 +140,11 @@ export default function SimpleFileStats({ shareId, shareIds, title, mock = null 
     return (
       <div className="card">
         <div className="card-body p-6 text-center">
-          <div className="mx-auto w-24 h-24 bg-gradient-to-br from-gray-50 to-gray-100 rounded-full flex items-center justify-center mb-6">
-            <Eye className="h-12 w-12 text-gray-400" />
+          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-gray-50 to-gray-100 rounded-full flex items-center justify-center mb-4">
+            <Eye className="h-8 w-8 text-gray-400" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No views yet</h3>
-          <p className="text-gray-500 mb-8 max-w-sm mx-auto">
+          <h3 className="text-base font-medium text-gray-900 mb-1">No views yet</h3>
+          <p className="text-sm text-gray-500 max-w-sm mx-auto">
             Share this document to start tracking views.
           </p>
         </div>
