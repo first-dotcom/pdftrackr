@@ -237,10 +237,14 @@ async function startServer() {
     await initializeDatabase();
     await connectRedis();
 
-    // Schedule data retention cleanup job
-    scheduleDataRetentionCleanup();
-    // Schedule session cleanup job
-    scheduleSessionCleanup();
+    // Schedule cleanup jobs (if enabled)
+    if (config.featureFlags.enableCleanupJobs) {
+      scheduleDataRetentionCleanup();
+      scheduleSessionCleanup();
+      logger.info("Cleanup jobs enabled (data retention + session cleanup)");
+    } else {
+      logger.info("Cleanup jobs disabled by feature flag");
+    }
 
     const port = config.server.port;
     app.listen(port, () => {

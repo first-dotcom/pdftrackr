@@ -36,6 +36,9 @@ const envSchema = z.object({
   
   // Admin
   ADMIN_EMAILS: z.string().default(""),
+  
+  // Feature Flags
+  ENABLE_CLEANUP_JOBS: z.string().default("true"),
 });
 
 // Parse and validate environment variables
@@ -77,6 +80,9 @@ export const config = {
   },
   admin: {
     emails: env.ADMIN_EMAILS ? env.ADMIN_EMAILS.split(',').map(email => email.trim()) : [],
+  },
+  featureFlags: {
+    enableCleanupJobs: env.ENABLE_CLEANUP_JOBS === "true",
   },
   quotas: planQuotas,
 };
