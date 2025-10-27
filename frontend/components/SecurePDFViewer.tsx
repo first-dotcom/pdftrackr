@@ -876,7 +876,7 @@ export default function SecurePDFViewer({
                   pageNumber={pageNumber}
                   scale={scale}
                   rotate={rotation}
-                  renderTextLayer={false}
+                  renderTextLayer={true}
                   renderAnnotationLayer={false}
                   className="mx-auto shadow-lg"
                   onRenderSuccess={() => {}}
@@ -913,10 +913,7 @@ export default function SecurePDFViewer({
             height: auto !important; 
           }
           .react-pdf__Page__textContent {
-            user-select: none !important;
-            -webkit-user-select: none !important;
-            -moz-user-select: none !important;
-            -ms-user-select: none !important;
+            /* Text selection now enabled for better user experience */
           }
           .react-pdf__Page__annotations {
             display: none !important;
