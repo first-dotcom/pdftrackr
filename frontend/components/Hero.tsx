@@ -145,7 +145,6 @@ export default function Hero({ isSignedIn = false }: HeroProps) {
                   <div className="bg-gray-50 p-2 rounded">
                     <div className="flex justify-between items-center mb-2">
                       <span className="font-semibold text-gray-700 text-sm">Live Analytics</span>
-                      <span className="text-xs text-gray-500">Real Data</span>
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
