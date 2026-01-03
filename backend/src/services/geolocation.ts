@@ -48,9 +48,9 @@ class GeolocationService {
   ];
 
   async getLocationFromIP(ip: string): Promise<LocationData> {
-    // Skip private/local IPs
+    // Skip private/local IPs - return empty, not invalid codes
     if (this.isPrivateIP(ip)) {
-      return { country: 'Local', countryCode: 'LOCAL', city: 'Development' };
+      return {};
     }
 
     // Check cache first
@@ -62,73 +62,42 @@ class GeolocationService {
     // Try each service until one works
     for (const service of this.FALLBACK_SERVICES) {
       try {
-        logger.debug(`Attempting geolocation via ${service.name} for IP: ${ip}`);
-        
-        // Create AbortController for timeout
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
         
         const response = await fetch(service.url(ip), {
           signal: controller.signal,
-          headers: {
-            'User-Agent': 'PDFTrackr-Analytics/1.0',
-          },
+          headers: { 'User-Agent': 'PDFTrackr-Analytics/1.0' },
         });
 
         clearTimeout(timeoutId);
 
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
+        if (!response.ok) continue;
 
         const data = await response.json();
-        
-        // Check for API-specific error formats
-        if (data.status === 'fail' || data.error) {
-          throw new Error(data.message || 'API error');
-        }
+        if (data.status === 'fail' || data.error) continue;
 
         const location = service.parser(data);
-        
-        // Validate we got useful data
-        if (!location.country && !location.city) {
-          throw new Error('No useful location data');
-        }
+        if (!location.countryCode && !location.city) continue;
 
-        // Cache the result
-        this.cache.set(ip, {
+        // Cache and return only valid data
+        const result = {
           ...location,
           _cachedAt: Date.now(),
-        } as LocationData & { _cachedAt: number });
-
-        logger.debug(`Geolocation success via ${service.name}: ${location.city}, ${location.country}`);
+        } as LocationData & { _cachedAt: number };
+        
+        this.cache.set(ip, result);
         return location;
 
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        logger.warn(`Geolocation failed via ${service.name}:`, errorMessage);
+      } catch {
         continue;
       }
     }
 
-    // All services failed, return default
-    const fallback: LocationData = {
-      country: 'Unknown',
-      countryCode: 'UNK',
-      city: 'Unknown',
-    };
-
-    // Cache the fallback for a shorter time
-    this.cache.set(ip, {
-      ...fallback,
-      _cachedAt: Date.now(),
-    } as LocationData & { _cachedAt: number });
-
-    logger.warn(`All geolocation services failed for IP: ${ip}`);
-    return fallback;
+    // All failed - return empty, cache nothing
+    return {};
   }
 
-  // 🌍 ENHANCED ANALYTICS FUNCTIONS
   async enrichAuditLogWithLocation(ip: string, existingMetadata: any = {}): Promise<any> {
     try {
       const location = await this.getLocationFromIP(ip);
@@ -151,42 +120,6 @@ class GeolocationService {
       logger.error('Failed to enrich with location:', error);
       return existingMetadata;
     }
-  }
-
-  // Get aggregated geographic analytics
-  async getGeographicBreakdown(auditLogs: any[]): Promise<any> {
-    const locationCounts: Record<string, { country: string; count: number; cities: Set<string> }> = {};
-    
-    for (const log of auditLogs) {
-      const location = log.metadata?.location;
-      if (!location?.country) continue;
-      
-      const countryCode = location.countryCode || 'UNK';
-      
-      if (!locationCounts[countryCode]) {
-        locationCounts[countryCode] = {
-          country: location.country,
-          count: 0,
-          cities: new Set(),
-        };
-      }
-      
-      locationCounts[countryCode].count++;
-      if (location.city) {
-        locationCounts[countryCode].cities.add(location.city);
-      }
-    }
-
-    // Convert to sorted array
-    return Object.entries(locationCounts)
-      .map(([code, data]) => ({
-        countryCode: code,
-        country: data.country,
-        views: data.count,
-        cities: Array.from(data.cities),
-        cityCount: data.cities.size,
-      }))
-      .sort((a, b) => b.views - a.views);
   }
 
   // 🔧 HELPER METHODS
@@ -215,7 +148,6 @@ class GeolocationService {
     return (Date.now() - cached._cachedAt) < this.CACHE_TTL;
   }
 
-  // Clean up old cache entries
   clearExpiredCache(): void {
     const now = Date.now();
     for (const [ip, data] of this.cache.entries()) {
@@ -224,17 +156,27 @@ class GeolocationService {
       }
     }
   }
-
-  // Get cache stats
-  getCacheStats(): { size: number; entries: string[] } {
-    return {
-      size: this.cache.size,
-      entries: Array.from(this.cache.keys()),
-    };
-  }
 }
 
 export const geolocationService = new GeolocationService();
+
+/**
+ * Get validated location from IP - only returns valid 2-char country codes
+ */
+export async function getValidatedLocationFromIP(ip: string): Promise<{
+  country: string | undefined;
+  city: string | undefined;
+}> {
+  try {
+    const location = await geolocationService.getLocationFromIP(ip);
+    const country = location.countryCode && /^[A-Z]{2}$/.test(location.countryCode)
+      ? location.countryCode
+      : undefined;
+    return { country, city: location.city };
+  } catch {
+    return { country: undefined, city: undefined };
+  }
+}
 
 // Clean up expired cache entries every hour
 setInterval(() => {

@@ -84,7 +84,7 @@ services:
 
   # ClamAV Antivirus Scanner
   clamav:
-    image: clamav/clamav-debian:1.3
+    image: clamav/clamav-debian:1.4.1
     container_name: pdftrackr_clamav
     ports:
       - "3310:3310"

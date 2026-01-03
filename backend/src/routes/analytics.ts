@@ -1157,6 +1157,67 @@ router.get(
   }),
 );
 
+// Get email captures for a file
+router.get(
+  "/files/:fileId/email-captures",
+  authenticate,
+  asyncHandler(async (req: Request, res: Response) => {
+    const fileId = parseInt(req.params.fileId);
+    const userId = req.user?.id;
+
+    if (!fileId || isNaN(fileId)) {
+      throw new CustomError("Invalid file ID", 400);
+    }
+
+    if (!userId) {
+      throw new CustomError("Unauthorized", 401);
+    }
+
+    // Verify file ownership
+    const file = await db
+      .select()
+      .from(files)
+      .where(and(eq(files.id, fileId), eq(files.userId, userId)))
+      .limit(1);
+
+    if (file.length === 0) {
+      throw new CustomError("File not found", 404);
+    }
+
+    // Get all share links for this file
+    const fileShareLinks = await db
+      .select({ shareId: shareLinks.shareId })
+      .from(shareLinks)
+      .where(eq(shareLinks.fileId, fileId));
+
+    const shareIds = fileShareLinks.map((link) => link.shareId);
+
+    if (shareIds.length === 0) {
+      res.json({
+        success: true,
+        data: [],
+      });
+      return;
+    }
+
+    // Get email captures for all share links
+    const captures = await db
+      .select({
+        email: emailCaptures.email,
+        name: emailCaptures.name,
+        capturedAt: emailCaptures.capturedAt,
+      })
+      .from(emailCaptures)
+      .where(inArray(emailCaptures.shareId, shareIds))
+      .orderBy(desc(emailCaptures.capturedAt));
+
+    res.json({
+      success: true,
+      data: captures,
+    });
+  }),
+);
+
 // Original sessions endpoint with page details included
 router.get(
   "/files/:fileId/sessions",

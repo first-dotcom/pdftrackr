@@ -2,7 +2,7 @@ import { and, desc, eq, or, isNull, ne } from "drizzle-orm";
 import { auditLogs, viewSessions, pageViews, files, shareLinks } from "../models/schema";
 import { db } from "../utils/database";
 import { logger } from "../utils/logger";
-import { geolocationService } from "./geolocation";
+import { geolocationService, getValidatedLocationFromIP } from "./geolocation";
 import { globalAnalyticsService } from "./globalAnalyticsService";
 import { v4 as uuidv4 } from "uuid";
 
@@ -213,6 +213,15 @@ export class AuditService {
           .limit(1);
         
         if (existingSession.length === 0) {
+          // Get location data from IP (non-blocking)
+          let locationCountry: string | undefined;
+          let locationCity: string | undefined;
+          if (data.ip) {
+            const location = await getValidatedLocationFromIP(data.ip);
+            locationCountry = location.country;
+            locationCity = location.city;
+          }
+
           // Create new session
           await db.insert(viewSessions).values({
             shareId: data.shareId,
@@ -220,6 +229,8 @@ export class AuditService {
             viewerEmail: data.email,
             ipAddressHash: this.hashIP(data.ip),
             userAgent: data.userAgent,
+            country: locationCountry,
+            city: locationCity,
             startedAt: new Date(),
             lastActiveAt: new Date(),
             totalDuration: 0,

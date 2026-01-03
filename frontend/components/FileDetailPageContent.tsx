@@ -8,7 +8,7 @@ import { useApi } from "@/hooks/useApi";
 import type { File as FileType, ShareLink, AggregateAnalytics, PaginatedSessionsResponse } from "@/shared/types";
 import { formatFileSize } from "@/utils/formatters";
 import { formatDistanceToNow } from "date-fns";
-import { ArrowLeft, Calendar, Download, Eye, FileText, Share2, Trash2 } from "lucide-react";
+import { ArrowLeft, Calendar, ChevronDown, ChevronUp, Download, Eye, FileText, Share2, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -44,6 +44,10 @@ export default function FileDetailPageContent({
   const { toasts, removeToast, showSuccess } = useToasts();
   const showSuccessRef = useRef(showSuccess);
   const [quickShareLoading, setQuickShareLoading] = useState(false);
+  const [emailCaptures, setEmailCaptures] = useState<Array<{ email: string; name: string | null; capturedAt: string }>>([]);
+  const [emailCapturesLoading, setEmailCapturesLoading] = useState(false);
+  const [emailCapturesExpanded, setEmailCapturesExpanded] = useState(false);
+  const [emailCapturesError, setEmailCapturesError] = useState<string | null>(null);
 
   // Update ref when showSuccess changes
   useEffect(() => {
@@ -60,6 +64,7 @@ export default function FileDetailPageContent({
     if (fileId) {
       fetchFileDetails();
       fetchShareLinks();
+      fetchEmailCaptures();
     }
   }, [fileId, isDemo]);
 
@@ -122,6 +127,27 @@ export default function FileDetailPageContent({
       console.error("Failed to fetch share links:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchEmailCaptures = async () => {
+    if (isDemo) return;
+    
+    setEmailCapturesLoading(true);
+    setEmailCapturesError(null);
+    try {
+      const response = await api.analytics.emailCaptures(parseInt(fileId));
+
+      if (response.success && response.data) {
+        setEmailCaptures(response.data as Array<{ email: string; name: string | null; capturedAt: string }>);
+      } else {
+        setEmailCapturesError("Could not load email captures. Please refresh.");
+      }
+    } catch (err) {
+      console.error("Failed to fetch email captures:", err);
+      setEmailCapturesError("Could not load email captures. Please refresh.");
+    } finally {
+      setEmailCapturesLoading(false);
     }
   };
 
@@ -468,6 +494,75 @@ export default function FileDetailPageContent({
                   totalPages={file.pageCount || Math.max(1, Math.ceil((file.size || 0) / 50000))}
                   mock={isDemo ? { aggregate: mockAggregate, individual: mockIndividual } : undefined}
                 />
+              </div>
+            </div>
+          )}
+
+          {/* Email Captures Section */}
+          {shareLinks.length > 0 && (
+            <div className="card">
+              <div className="card-body">
+                <button
+                  type="button"
+                  onClick={() => setEmailCapturesExpanded(!emailCapturesExpanded)}
+                  className="flex items-center justify-between w-full text-left"
+                >
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Captured emails ({emailCaptures.length})
+                  </h2>
+                  {emailCapturesExpanded ? (
+                    <ChevronUp className="h-5 w-5 text-gray-500" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 text-gray-500" />
+                  )}
+                </button>
+
+                {emailCapturesExpanded && (
+                  <div className="mt-4">
+                    {emailCapturesError ? (
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                        <p className="text-sm text-red-600">{emailCapturesError}</p>
+                      </div>
+                    ) : emailCapturesLoading ? (
+                      <div className="text-center py-8 text-gray-500">Loading...</div>
+                    ) : emailCaptures.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">No email captures yet</div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Email
+                              </th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Name
+                              </th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Session Date
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {emailCaptures.map((capture, index) => (
+                              <tr key={index} className="hover:bg-gray-50">
+                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                  {capture.email}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                  {capture.name || "No name provided"}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                  {new Date(capture.capturedAt).toLocaleDateString()}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}

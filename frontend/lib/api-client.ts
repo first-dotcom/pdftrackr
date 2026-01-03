@@ -315,6 +315,7 @@ class ApiClient {
       const query = searchParams.toString();
       return this.get(`/api/analytics/files/${fileId}/individual${query ? `?${query}` : ""}`);
     },
+    emailCaptures: (fileId: number) => this.get(`/api/analytics/files/${fileId}/email-captures`),
     share: (shareId: string) => this.get(`/api/analytics/shares/${shareId}`),
     dashboard: (params?: { days?: number }) => {
       const searchParams = new URLSearchParams();

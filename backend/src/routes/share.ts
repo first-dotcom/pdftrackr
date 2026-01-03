@@ -23,6 +23,7 @@ import { db } from "../utils/database";
 import { getCountryFromIP, hashIPAddress } from "../utils/privacy";
 import { deleteCache, getCache, getSession, setCache, setSession } from "../utils/redis";
 import { logger } from "../utils/logger";
+import { getValidatedLocationFromIP } from "../services/geolocation";
 import {
   createShareLinkSchema,
   shareAccessSchema,
@@ -319,6 +320,19 @@ router.post(
     const ipHash = hashIPAddress(req.ip || "");
     const ipCountry = getCountryFromIP(req.ip || "");
 
+    // Get location data from IP
+    let locationCountry: string | undefined;
+    let locationCity: string | undefined;
+    if (req.ip) {
+      try {
+        const location = await getValidatedLocationFromIP(req.ip);
+        locationCountry = location.country;
+        locationCity = location.city;
+      } catch (error) {
+        logger.warn("Failed to get location from IP", { ip: req.ip, error });
+      }
+    }
+
     const viewerInfo = {
       email: email || null,
       name: name || null,
@@ -326,6 +340,8 @@ router.post(
       ipAddressCountry: ipCountry,
       userAgent: req.get("User-Agent"),
       referer: req.get("Referer"),
+      country: locationCountry,
+      city: locationCity,
     };
 
     // Check if this is a unique view (same IP hash + email in last 24 hours)
@@ -357,6 +373,8 @@ router.post(
         ipAddressCountry: viewerInfo.ipAddressCountry,
         userAgent: viewerInfo.userAgent,
         referer: viewerInfo.referer,
+        country: viewerInfo.country,
+        city: viewerInfo.city,
         isUnique,
         consentGiven: true, // User consented by accessing the link
         dataRetentionDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year retention
