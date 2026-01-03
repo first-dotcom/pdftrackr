@@ -218,101 +218,7 @@ router.get(
   }),
 );
 
-// Get individual session data for detailed viewer behavior
-router.get(
-  "/files/:fileId/sessions",
-  authenticate,
-  asyncHandler(async (req: Request, res: Response) => {
-    if (!req.params.fileId) {
-      throw new CustomError("File ID is required", 400);
-    }
-
-    const fileId = parseInt(req.params.fileId);
-    const { startDate, endDate } = req.query;
-
-    if (!req.user?.id) {
-      res.status(401).json({ success: false, error: "Unauthorized" });
-      return;
-    }
-
-    // Verify file ownership
-    const file = await db
-      .select()
-      .from(files)
-      .where(and(eq(files.id, fileId), eq(files.userId, req.user.id)))
-      .limit(1);
-
-    if (file.length === 0) {
-      throw new CustomError("File not found", 404);
-    }
-
-    // Date range filters
-    const start = startDate
-      ? new Date(startDate as string)
-      : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 30 days ago
-    const _end = endDate ? new Date(endDate as string) : new Date();
-
-    // Get all share links for this file
-    const fileShareLinks = await db.select().from(shareLinks).where(eq(shareLinks.fileId, fileId));
-    const shareIds = fileShareLinks.map((link) => link.shareId);
-
-    if (shareIds.length === 0) {
-      res.json({
-        success: true,
-        data: {
-          sessions: [],
-        },
-      });
-      return;
-    }
-
-    // Get individual session data with page-level details
-    const sessionData = await db
-      .select({
-        sessionId: viewSessions.sessionId,
-        startedAt: viewSessions.startedAt,
-        totalDuration: viewSessions.totalDuration,
-        isUnique: viewSessions.isUnique,
-        pageNumber: pageViews.pageNumber,
-        pageDuration: pageViews.duration,
-      })
-      .from(viewSessions)
-      .leftJoin(pageViews, eq(viewSessions.sessionId, pageViews.sessionId))
-      .where(and(inArray(viewSessions.shareId, shareIds), gte(viewSessions.startedAt, start)))
-      .orderBy(desc(viewSessions.startedAt), sql`${pageViews.pageNumber} NULLS LAST`);
-
-    // Group sessions and their page data
-    const sessionsMap = new Map();
-
-    sessionData.forEach((row) => {
-      if (!sessionsMap.has(row.sessionId)) {
-        sessionsMap.set(row.sessionId, {
-          sessionId: row.sessionId,
-          startedAt: row.startedAt,
-          totalDuration: row.totalDuration,
-          isUnique: row.isUnique,
-          pages: [],
-        });
-      }
-
-      if (row.pageNumber) {
-        sessionsMap.get(row.sessionId).pages.push({
-          pageNumber: row.pageNumber,
-          duration: row.pageDuration,
-        });
-      }
-    });
-
-    const sessions = Array.from(sessionsMap.values());
-
-    res.json({
-      success: true,
-      data: {
-        sessions,
-      },
-    });
-  }),
-);
+// Removed: Old unpaginated sessions endpoint - use the paginated one at line 1222
 
 // Get analytics dashboard data
 router.get(
@@ -608,19 +514,38 @@ router.get(
   asyncHandler(async (req: Request, res: Response) => {
     const { shareId } = req.params;
 
-    // Verify share link ownership
-    const shareLink = await db
-      .select()
+    // Verify share link ownership and get data
+    const shareLinkResult = await db
+      .select({
+        shareLink: shareLinks,
+        file: files,
+      })
       .from(shareLinks)
       .innerJoin(files, eq(shareLinks.fileId, files.id))
       .where(and(eq(shareLinks.shareId, shareId), eq(files.userId, req.user?.id)))
       .limit(1);
 
-    if (shareLink.length === 0) {
+    if (shareLinkResult.length === 0) {
       throw new CustomError("Share link not found", 404);
     }
 
-    // Get detailed analytics for this share link
+    const { shareLink, file } = shareLinkResult[0];
+
+    // Parse pagination params
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+    const offset = (page - 1) * limit;
+
+    // Get total count
+    const [{ count }] = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(viewSessions)
+      .where(eq(viewSessions.shareId, shareId));
+
+    const total = Number(count);
+    const totalPages = Math.ceil(total / limit);
+
+    // Get detailed analytics for this share link with pagination
     const sessions = await db
       .select({
         sessionId: viewSessions.sessionId,
@@ -635,14 +560,17 @@ router.get(
       })
       .from(viewSessions)
       .where(eq(viewSessions.shareId, shareId))
-      .orderBy(desc(viewSessions.startedAt));
+      .orderBy(desc(viewSessions.startedAt))
+      .limit(limit)
+      .offset(offset);
 
     res.json({
       success: true,
       data: {
-        shareLink: shareLink[0]?.share_links,
-        file: shareLink[0]?.files,
+        shareLink,
+        file,
         sessions,
+        pagination: { page, limit, total, totalPages },
       },
     });
   }),
@@ -1195,12 +1123,29 @@ router.get(
     if (shareIds.length === 0) {
       res.json({
         success: true,
-        data: [],
+        data: {
+          captures: [],
+          pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
+        },
       });
       return;
     }
 
-    // Get email captures for all share links
+    // Parse pagination params
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+    const offset = (page - 1) * limit;
+
+    // Get total count
+    const [{ count }] = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(emailCaptures)
+      .where(inArray(emailCaptures.shareId, shareIds));
+
+    const total = Number(count);
+    const totalPages = Math.ceil(total / limit);
+
+    // Get email captures with pagination
     const captures = await db
       .select({
         email: emailCaptures.email,
@@ -1209,11 +1154,16 @@ router.get(
       })
       .from(emailCaptures)
       .where(inArray(emailCaptures.shareId, shareIds))
-      .orderBy(desc(emailCaptures.capturedAt));
+      .orderBy(desc(emailCaptures.capturedAt))
+      .limit(limit)
+      .offset(offset);
 
     res.json({
       success: true,
-      data: captures,
+      data: {
+        captures,
+        pagination: { page, limit, total, totalPages },
+      },
     });
   }),
 );

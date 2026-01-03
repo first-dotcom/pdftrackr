@@ -48,6 +48,8 @@ export default function FileDetailPageContent({
   const [emailCapturesLoading, setEmailCapturesLoading] = useState(false);
   const [emailCapturesExpanded, setEmailCapturesExpanded] = useState(false);
   const [emailCapturesError, setEmailCapturesError] = useState<string | null>(null);
+  const [emailCapturesPage, setEmailCapturesPage] = useState(1);
+  const [emailCapturesPagination, setEmailCapturesPagination] = useState<{ page: number; limit: number; total: number; totalPages: number } | null>(null);
 
   // Update ref when showSuccess changes
   useEffect(() => {
@@ -62,9 +64,10 @@ export default function FileDetailPageContent({
     }
 
     if (fileId) {
+      setEmailCapturesPage(1);
       fetchFileDetails();
       fetchShareLinks();
-      fetchEmailCaptures();
+      fetchEmailCaptures(1);
     }
   }, [fileId, isDemo]);
 
@@ -130,16 +133,27 @@ export default function FileDetailPageContent({
     }
   };
 
-  const fetchEmailCaptures = async () => {
+  const fetchEmailCaptures = async (page: number = emailCapturesPage) => {
     if (isDemo) return;
     
     setEmailCapturesLoading(true);
     setEmailCapturesError(null);
     try {
-      const response = await api.analytics.emailCaptures(parseInt(fileId));
+      const response = await api.analytics.emailCaptures(parseInt(fileId), { page, limit: 20 });
 
       if (response.success && response.data) {
-        setEmailCaptures(response.data as Array<{ email: string; name: string | null; capturedAt: string }>);
+        const data = response.data as { captures?: Array<{ email: string; name: string | null; capturedAt: string }>; pagination?: { page: number; limit: number; total: number; totalPages: number } };
+        // Handle both new format (with captures/pagination) and fallback for safety
+        if (data.captures && data.pagination) {
+          setEmailCaptures(data.captures);
+          setEmailCapturesPagination(data.pagination);
+        } else if (Array.isArray(data)) {
+          // Fallback: if data is array (old format), treat as captures
+          setEmailCaptures(data);
+          setEmailCapturesPagination(null);
+        } else {
+          setEmailCapturesError("Could not load email captures. Please refresh.");
+        }
       } else {
         setEmailCapturesError("Could not load email captures. Please refresh.");
       }
@@ -508,7 +522,7 @@ export default function FileDetailPageContent({
                   className="flex items-center justify-between w-full text-left"
                 >
                   <h2 className="text-lg font-semibold text-gray-900">
-                    Captured emails ({emailCaptures.length})
+                    Captured emails ({emailCapturesPagination?.total ?? emailCaptures.length})
                   </h2>
                   {emailCapturesExpanded ? (
                     <ChevronUp className="h-5 w-5 text-gray-500" />
@@ -528,38 +542,73 @@ export default function FileDetailPageContent({
                     ) : emailCaptures.length === 0 ? (
                       <div className="text-center py-8 text-gray-500">No email captures yet</div>
                     ) : (
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Email
-                              </th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Name
-                              </th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Session Date
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {emailCaptures.map((capture, index) => (
-                              <tr key={index} className="hover:bg-gray-50">
-                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                                  {capture.email}
-                                </td>
-                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                  {capture.name || "No name provided"}
-                                </td>
-                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                  {new Date(capture.capturedAt).toLocaleDateString()}
-                                </td>
+                      <>
+                        <div className="overflow-x-auto">
+                          <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                              <tr>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Email
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Name
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Session Date
+                                </th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {emailCaptures.map((capture, index) => (
+                                <tr key={index} className="hover:bg-gray-50">
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                    {capture.email}
+                                  </td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                    {capture.name || "No name provided"}
+                                  </td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                    {new Date(capture.capturedAt).toLocaleDateString()}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        {emailCapturesPagination && emailCapturesPagination.totalPages > 1 && (
+                          <div className="mt-4 flex items-center justify-between">
+                            <div className="text-sm text-gray-500">
+                              Showing {((emailCapturesPagination.page - 1) * emailCapturesPagination.limit) + 1} to {Math.min(emailCapturesPagination.page * emailCapturesPagination.limit, emailCapturesPagination.total)} of {emailCapturesPagination.total}
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const newPage = emailCapturesPagination.page - 1;
+                                  setEmailCapturesPage(newPage);
+                                  fetchEmailCaptures(newPage);
+                                }}
+                                disabled={emailCapturesPagination.page <= 1}
+                                className="px-3 py-1 text-sm border rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                              >
+                                Previous
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const newPage = emailCapturesPagination.page + 1;
+                                  setEmailCapturesPage(newPage);
+                                  fetchEmailCaptures(newPage);
+                                }}
+                                disabled={emailCapturesPagination.page >= emailCapturesPagination.totalPages}
+                                className="px-3 py-1 text-sm border rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                              >
+                                Next
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 )}

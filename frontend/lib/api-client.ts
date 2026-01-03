@@ -315,8 +315,32 @@ class ApiClient {
       const query = searchParams.toString();
       return this.get(`/api/analytics/files/${fileId}/individual${query ? `?${query}` : ""}`);
     },
-    emailCaptures: (fileId: number) => this.get(`/api/analytics/files/${fileId}/email-captures`),
-    share: (shareId: string) => this.get(`/api/analytics/shares/${shareId}`),
+    emailCaptures: (
+      fileId: number,
+      params?: {
+        page?: number;
+        limit?: number;
+      },
+    ) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append("page", params.page.toString());
+      if (params?.limit) searchParams.append("limit", params.limit.toString());
+      const query = searchParams.toString();
+      return this.get(`/api/analytics/files/${fileId}/email-captures${query ? `?${query}` : ""}`);
+    },
+    share: (
+      shareId: string,
+      params?: {
+        page?: number;
+        limit?: number;
+      },
+    ) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append("page", params.page.toString());
+      if (params?.limit) searchParams.append("limit", params.limit.toString());
+      const query = searchParams.toString();
+      return this.get(`/api/analytics/shares/${shareId}${query ? `?${query}` : ""}`);
+    },
     dashboard: (params?: { days?: number }) => {
       const searchParams = new URLSearchParams();
       if (params?.days !== undefined) searchParams.append("days", String(params.days));
